@@ -1,13 +1,11 @@
 package no.fractal.database;
 
-import no.trygvejw.debugLogger.DebugLogger;
+import no.fractal.debugLogger.DebugLogger;
 import no.fractal.util.ThrowingConsumer;
 
 import java.sql.*;
-import java.util.HashMap;
-import java.util.UUID;
 
-class PsqlDb {
+abstract class PsqlDb {
 
     private static final String url = System.getenv("SQLURL");
     private static final String dbUser = System.getenv("POSGRESS_USER");
@@ -18,14 +16,15 @@ class PsqlDb {
 
 
 
-    protected static Connection tryConnectToDB(){
+    protected static Connection tryConnectToDB() throws SQLException{
         allQueries.log("try connect to db", "url", url, "user", dbUser, "passwd", dbPassword);
         Connection connection = null;
+
         try{
             Class.forName("org.postgresql.Driver"); // i think this is to chek if the class exists
 
             connection = DriverManager.getConnection(url, dbUser, dbPassword);
-        } catch (Exception e){
+        } catch (ClassNotFoundException e){
             e.printStackTrace();
         }
 
@@ -34,16 +33,8 @@ class PsqlDb {
 
 
 
-    protected static void sqlQuery(String query, ThrowingConsumer<ResultSet, SQLException> rowHandler){
-        try{
-            sqlQueryUnCaught(query, rowHandler);
-        } catch (SQLException e){
-            errorQueries.log("ERROR QUERY:", query);
-            e.printStackTrace();
-        }
-    }
 
-    protected static void sqlQueryUnCaught(String query, ThrowingConsumer<ResultSet, SQLException> rowHandler) throws SQLException{
+    protected static void sqlQuery(String query, ThrowingConsumer<ResultSet, SQLException> rowHandler) throws SQLException{
 
         Connection connection = tryConnectToDB();
         Statement statement = connection.createStatement();
@@ -63,17 +54,7 @@ class PsqlDb {
     }
 
 
-
-    protected static void sqlUpdate(String query){
-        try{
-            sqlUpdateUnCaught(query);
-        } catch (SQLException e){
-            errorQueries.log("ERROR QUERY:", query);
-            e.printStackTrace();
-        }
-    }
-
-    protected static void sqlUpdateUnCaught(String query) throws SQLException{
+    protected static void sqlUpdate(String query) throws SQLException{
         Connection connection = tryConnectToDB();
         Statement statement = connection.createStatement();
 

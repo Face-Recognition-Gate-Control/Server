@@ -1,4 +1,4 @@
-package no.trygvejw.debugLogger;
+package no.fractal.debugLogger;
 
 import java.io.File;
 import java.io.IOException;

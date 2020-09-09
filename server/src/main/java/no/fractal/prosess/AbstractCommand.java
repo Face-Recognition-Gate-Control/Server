@@ -1,7 +1,7 @@
 package no.fractal.prosess;
 
 
-import no.trygvejw.debugLogger.DebugLogger;
+import no.fractal.debugLogger.DebugLogger;
 
 import java.io.File;
 import java.io.IOException;

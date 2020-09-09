@@ -28,47 +28,69 @@ services:
         target: /docker-entrypoint-initdb.d
 
     networks:
-      db_network:
+      internal:
         ipv4_address: "${POSTGRES_IP}"
 
-    ports:
-      - "5432:5432"
+#    ports:
+#      - "5432:5432"
 
     restart: unless-stopped
 
 
-  mail:
-    image: namshi/smtp
 
-    networks:
-      frontend:
-
-
-  api_server:
+  web_server:
 
     build:
-      context: ./server
+      context: ./node
       dockerfile: ./Dockerfile
+
+    environment:
+      <<: *db-login
 
     volumes:
       - type: volume
-        source: fant_images
-        target: /fant_images
+        source: fractal_thumbnail_images
+        target: /fractal_thumbnail_images
 
-    environment:
-      PAYARA_ARGS: "--debug"
 
     networks:
-      db_network:
+      internal:
+        ipv4_address: "${WEBSERVER_IP}"
+
+
+#    ports:
+#      - "80:80"
+#      - "48:48"
+
+    depends_on:
+      - postgres_db
+
+    restart: unless-stopped
+
+  server:
+    container_name: docker_manager
+
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+
+
+    environment:
+      <<: *db-login
+
+
+    volumes:
+      - type: volume
+        source: fractal_thumbnail_images
+        target: /fractal_thumbnail_images
+
+
+    networks:
+      internal:
       frontend:
 
-
-
-    ports:
-      - "8080:8080"
-      - "4848:4848"
-      - "8181:8181"
-      - "9009:9009"
+    depends_on:
+      - postgres_db
 
     restart: unless-stopped
 
@@ -104,6 +126,7 @@ services:
 #
 #    networks:
 #      frontend:
+#      internal:
 #
 #    depends_on:
 #      - api_server
@@ -112,7 +135,7 @@ services:
 
 
 networks:
-  db_network:
+  internal:
     ipam:
       driver: default
       config:
@@ -122,6 +145,10 @@ networks:
   frontend:
 
 volumes:
+  # posgres db
   db_data:
-  fant_images:
+
+  # thumbnail images
+  fractal_thumbnail_images:
+
   nginx_data:

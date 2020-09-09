@@ -1,11 +1,9 @@
 package no.trygvejw.http;
 
-import no.trygvejw.debugLogger.DebugLogger;
+import no.fractal.debugLogger.DebugLogger;
 
 import java.io.*;
-import java.lang.reflect.Array;
 import java.net.http.HttpRequest;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
