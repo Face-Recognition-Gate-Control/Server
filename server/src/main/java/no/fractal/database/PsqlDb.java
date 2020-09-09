@@ -1,8 +1,7 @@
-package no.ntnu.sql;
+package no.fractal.database;
 
-import no.ntnu.enums.RunType;
-import no.ntnu.util.ThrowingConsumer;
 import no.trygvejw.debugLogger.DebugLogger;
+import no.fractal.util.ThrowingConsumer;
 
 import java.sql.*;
 import java.util.HashMap;
@@ -17,14 +16,6 @@ class PsqlDb {
     protected static final DebugLogger allQueries = new DebugLogger(false);
     protected static final DebugLogger errorQueries = new DebugLogger(true);
 
-
-    protected enum ticketsColumns{
-        id,
-        return_mail,
-        run_priority,
-        timestamp,
-        status
-    }
 
 
     protected static Connection tryConnectToDB(){
@@ -61,7 +52,6 @@ class PsqlDb {
         ResultSet resultSet = statement.executeQuery(query);
 
 
-        HashMap<UUID, RunType> tmpList = new HashMap<>();
         while (resultSet.next()){
             rowHandler.accept(resultSet);
         }

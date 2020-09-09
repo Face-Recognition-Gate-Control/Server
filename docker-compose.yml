@@ -1,18 +1,13 @@
 version: '3.8'
 
+
 x-DbLoggin:
   environment:
     &db-login
-#    SQLURL: "jdbc:postgresql://10.20.30.40:5432/local_db"
-    POSGRESS_USER: "postgres"
-    POSTGRES_DB: "local_db"
-    POSTGRES_PASSWORD: "password"
-
-x-CertbotConf:
-  environment:
-    &certbot-conf
-    DOMAIN: "${API_DOMAIN}"
-    LE_EMAIL: "${MAIL_USERNAME}"
+    SQLURL: "jdbc:postgresql://${POSTGRES_IP}:5432/${POSGRESS_USERNAME}"
+    POSGRESS_USER: "${POSGRESS_USERNAME}"
+    POSTGRES_DB: "${POSGRESS_DB_NAME}"
+    POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
 
 
 services:
@@ -34,7 +29,7 @@ services:
 
     networks:
       db_network:
-        ipv4_address: "10.20.30.40"
+        ipv4_address: "${POSTGRES_IP}"
 
     ports:
       - "5432:5432"

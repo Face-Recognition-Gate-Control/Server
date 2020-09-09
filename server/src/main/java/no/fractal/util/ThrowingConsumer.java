@@ -1,4 +1,4 @@
-package no.ntnu.util;
+package no.fractal.util;
 
 
 /**

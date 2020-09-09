@@ -3,9 +3,9 @@ version: '3.8'
 x-DbLoggin:
   environment:
     &db-login
-    SQLURL: "jdbc:postgresql://${MASTER_IP}:5432/docker"
-    POSGRESS_USER: "postgres"
-    POSTGRES_DB: "docker"
+    SQLURL: "jdbc:postgresql://${MASTER_IP}:5432/${POSGRESS_USERNAME}"
+    POSGRESS_USER: "${POSGRESS_USERNAME}"
+    POSTGRES_DB: "${POSGRESS_DB_NAME}"
     POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
 
 
