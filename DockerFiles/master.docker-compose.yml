@@ -1,0 +1,172 @@
+version: '3.8'
+
+x-DbLoggin:
+  environment:
+    &db-login
+    SQLURL: "jdbc:postgresql://${MASTER_IP}:5432/docker"
+    POSGRESS_USER: "postgres"
+    POSTGRES_DB: "docker"
+    POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
+
+
+
+
+
+services:
+  postgres_db:
+    image: postgres
+    container_name: postgres_db
+
+
+
+    environment:
+      << :  *db-login
+      PGDATA: "/var/lib/postgresql/data/pgdata"
+
+
+    volumes:
+    - type: volume
+      source: db_data
+      target: /var/lib/postgresql/data
+    - type: bind
+      source: ./DockerFiles/posgress/db_init_scripts
+      target: /docker-entrypoint-initdb.d
+
+    networks:
+      db_network:
+
+    ports:
+      - "${MASTER_IP}:5432:5432"
+
+
+    restart: unless-stopped
+
+
+  api_server:
+    container_name: api_server
+
+    build:
+      context: ./ServerApi
+      dockerfile: ./Dockerfile
+
+    environment:
+      << :  *db-login
+
+
+    volumes:
+    - type: bind
+      source: ./save_data/run
+      target: /runvol
+
+    - type: bind
+      source: ./save_data/send
+      target: /send
+
+
+    networks:
+      db_network:
+      frontend:
+
+    depends_on:
+      - postgres_db
+
+    ports:
+      - target: 8080
+        published: 8080
+        protocol: tcp
+        mode: host
+
+    restart: unless-stopped
+
+  docker_manager:
+    container_name: docker_manager
+
+    build:
+      context: ./Docker_manager
+      dockerfile: Dockerfile
+
+
+    environment:
+      SAVE_DATA_SYS_PATH: $PWD/save_data
+      << :  *db-login
+      MAIL_PASSWORD: "${MAIL_PASSWORD}"
+      MAIL_USERNAME: "${MAIL_USERNAME}"
+      IS_SLAVE: "FALSE"
+
+    volumes:
+    - type: bind
+      source: /var/run/docker.sock
+      target: /var/run/docker.sock
+    - type: bind
+      source: ./save_data
+      target: /save_data
+    - type: bind
+      source: ./Docker_manager/RUNTYPES
+      target: /runtypes
+
+    - type: bind
+      source: ./ConfigFiles/resource_tags.yaml
+      target: /app/resource_tags.yaml
+    - type: bind
+      source: ./system_resources.yaml
+      target: /app/system_resources.yaml
+
+
+    networks:
+      db_network:
+      backend:
+
+    depends_on:
+      - postgres_db
+
+    restart: unless-stopped
+
+
+  # https://github.com/mikael2/payara-postgres-nginx/
+  nginx:
+    container_name: nginx
+
+    build:
+      context: ./DockerFiles/nginx_certbot
+      dockerfile: Dockerfile
+
+    volumes:
+      - type: volume
+        source: nginx_data
+        target: /etc/letsencrypt
+
+    env_file:
+      - ./ConfigFiles/nginx_cerbot.env
+
+    environment:
+      DOMAIN: "${API_DOMAIN}"
+      LE_EMAIL: "${MAIL_USERNAME}"
+    logging:
+      options:
+        max-size: "50m"
+        max-file: "3"
+
+    ports:
+      - "80:80"
+      - "443:443"
+
+    networks:
+      frontend:
+
+    depends_on:
+      - api_server
+
+    restart: unless-stopped
+
+
+networks:
+  db_network:
+  frontend:
+  backend:
+  ticketNetwork:
+    external: true
+
+
+volumes:
+  db_data:
+  nginx_data:

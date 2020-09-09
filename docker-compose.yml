@@ -1,0 +1,132 @@
+version: '3.8'
+
+x-DbLoggin:
+  environment:
+    &db-login
+#    SQLURL: "jdbc:postgresql://10.20.30.40:5432/local_db"
+    POSGRESS_USER: "postgres"
+    POSTGRES_DB: "local_db"
+    POSTGRES_PASSWORD: "password"
+
+x-CertbotConf:
+  environment:
+    &certbot-conf
+    DOMAIN: "${API_DOMAIN}"
+    LE_EMAIL: "${MAIL_USERNAME}"
+
+
+services:
+  postgres_db:
+    image: postgres
+
+    environment:
+      << :  *db-login
+      PGDATA: "/var/lib/postgresql/data/pgdata"
+
+
+    volumes:
+      - type: volume
+        source: db_data
+        target: /var/lib/postgresql/data
+      - type: bind
+        source: ./docker_files/posgress/db_init_scripts
+        target: /docker-entrypoint-initdb.d
+
+    networks:
+      db_network:
+        ipv4_address: "10.20.30.40"
+
+    ports:
+      - "5432:5432"
+
+    restart: unless-stopped
+
+
+  mail:
+    image: namshi/smtp
+
+    networks:
+      frontend:
+
+
+  api_server:
+
+    build:
+      context: ./server
+      dockerfile: ./Dockerfile
+
+    volumes:
+      - type: volume
+        source: fant_images
+        target: /fant_images
+
+    environment:
+      PAYARA_ARGS: "--debug"
+
+    networks:
+      db_network:
+      frontend:
+
+
+
+    ports:
+      - "8080:8080"
+      - "4848:4848"
+      - "8181:8181"
+      - "9009:9009"
+
+    restart: unless-stopped
+
+
+
+  # https://github.com/mikael2/payara-postgres-nginx/
+#  nginx:
+#    container_name: nginx
+#
+#    build:
+#      context: ./DockerFiles/nginx_certbot
+#      dockerfile: Dockerfile
+#
+#    volumes:
+#      - type: volume
+#        source: nginx_data
+#        target: /etc/letsencrypt
+#
+#    env_file:
+#      - ./config_files/nginx_cerbot.env
+#
+#    environment:
+#      DOMAIN: "${API_DOMAIN}"
+#      LE_EMAIL: "${MAIL_USERNAME}"
+#    logging:
+#      options:
+#        max-size: "50m"
+#        max-file: "3"
+#
+#    ports:
+#      - "80:80"
+#      - "443:443"
+#
+#    networks:
+#      frontend:
+#
+#    depends_on:
+#      - api_server
+#
+#    restart: unless-stopped
+
+
+networks:
+  db_network:
+    ipam:
+      driver: default
+      config:
+        - subnet: 10.0.0.0/8
+
+
+  frontend:
+
+volumes:
+  db_data:
+  fant_images:
+  nginx_data:
