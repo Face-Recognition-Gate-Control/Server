@@ -16,13 +16,13 @@ services:
 
     environment:
       << :  *db-login
-      PGDATA: "/var/lib/postgresql/data/pgdata"
+#      PGDATA: "/var/lib/postgresql/data/pgdata"
 
 
     volumes:
-      - type: volume
-        source: db_data
-        target: /var/lib/postgresql/data
+#      - type: volume
+#        source: db_data
+#        target: /var/lib/postgresql/data
       - type: bind
         source: ./docker_files/posgress/db_init_scripts
         target: /docker-entrypoint-initdb.d
@@ -41,7 +41,7 @@ services:
   web_server:
 
     build:
-      context: ./node
+      context: ./web/api
       dockerfile: ./Dockerfile
 
     environment:
@@ -51,6 +51,9 @@ services:
       - type: volume
         source: fractal_thumbnail_images
         target: /fractal_thumbnail_images
+      - type: bind
+        source: $PWD/web/api/
+        target: /usr/src/app
 
 
     networks:
@@ -62,8 +65,8 @@ services:
 #      - "80:80"
 #      - "48:48"
 
-    depends_on:
-      - postgres_db
+#    depends_on:
+#      - postgres_db
 
     restart: unless-stopped
 
