@@ -1,7 +1,7 @@
 package no.fractal.socket;
 
+import java.io.BufferedInputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.net.Socket;
 
 /**
@@ -25,7 +25,7 @@ public abstract class Client implements Runnable {
 	/**
 	 * Input stream from the client
 	 */
-	private InputStreamReader streamInput;
+	private BufferedInputStream streamInput;
 
 	/**
 	 * Unique id for the client
@@ -53,7 +53,7 @@ public abstract class Client implements Runnable {
 	 * @throws IOException thrown if we cant create the reader
 	 */
 	private void createInputReader() throws IOException {
-		this.streamInput = new InputStreamReader(clientSocket.getInputStream());
+		this.streamInput = new BufferedInputStream(clientSocket.getInputStream());
 	}
 
 	/**
@@ -61,7 +61,7 @@ public abstract class Client implements Runnable {
 	 *
 	 * @return input stream reader
 	 */
-	protected InputStreamReader getInputReader() {
+	protected BufferedInputStream getInputReader() {
 		return this.streamInput;
 	}
 
