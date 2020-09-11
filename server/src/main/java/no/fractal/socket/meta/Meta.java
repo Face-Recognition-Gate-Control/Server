@@ -1,0 +1,25 @@
+package no.fractal.socket.meta;
+
+/**
+ * A Meta header is included in every request/response from the FRACTAL
+ * protocol. A meta header includes atlease a segment array, defining all
+ * segemnts in the package (Json data, files, other types etc). All data that is
+ * to be red/written has to be defined in a segment in order in which it is to
+ * be red/written from the stream.
+ * 
+ */
+public abstract class Meta {
+
+	public Meta() {
+	}
+
+	private Segment[] segments;
+
+	public Segment[] getAttachments() {
+		return segments;
+	}
+
+	public void setAttachments(Segment[] segments) {
+		this.segments = segments;
+	}
+}
