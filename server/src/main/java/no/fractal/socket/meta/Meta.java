@@ -10,16 +10,22 @@ package no.fractal.socket.meta;
  */
 public abstract class Meta {
 
+	/**
+	 * Required for JSON marshalling
+	 */
 	public Meta() {
 	}
 
+	/**
+	 * All segments in the meta payload
+	 */
 	private Segment[] segments;
 
-	public Segment[] getAttachments() {
+	public Segment[] getSegments() {
 		return segments;
 	}
 
-	public void setAttachments(Segment[] segments) {
+	public void setSegments(Segment[] segments) {
 		this.segments = segments;
 	}
 }
