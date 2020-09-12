@@ -77,7 +77,7 @@ public abstract class Client implements Runnable {
 	 *
 	 * @return input stream reader
 	 */
-	protected BufferedInputStream getInputReader() {
+	public BufferedInputStream getInputReader() {
 		return this.streamInput;
 	}
 
@@ -86,7 +86,7 @@ public abstract class Client implements Runnable {
 	 *
 	 * @return output stream
 	 */
-	protected BufferedOutputStream getOutputStream() {
+	public BufferedOutputStream getOutputStream() {
 		return this.streamOutput;
 	}
 
