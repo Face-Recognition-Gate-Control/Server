@@ -74,7 +74,10 @@ public class PayloadLoader<T> {
 	@SuppressWarnings({ "unchecked" })
 	public T getnewInstance(String name, Object[] params) {
 		try {
-			return (T) this.classes.get(name).getConstructor(constructorTypes).newInstance(params);
+			Class<?> o = this.classes.get(name);
+			if (o != null) {
+				return (T) o.getConstructor(constructorTypes).newInstance(params);
+			}
 		} catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException
 				| NoSuchMethodException | SecurityException e) {
 			LOGGER.warning("Could not create class stored with name: " + name + "\n" + e.getMessage());
