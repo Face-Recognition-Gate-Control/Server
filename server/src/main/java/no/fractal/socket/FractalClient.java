@@ -46,6 +46,7 @@ public class FractalClient extends Client {
 	 * Register all payloads with name and class type to the loader
 	 */
 	private void registerPayloads() {
+		payloads.addSubClass("authentication", AuthenticationPayload.class);
 	}
 
 	/**
