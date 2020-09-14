@@ -32,7 +32,7 @@ public class StreamUtils {
         byte[] buffer = new byte[bufferSize];
         int bytesRead = -1;
 
-        while ((bytesRead = inputStream.read(buffer, 0, remaining % byteSize)) != -1) {
+        while ((bytesRead = inputStream.read(buffer, 0, Math.min(remaining, bufferSize))) != -1) {
             remaining -= bufferSize;
 
             outputStream.write(buffer, 0, bytesRead);

@@ -31,7 +31,7 @@ public class FractalProtocol {
             int mimeByteSize = ByteBuffer.wrap(inputStream.readNBytes(ID_SIZE)).getShort();
             String mimeType = new String(inputStream.readNBytes(mimeByteSize), StandardCharsets.UTF_8).trim();
 
-            long metaByteSize = ByteBuffer.wrap(inputStream.readNBytes(ID_SIZE)).getLong();
+            long metaByteSize = ByteBuffer.wrap(inputStream.readNBytes(META_BYTE_SIZE)).getLong();
             JSONArray segmentsMeta = new JSONArray(new JSONTokener(new String(inputStream.readNBytes(mimeByteSize), StandardCharsets.UTF_8).trim()));
 
             return new FractalRequestMeta(segmentsMeta,mimeType);
