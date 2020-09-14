@@ -26,8 +26,8 @@ public class SendThumbnailRequest extends AbstractRequest {
         ArrayList<Segment> segments = new ArrayList<>();
 
         segments.add(new Segment((inputStream, segment_meta) -> {
-            String fileName = segment_meta.get("IMNAME");
-            int fileSize = Integer.parseInt(segment_meta.get("File_size"));
+            String fileName = segment_meta.get(metaKeys.IM_NAME.name());
+            int fileSize = Integer.parseInt(segment_meta.get(Segment.DEFAULT_KEYS.SIZE.name()));
 
             this.fileName = fileName;
             File writefile = new File(fileName);
@@ -36,7 +36,7 @@ public class SendThumbnailRequest extends AbstractRequest {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-        }).addMetaValue("IMNAME"));
+        }).addMetaValue(metaKeys.IM_NAME.name()));
 
         segments.add(new Segment((inputStream, stringStringHashMap) -> {
             // json parsing elns //
@@ -44,5 +44,10 @@ public class SendThumbnailRequest extends AbstractRequest {
         .addMetaValue("metaparam 2 osv.."));
 
         return segments;
+    }
+
+    private static enum metaKeys{
+        IM_NAME,
+        META_PARAM
     }
 }

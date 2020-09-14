@@ -13,9 +13,10 @@ public class Segment {
 
     public Segment(BiConsumer<BufferedInputStream, HashMap<String, String>> segmentConsumer){
         this.segmentConsumer = segmentConsumer;
-        metaValues.put("MIME", null); // mimetype
-        metaValues.put("SIZE", null); // bytesize
+        metaValues.put(DEFAULT_KEYS.MIME.name(), null); // mimetype
+        metaValues.put(DEFAULT_KEYS.SIZE.name(), null); // bytesize
     }
+
 
     public Segment addMetaValue(String valueName){
         metaValues.put(valueName,null);
@@ -43,6 +44,11 @@ public class Segment {
         }
 
         return true; // tror æ hadd en plan med den her men ikke helt sikker på hva
+    }
+
+    public static enum DEFAULT_KEYS{
+        MIME,
+        SIZE
     }
 
 }
