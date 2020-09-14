@@ -3,6 +3,8 @@ package no.fractal.socket.payload;
 import no.fractal.socket.Client;
 import no.fractal.socket.meta.Meta;
 
+import java.util.function.Supplier;
+
 /**
  * Abstract class for all payload handlers. All payloads must implement a meta
  * type which describes the meta header for given payload.
@@ -33,5 +35,7 @@ public abstract class PayloadBase<T extends Meta> {
 	 * @param meta meta header for this payload
 	 */
 	public abstract void execute(Meta meta);
+
+	public abstract Supplier<T> factoryGenerate();
 
 }

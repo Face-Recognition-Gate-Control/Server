@@ -59,6 +59,7 @@ public class FractalClient extends Client {
 		try {
 			try {
 
+
 				Gson gson = new Gson();
 				BufferedInputStream in = this.getInputReader();
 				BufferedOutputStream out = this.getOutputStream();
