@@ -18,9 +18,15 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
     meta = json.dumps({"segments": [
         {
             "size": payloadSize,
-            "mime": "application/json"
+            "mime_type": "application/json",
+            "filename": "aim aname",
+        },
+        {
+            "size": payloadSize,
+            "mime_type": "application/png",
+            "filename": "iamafile.png",
         }
-    ]})
+    ], "username": "freshfish"})
 
     payloadNameSize = len(payloadName).to_bytes(PAYLOAD_NAME_LENGTH, 'big')
     payloadNameByes = bytes(payloadName, "utf-8")
@@ -36,14 +42,17 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
     metaBytesSize = metaSize.to_bytes(META_LENGTH, 'big')
     metaBytes = bytes(meta, "utf-8")
 
-    payload = payload = [0] * payloadSize
-    payloadByes = bytes(payload, "utf-8")
+    payloadBytes1 = bytearray()
+    payloadBytes1.append(payloadSize)
+    payloadBytes2 = bytearray()
+    payloadBytes2.append(payloadSize)
 
     s.sendall(payloadNameSize)
     s.sendall(payloadNameByes)
     s.sendall(metaBytesSize)
     s.sendall(metaBytes)
-    s.sendall(payloadByes)
+    s.sendall(payloadBytes1)
+    s.sendall(payloadBytes2)
 
     # SEND FILE:
 

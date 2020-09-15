@@ -1,28 +1,23 @@
 package no.fractal.socket.payload;
 
 import no.fractal.socket.Client;
+
 import no.fractal.socket.meta.AuthenticationMeta;
-import no.fractal.socket.meta.Meta;
+import no.fractal.util.Parser;
 
 public class AuthenticationPayload extends PayloadBase<AuthenticationMeta> {
 
-	private AuthenticationMeta meta;
+	AuthenticationMeta meta = this.getMeta(AuthenticationMeta.class);
 
-	public AuthenticationPayload(Client client) {
-		super(client);
+	public AuthenticationPayload(Client client, Parser<AuthenticationMeta> mf) {
+		super(client, mf);
 	}
 
 	@Override
-	public Class<AuthenticationMeta> getMetaType() {
-		return AuthenticationMeta.class;
-	}
-
-	@Override
-	public void execute(Meta inputMeta) {
-		if (inputMeta instanceof AuthenticationMeta) {
-			this.meta = (AuthenticationMeta) meta;
-		}
+	public void execute() {
 		System.out.println("AUTHENTICATION IS EXECUTED");
+		System.out.println("I have authfield: " + meta.getUsername());
+
 	}
 
 }

@@ -1,6 +1,7 @@
 package no.fractal.socket.payload;
 
 import no.fractal.socket.Client;
+import no.fractal.util.Parser;
 import no.fractal.socket.meta.Meta;
 
 /**
@@ -11,20 +12,37 @@ import no.fractal.socket.meta.Meta;
  */
 public abstract class PayloadBase<T extends Meta> {
 
+	/**
+	 * Client owning the payload
+	 */
 	private Client client;
 
-	public PayloadBase(Client client) {
+	/**
+	 * Parser for the header meta
+	 */
+	private Parser<T> metaParser;
+
+	public PayloadBase(Client client, Parser<T> metaParser) {
 		this.client = client;
+		this.metaParser = metaParser;
 	}
 
+	/**
+	 * Returns the client for the payload
+	 */
 	protected Client getClient() {
 		return client;
 	}
 
 	/**
-	 * Returns the meta type for the payload
+	 * Returns the parsed meta for this payload
+	 * 
+	 * @param type the type for the meta
+	 * @return parsed meta
 	 */
-	public abstract Class<? extends Meta> getMetaType();
+	protected T getMeta(Class<T> type) {
+		return this.metaParser.parse(type);
+	}
 
 	/**
 	 * Executes the payload instructions for this payload. The meta includes all
@@ -32,6 +50,6 @@ public abstract class PayloadBase<T extends Meta> {
 	 * 
 	 * @param meta meta header for this payload
 	 */
-	public abstract void execute(Meta meta);
+	public abstract void execute();
 
 }

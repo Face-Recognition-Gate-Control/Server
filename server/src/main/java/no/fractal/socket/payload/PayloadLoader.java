@@ -76,11 +76,11 @@ public class PayloadLoader<T> {
 		try {
 			Class<?> o = this.classes.get(name);
 			if (o != null) {
-				return (T) o.getConstructor(constructorTypes).newInstance(params);
+				return (T) o.getDeclaredConstructor(constructorTypes).newInstance(params);
 			}
 		} catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException
 				| NoSuchMethodException | SecurityException e) {
-			LOGGER.warning("Could not create class stored with name: " + name + "\n" + e.getMessage());
+			LOGGER.warning("Could not create class stored with name: " + name + "\n" + e.getMessage() + "\n");
 		}
 		return null;
 	}
