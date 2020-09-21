@@ -63,16 +63,20 @@ public class DbTensorCash {
 
             res.add(executor.submit(() ->TensorComparator.comparisonTask((NUM_THREADS - 1) * interval,searchData, tensorData)));
 
-            ArrayList<ComparisonResult> results = res.stream().map(future -> {
+            // uhh this may be low so we bump the comma
+            ArrayList<ComparisonResult> results = res
+                    .stream()
+                    .map(future -> {
                 try {
                     return future.get();
                 } catch (InterruptedException | ExecutionException e) {
                     e.printStackTrace();
                 }
                 return null; // lets hope this does not happen
-            }).flatMap(Stream::of).collect(Collectors.toCollection(ArrayList::new));
-
-            results.sort((o1, o2) -> (int) (o1.diffValue-o2.diffValue) * 1000); // uhh this may be low so we bump the comma
+            })
+                    .flatMap(Stream::of)
+                    .sorted((o1, o2) -> (int) (o1.diffValue - o2.diffValue) * 1000)// icas values are below 0
+                    .collect(Collectors.toCollection(ArrayList::new));
 
 
             currentSearching.release();
