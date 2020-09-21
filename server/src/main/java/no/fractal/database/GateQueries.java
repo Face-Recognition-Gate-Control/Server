@@ -1,7 +1,30 @@
 package no.fractal.database;
 
+import no.fractal.database.Datatypes.TensorData;
+
+import java.math.BigDecimal;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.UUID;
+
 public class GateQueries extends PsqlDb {
-    protected static boolean waitForConection = true;
+
+    public static ArrayList<TensorData> getWorkerResourceManagerById() throws SQLException {
+        String query = "SELECT user_id, face_vec FROM login_referance;";
+
+        ArrayList<TensorData> ret = new ArrayList<>();
+
+        sqlQuery(query, resultSet -> {
+            ret.add(new TensorData(
+                    (BigDecimal[]) resultSet.getArray("face_vec").getArray(),
+                    UUID.fromString(resultSet.getString("user_id"))
+                    ));
+        });
+
+        return ret;
+    }
+
+
 
 
 
