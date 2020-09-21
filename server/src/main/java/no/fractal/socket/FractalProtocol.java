@@ -5,7 +5,9 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 
-public class FractalProtocol {
+import no.fractal.util.Parser;
+
+public class FractalProtocol<T> {
 
 	/**
 	 * Byte size of the ID header
@@ -20,6 +22,12 @@ public class FractalProtocol {
 	private String id;
 
 	private String meta;
+
+	private Parser<T> metaParser;
+
+	public FractalProtocol(Parser<T> metaParser) {
+		this.metaParser = metaParser;
+	}
 
 	public int getIdHeaderBytesLength() {
 		return ID_LENGTH;
@@ -70,6 +78,21 @@ public class FractalProtocol {
 
 	private void readMeta(BufferedInputStream in) throws IOException {
 		this.meta = this.readHeader(in, META_LENGTH);
+	}
+
+	/**
+	 * Returns the parsed meta object by the Parser provided on object
+	 * initialization. Returns null if there is no meta data to parse.
+	 * 
+	 * @param Class type to parse too
+	 * @return returns parsed class or null
+	 */
+	public T getParsedMeta(Class<? extends T> t) {
+		String meta = this.getMeta();
+		if (meta == null) {
+			return null;
+		}
+		return metaParser.parse(t, meta);
 	}
 
 	/**

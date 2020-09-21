@@ -3,14 +3,21 @@ package no.fractal.socket.payload;
 import no.fractal.socket.Client;
 
 import no.fractal.socket.meta.AuthenticationMeta;
-import no.fractal.util.Parser;
 
 public class AuthenticationPayload extends PayloadBase<AuthenticationMeta> {
 
-	AuthenticationMeta meta = this.getMeta(AuthenticationMeta.class);
+	private AuthenticationMeta meta;
 
-	public AuthenticationPayload(Client client, Parser<AuthenticationMeta> mf) {
-		super(client, mf);
+	public AuthenticationPayload(Client client, AuthenticationMeta meta) {
+		super(client);
+		setMeta(meta);
+	}
+
+	private void setMeta(AuthenticationMeta meta) {
+		if (meta == null)
+			throw new IllegalArgumentException("Meta can not be null");
+
+		this.meta = meta;
 	}
 
 	@Override

@@ -3,8 +3,6 @@ package no.fractal.socket;
 import no.fractal.socket.meta.*;
 import no.fractal.socket.payload.AuthenticationPayload;
 import no.fractal.socket.payload.NoSuchPayloadException;
-import no.fractal.socket.payload.PayloadLoader;
-import no.fractal.util.Parser;
 import no.fractal.socket.payload.PayloadBase;
 
 import java.io.BufferedInputStream;
@@ -23,30 +21,16 @@ public class FractalClient extends Client {
 	// Handles logging for the FractalClient
 	private static Logger LOGGER = Logger.getLogger(FractalClient.class.getName());
 
-	private FractalProtocol protocol = new FractalProtocol();
-
-	PayloadLoader<PayloadBase<? extends Meta>> payloads;
+	private FractalProtocol<Meta> protocol = new FractalProtocol<Meta>(new JsonMetaParser<Meta>());
 
 	public FractalClient(Socket clientSocket, TcpServer server) throws IOException {
 		super(clientSocket, server);
-
-		Class<?> constructorTypes[] = { Client.class, Parser.class };
-		payloads = new PayloadLoader<PayloadBase<? extends Meta>>(constructorTypes);
 	}
 
 	@Override
 	public void run() {
 		// initial setup
-		this.registerPayloads();
 		this.read();
-	}
-
-	/**
-	 * Register all payloads with name and class type to the loader
-	 */
-	private void registerPayloads() {
-		payloads.addSubClass("authentication", AuthenticationPayload.class);
-		payloads.addSubClass("logout", AuthenticationPayload.class);
 	}
 
 	/**
@@ -61,15 +45,20 @@ public class FractalClient extends Client {
 			BufferedInputStream in = this.getInputReader();
 			boolean reading = true;
 			while (reading) {
+
 				// Blocks here until all header fields are red.
 				protocol.readHeader(in);
+
 				// Headers extract
 				String payloadName = protocol.getId();
-				String metaString = protocol.getMeta();
 
 				try {
-					Object constructorArgumets[] = { this, new JsonMetaParser<Meta>(metaString) };
-					PayloadBase<? extends Meta> payload = payloads.getnewInstance(payloadName, constructorArgumets);
+					PayloadBase<?> payload = switch (payloadName) {
+						case "authentication" -> new AuthenticationPayload(this,
+								(AuthenticationMeta) protocol.getParsedMeta(AuthenticationMeta.class));
+						default -> null;
+					};
+
 					if (payload == null) {
 						throw new NoSuchPayloadException("Can not find the payload with name: " + payloadName);
 					}

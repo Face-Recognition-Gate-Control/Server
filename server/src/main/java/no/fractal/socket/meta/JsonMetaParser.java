@@ -8,14 +8,8 @@ public class JsonMetaParser<T> implements Parser<T> {
 
 	Gson gson = new Gson();
 
-	private String metaString;
-
-	public JsonMetaParser(String meta) {
-		this.metaString = meta;
-	}
-
 	@Override
-	public T parse(Class<T> type) {
+	public T parse(Class<? extends T> type, String metaString) {
 		return gson.fromJson(metaString, type);
 	}
 }

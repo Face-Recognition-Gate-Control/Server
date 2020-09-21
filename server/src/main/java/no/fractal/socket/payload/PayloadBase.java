@@ -17,14 +17,8 @@ public abstract class PayloadBase<T extends Meta> {
 	 */
 	private Client client;
 
-	/**
-	 * Parser for the header meta
-	 */
-	private Parser<T> metaParser;
-
-	public PayloadBase(Client client, Parser<T> metaParser) {
+	public PayloadBase(Client client) {
 		this.client = client;
-		this.metaParser = metaParser;
 	}
 
 	/**
@@ -32,16 +26,6 @@ public abstract class PayloadBase<T extends Meta> {
 	 */
 	protected Client getClient() {
 		return client;
-	}
-
-	/**
-	 * Returns the parsed meta for this payload
-	 * 
-	 * @param type the type for the meta
-	 * @return parsed meta
-	 */
-	protected T getMeta(Class<T> type) {
-		return this.metaParser.parse(type);
 	}
 
 	/**
