@@ -12,10 +12,20 @@ import java.util.concurrent.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+
+/**
+ * this is the singelton interface used to acsess the db tensors
+ *
+ * the reason for this interface is for cashing
+ */
 public class DbTensorCash {
 
     private static DbTensorCash instance;
 
+    /**
+     * returns instance
+     * @return instance
+     */
     public static DbTensorCash getInstance() {
         if (instance == null){
             instance = new DbTensorCash();
@@ -23,18 +33,18 @@ public class DbTensorCash {
         return instance;
     }
 
-
+    // num threads to use for a single seartch op
     private static final int NUM_THREADS = 6;
+    // max paralel sertch ops
     private static final int CONCURRENT_SEARCHES = 5;
 
     private ExecutorService executor;
 
     private ArrayList<TensorData> tensorData;
-    private Semaphore updatePending = new Semaphore(1);
-    private Semaphore currentSearching = new Semaphore(CONCURRENT_SEARCHES);
+    private final Semaphore updatePending = new Semaphore(1);
+    private final Semaphore currentSearching = new Semaphore(CONCURRENT_SEARCHES);
 
-    public DbTensorCash() {
-
+    private DbTensorCash() {
         executor = Executors.newFixedThreadPool(NUM_THREADS);
         try {
             tensorData = GateQueries.getWorkerResourceManagerById();
@@ -44,6 +54,13 @@ public class DbTensorCash {
 
     }
 
+    /**
+     * compairs the provided Tensor data with the database
+     * to many seartch ops or add operation in progress this wil block
+     *
+     * @param searchData the data to compair
+     * @return the highest scored comparison result
+     */
     public ComparisonResult getClosestMatch(TensorData searchData){
         try{
             updatePending.acquire();
@@ -92,7 +109,13 @@ public class DbTensorCash {
     }
 
 
-
+    /**
+     * adds a datapoint to the local cash
+     *
+     * this shold be called from wherever tensor data is put in to the db
+     *
+     * @param newData
+     */
     public void addDatapoint(TensorData newData){
 
         try{
