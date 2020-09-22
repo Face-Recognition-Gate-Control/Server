@@ -1,5 +1,6 @@
 package no.fractal.util;
 
-public interface Parser<T> {
-	public T parse(Class<? extends T> type, String stringToParse);
+public interface Parser {
+	public <T> T parse(Class<? extends T> type, String stringToParse);
+
 }

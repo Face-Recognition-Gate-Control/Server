@@ -1,10 +1,14 @@
 package no.fractal.socket;
 
 import java.io.BufferedInputStream;
+import java.io.File;
 import java.io.IOException;
+
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 
+import no.fractal.socket.meta.Meta;
+import no.fractal.socket.payload.PayloadBase;
 import no.fractal.util.Parser;
 
 public class FractalProtocol<T> {
@@ -23,9 +27,9 @@ public class FractalProtocol<T> {
 
 	private String meta;
 
-	private Parser<T> metaParser;
+	private Parser metaParser;
 
-	public FractalProtocol(Parser<T> metaParser) {
+	public FractalProtocol(Parser metaParser) {
 		this.metaParser = metaParser;
 	}
 
@@ -37,15 +41,50 @@ public class FractalProtocol<T> {
 		return META_LENGTH;
 	}
 
+	public class PayloadBuilder {
+
+		File[] segments;
+
+		public PayloadBuilder(File[] segments) {
+			this.segments = segments;
+		}
+
+		/**
+		 * Creates a payload object from the defined type, and inject data from meta,
+		 * and all file segments.
+		 * 
+		 * @param <E> type of the payload
+		 * @param t   type of the payload
+		 * @return
+		 */
+		public <E extends PayloadBase> E createPayloadObject(Class<E> t) {
+			E payload = metaParser.parse(t, getMeta());
+			payload.setSegments(segments);
+			return payload;
+		}
+	}
+
 	/**
 	 * Reads the header data from the input stream. This operation is blocking.
 	 * 
 	 * @param in stream reader
 	 * @throws IOException thrown if stream is closed
 	 */
-	public void readHeader(BufferedInputStream in) throws IOException {
+	public PayloadBuilder readPayload(BufferedInputStream in) throws IOException {
 		this.readId(in);
 		this.readMeta(in);
+		return new PayloadBuilder(this.readSegments(in));
+	}
+
+	/**
+	 * Returns a list of all file segments from a request.
+	 * 
+	 * @param in input stream for reading files
+	 * @return list of all file segments
+	 */
+	private File[] readSegments(BufferedInputStream in) {
+		return new SegmentReader(in).read(getParsedMeta().getSegments());
+
 	}
 
 	private String readHeader(BufferedInputStream in, int headerSize) throws IOException {
@@ -92,7 +131,22 @@ public class FractalProtocol<T> {
 		if (meta == null) {
 			return null;
 		}
+
 		return metaParser.parse(t, meta);
+	}
+
+	/**
+	 * Returns the Meta object from header. Returns null if meta is not set.
+	 * 
+	 * @return returns parsed Meta or null
+	 */
+	public Meta getParsedMeta() {
+		String meta = this.getMeta();
+		if (meta == null) {
+			return null;
+		}
+
+		return metaParser.parse(Meta.class, meta);
 	}
 
 	/**

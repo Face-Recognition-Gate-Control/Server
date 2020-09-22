@@ -1,31 +1,25 @@
 package no.fractal.socket.payload;
 
-import no.fractal.socket.Client;
-import no.fractal.util.Parser;
-import no.fractal.socket.meta.Meta;
+import java.io.File;
 
 /**
- * Abstract class for all payload handlers. All payloads must implement a meta
- * type which describes the meta header for given payload.
- * 
- * @param <T> type of the meta header
+ * Abstract class for all payloads. All payloads can have segments (files)
+ * attached.
  */
-public abstract class PayloadBase<T extends Meta> {
+public abstract class PayloadBase {
 
-	/**
-	 * Client owning the payload
-	 */
-	private Client client;
+	transient File[] segments;
 
-	public PayloadBase(Client client) {
-		this.client = client;
+	public PayloadBase() {
 	}
 
 	/**
-	 * Returns the client for the payload
+	 * Sets the segments for this payload
+	 * 
+	 * @param segments
 	 */
-	protected Client getClient() {
-		return client;
+	public void setSegments(File[] segments) {
+		this.segments = segments;
 	}
 
 	/**

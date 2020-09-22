@@ -11,6 +11,8 @@ public class Segment {
 
 	private String mime;
 
+	private String filename;
+
 	public Segment() {
 	}
 
@@ -28,5 +30,13 @@ public class Segment {
 
 	public void setMime(String mime) {
 		this.mime = mime;
+	}
+
+	public String getFilename() {
+		return filename;
+	}
+
+	public void setFilename(String filename) {
+		this.filename = filename;
 	}
 }

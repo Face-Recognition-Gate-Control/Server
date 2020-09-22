@@ -14,17 +14,26 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
 
     payloadName = "authentication"
 
-    payloadSize = 200
+    jsonData = json.dumps({"arraydata": [
+        {
+            "data": "text",
+            "number": 20000
+        }
+    ],
+        "field": "some field data"
+    })
+
+    textData = "I AM SOME TEXT HERE AND I WANT TO BE IN A FILE"
     meta = json.dumps({"segments": [
         {
-            "size": payloadSize,
+            "size": len(jsonData),
             "mime_type": "application/json",
-            "filename": "aim aname",
+            "filename": "ajsonfile.json",
         },
         {
-            "size": payloadSize,
-            "mime_type": "application/png",
-            "filename": "iamafile.png",
+            "size": len(textData),
+            "mime_type": "application/txt",
+            "filename": "textfile.txt",
         }
     ], "username": "freshfish"})
 
@@ -42,17 +51,15 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
     metaBytesSize = metaSize.to_bytes(META_LENGTH, 'big')
     metaBytes = bytes(meta, "utf-8")
 
-    payloadBytes1 = bytearray()
-    payloadBytes1.append(payloadSize)
-    payloadBytes2 = bytearray()
-    payloadBytes2.append(payloadSize)
-
+    payloadBytes1 = bytes(jsonData, "utf-8")
+    payloadBytes2 = bytes(textData, "utf-8")
     s.sendall(payloadNameSize)
     s.sendall(payloadNameByes)
     s.sendall(metaBytesSize)
     s.sendall(metaBytes)
     s.sendall(payloadBytes1)
     s.sendall(payloadBytes2)
+    # s.sendall(payloadBytes2)
 
     # SEND FILE:
 

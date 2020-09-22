@@ -8,7 +8,7 @@ package no.fractal.socket.meta;
  * be red/written from the stream.
  * 
  */
-public abstract class Meta {
+public class Meta {
 
 	/**
 	 * Required for JSON marshalling
