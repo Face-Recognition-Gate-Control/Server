@@ -14,7 +14,7 @@ public class SegmentReader {
 	/**
 	 * The folder where we store files temporary when they arrive.
 	 */
-	private static final String TEMP_FOLDER = "./tmp/";
+	private static final String TEMP_FOLDER = System.getProperty("java.io.tmpdir");;
 
 	/**
 	 * Check the temp dir for existance, if it exist, do nothing. Else create
