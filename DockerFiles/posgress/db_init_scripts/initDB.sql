@@ -47,8 +47,8 @@ CREATE TABLE IF NOT EXISTS thumbnails(
 )
 
 CREATE TABLE IF NOT EXISTS login_referance(
-    user_id        text references users(id)        ON DELETE CASCADE   not null,
-    face_vec       text                                                 not null,
+    user_id        uuid references users(id)        ON DELETE CASCADE   not null,
+    face_vec       numeric[]                                            not null,
     file_name      text                                                 not null,
 )
 
