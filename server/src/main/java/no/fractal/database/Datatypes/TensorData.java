@@ -1,52 +1,53 @@
 package no.fractal.database.Datatypes;
 
-import no.fractal.util.ArrayUtils;
 import no.fractal.util.ArrayUtils.BigDecimalArrays;
 
-
-import java.lang.reflect.Array;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.util.UUID;
 
-
 /**
- * Representing a face tensor id pair
- *
+ * Represents a tensor dataset, with an unique id.
  */
 public class TensorData {
+
+    private static final int TENSOR_SIZE = 512;
+
     public BigDecimal[] tensor;
+
     public UUID id;
 
     /**
-     *
-     * @param id
+     * 
+     * @param id the id of the tensor
      */
     public TensorData(UUID id) {
-        this(new BigDecimal[512], id);
+        this(new BigDecimal[TENSOR_SIZE], id);
     }
 
     /**
-     * build
-     * @param tensor the big decimal[512] tensor for the id
-     * @param id the id object
+     * The tensor should be of size 512
+     * 
+     * @param tensor tensor array
+     * @param id     id of the tensor
      */
     public TensorData(BigDecimal[] tensor, UUID id) {
         this.tensor = tensor;
         this.id = id;
     }
 
-
-    // this is probably going to change while desiding withc error algo to use
-    public float euclideanDistance(TensorData other){
-        return BigDecimalArrays.sumElements(
-                BigDecimalArrays.elementSquare(
-                        BigDecimalArrays.elementSubtract(this.tensor, other.tensor)))
-                .divide(BigDecimal.valueOf(tensor.length))
-                .sqrt(MathContext.DECIMAL32).floatValue();
+    /**
+     * Calculates the euclidean distance between this tensor and another. Returning
+     * the result(distance).
+     * 
+     * @param other tensor to calculate distance against
+     * @return distance
+     */
+    public float euclideanDistance(TensorData other) {
+        return BigDecimalArrays
+                .sumElements(
+                        BigDecimalArrays.elementSquare(BigDecimalArrays.elementSubtract(this.tensor, other.tensor)))
+                .divide(BigDecimal.valueOf(tensor.length)).sqrt(MathContext.DECIMAL32).floatValue();
     }
 
-
-    
-    
 }
