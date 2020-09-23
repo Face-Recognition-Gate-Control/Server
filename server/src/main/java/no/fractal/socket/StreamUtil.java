@@ -8,10 +8,16 @@ import java.io.InputStream;
 
 public class StreamUtil {
 
-	public void writeStreamToFile(InputStream in, String filename, String path, int filesize) {
-
+	/**
+	 * Writes stream data into a file. The path must include the path + filename.
+	 * 
+	 * @param in       inpustream to read from
+	 * @param path     the path+filename for tile to write to.
+	 * @param filesize how many bytes to read from the stream
+	 */
+	public static void writeStreamToFile(InputStream in, String path, int filesize) {
 		try {
-			FileOutputStream fos = new FileOutputStream(path + filename);
+			FileOutputStream fos = new FileOutputStream(path);
 			BufferedOutputStream bos = new BufferedOutputStream(fos);
 			byte[] filebuffer = new byte[4096];
 			int remaining = filesize;

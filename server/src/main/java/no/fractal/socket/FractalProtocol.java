@@ -1,13 +1,29 @@
 package no.fractal.socket;
 
 import java.io.BufferedInputStream;
+import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.Map;
 
+import com.google.gson.Gson;
+
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+
+import no.fractal.socket.meta.Segment;
+import no.fractal.socket.payload.PayloadBase;
 import no.fractal.util.Parser;
 
-public class FractalProtocol<T> {
+public class FractalProtocol {
+
+	/**
+	 * Total size of the payload
+	 */
+	private final int PAYLOAD_LENGTH = 4;
 
 	/**
 	 * Byte size of the ID header
@@ -15,18 +31,30 @@ public class FractalProtocol<T> {
 	private final int ID_LENGTH = 2;
 
 	/**
-	 * Byte size of the meta header
+	 * Byte size of the segment header
 	 */
-	private final int META_LENGTH = 4;
+	private final int SEGMENT_LENGTH = 4;
+
+	/**
+	 * Byte size of the json payload
+	 */
+	private final int JSON_LENGTH = 4;
+
+	/**
+	 * Bytes remaing for this payload to read
+	 */
+	private int remainingPayloadBytes = 0;
 
 	private String id;
 
-	private String meta;
+	private String segments;
 
-	private Parser<T> metaParser;
+	private String jsonPayload;
 
-	public FractalProtocol(Parser<T> metaParser) {
-		this.metaParser = metaParser;
+	private Parser parser;
+
+	public FractalProtocol(Parser parser) {
+		this.parser = parser;
 	}
 
 	public int getIdHeaderBytesLength() {
@@ -34,26 +62,43 @@ public class FractalProtocol<T> {
 	}
 
 	public int getMetaHeaderByteLength() {
-		return META_LENGTH;
+		return SEGMENT_LENGTH;
 	}
 
 	/**
-	 * Reads the header data from the input stream. This operation is blocking.
+	 * Reads the full payload from the input stream. This operation is blocking.
 	 * 
 	 * @param in stream reader
 	 * @throws IOException thrown if stream is closed
 	 */
-	public void readHeader(BufferedInputStream in) throws IOException {
-		this.readId(in);
-		this.readMeta(in);
+	public PayloadBuilder readPayload(BufferedInputStream in) throws IOException {
+		this.remainingPayloadBytes = this.readByteSize(in, PAYLOAD_LENGTH);
+		this.id = this.readHeader(in, ID_LENGTH);
+		this.segments = this.readHeader(in, SEGMENT_LENGTH);
+		this.jsonPayload = this.readHeader(in, JSON_LENGTH);
+		return new PayloadBuilder(this.readSegmentFiles(in));
 	}
 
-	private String readHeader(BufferedInputStream in, int headerSize) throws IOException {
-		byte[] input = new byte[headerSize];
-		int bytesRead = in.read(input, 0, input.length);
-		int size = 1;
+	private void reduceRemaingPayloadBytes(int bytesRed) {
+		this.remainingPayloadBytes -= bytesRed;
+	}
 
-		switch (headerSize) {
+	/**
+	 * Reads N bytes from the stream and returns the size of the bytes.
+	 * 
+	 * @param in     input stream to read from
+	 * @param length how many bytes to read
+	 * @return bytes as int
+	 * @throws IOException if stream closes or reading fails.
+	 */
+	private int readByteSize(BufferedInputStream in, int length) throws IOException {
+		byte[] input = new byte[length];
+		int bytesRead = in.read(input, 0, input.length);
+		if (bytesRead <= 0)
+			throw new IOException("Bytestream closed");
+		reduceRemaingPayloadBytes(bytesRead);
+		int size = 1;
+		switch (length) {
 			case 1:
 				size = input[0];
 				break;
@@ -65,43 +110,91 @@ public class FractalProtocol<T> {
 				break;
 
 		}
+		return size;
+	}
+
+	private String readHeader(BufferedInputStream in, int headerSize) throws IOException {
+		int size = readByteSize(in, headerSize);
+		byte[] input = new byte[size];
 		input = new byte[size];
-		bytesRead = in.read(input, 0, input.length);
+		int bytesRead = in.read(input, 0, input.length);
 		if (bytesRead <= 0)
 			throw new IOException("Bytestream closed");
+		reduceRemaingPayloadBytes(bytesRead);
 		return new String(input, StandardCharsets.UTF_8).trim();
 	}
 
-	private void readId(BufferedInputStream in) throws IOException {
-		this.id = this.readHeader(in, ID_LENGTH);
-	}
-
-	private void readMeta(BufferedInputStream in) throws IOException {
-		this.meta = this.readHeader(in, META_LENGTH);
-	}
-
 	/**
-	 * Returns the parsed meta object by the Parser provided on object
-	 * initialization. Returns null if there is no meta data to parse.
+	 * Reads the rest of the stream, if there is more data left for this payload.
+	 * This makes sure we dont start the next payload read at a position where we
+	 * read left over data from last payload, where an error etc has occured.
 	 * 
-	 * @param Class type to parse too
-	 * @return returns parsed class or null
+	 * Blocking operation
+	 * 
+	 * @param in input stream to read from
+	 * @throws IOException when IO goes wrong
 	 */
-	public T getParsedMeta(Class<? extends T> t) {
-		String meta = this.getMeta();
-		if (meta == null) {
-			return null;
+	public void clearStream(InputStream in) throws IOException {
+		if (this.remainingPayloadBytes > 0) {
+			in.readNBytes(this.remainingPayloadBytes);
 		}
-		return metaParser.parse(t, meta);
 	}
 
 	/**
-	 * Returns the meta data fetched from the data header
+	 * Returns a list of all file segments from a request.
 	 * 
-	 * @return meta data fetched from data header
+	 * @param in input stream for reading files
+	 * @return map of all segments
 	 */
-	public String getMeta() {
-		return this.meta;
+	private Map<String, Segment> readSegmentFiles(BufferedInputStream in) {
+		Map<String, Segment> segments = getParsedSegments();
+
+		var sr = new SegmentReader();
+		segments.forEach((key, segment) -> {
+			segment.setFile(sr.writeSegmentToTemp(in, segment));
+			reduceRemaingPayloadBytes(segment.getSize());
+		});
+
+		return segments;
+	}
+
+	/**
+	 * Returns a map of all the segments in the payload header. The key of the map
+	 * is the field name of the segment, for identification.
+	 * 
+	 * @return map of segment header
+	 */
+	private Map<String, Segment> getParsedSegments() {
+		var keyedSegments = new HashMap<String, Segment>();
+		try {
+			String segments = this.getSegments();
+			JsonObject segmentObject = JsonParser.parseString(segments).getAsJsonObject();
+			segmentObject.entrySet().forEach((jsonSegment) -> {
+				keyedSegments.put(jsonSegment.getKey(), new Segment(jsonSegment.getValue().getAsJsonObject()));
+			});
+
+		} catch (Exception e) {
+			System.out.println(e.getMessage());
+		}
+		return keyedSegments;
+	}
+
+	/**
+	 * Returns the segment data fetched from the data header
+	 * 
+	 * @return segment data fetched from data header
+	 */
+	public String getSegments() {
+		return this.segments;
+	}
+
+	/**
+	 * Returns the json string payload
+	 * 
+	 * @return json string payload
+	 */
+	public String getJsonPayload() {
+		return this.jsonPayload;
 	}
 
 	/**
@@ -111,6 +204,29 @@ public class FractalProtocol<T> {
 	 */
 	public String getId() {
 		return this.id;
+	}
+
+	public class PayloadBuilder {
+
+		Map<String, Segment> segments;
+
+		public PayloadBuilder(Map<String, Segment> segments) {
+			this.segments = segments;
+		}
+
+		/**
+		 * Creates a payload object from the defined type, and inject data from segment,
+		 * and all file segments.
+		 * 
+		 * @param <E> type of the payload
+		 * @param t   type of the payload
+		 * @return payload object
+		 */
+		public <E extends PayloadBase> E createPayloadObject(Class<E> t) {
+			E payload = parser.parse(t, getJsonPayload());
+			payload.setSegments(segments);
+			return payload;
+		}
 	}
 
 }

@@ -6,51 +6,88 @@ import json
 HOST = 'localhost'    # The remote host
 PORT = 9876         # The same port as used by the server
 
+# TOTAL PAYLOAD SIZE
+PAYLOAD_LENGTH = 4
+# SIZE OF THE PAYLOAD IDENTIFIER
 PAYLOAD_NAME_LENGTH = 2
-META_LENGTH = 4
+# SIZE OF SEGMENTS HEADER
+SEGMENTS_LENGTH = 4
+# SIZE OF JSON PAYLOAD
+JSON_LENGTH = 4
 
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
     s.connect((HOST, PORT))
 
-    payloadName = "authentication"
-
-    payloadSize = 200
-    meta = json.dumps({"segments": [
+    # SEGMENT 1
+    jsonData = json.dumps({"arraydata": [
         {
-            "size": payloadSize,
-            "mime_type": "application/json",
-            "filename": "aim aname",
-        },
-        {
-            "size": payloadSize,
-            "mime_type": "application/png",
-            "filename": "iamafile.png",
+            "data": "text",
+            "number": 20000
         }
-    ], "username": "freshfish"})
+    ],
+        "field": "some field data"
+    })
+    jsonDataLength = len(jsonData)
 
-    payloadNameSize = len(payloadName).to_bytes(PAYLOAD_NAME_LENGTH, 'big')
+    # SEGMENT 2
+    textData = "I AM SOME TEXT HERE AND I WANT TO BE IN A FILE"
+    textDataLength = len(textData)
+
+    # PAYLOAD IDENTIFIER
+    payloadName = "authentication"
+    payloadNameLength = len(payloadName)
+    payloadNameSize = payloadNameLength.to_bytes(PAYLOAD_NAME_LENGTH, 'big')
     payloadNameByes = bytes(payloadName, "utf-8")
 
-    metaSize = len(meta)
-    #
-    # metaSizeFile = os.path.getsize("./windows.iso")
+    # JSON PAYLOAD
+    jsonPayload = json.dumps(
+        {
+            "identificationId": "werlkjwelr5t468r7ter87"
+        }
+    )
+    jsonByteLength = len(jsonPayload)
+    jsonByteSize = jsonByteLength.to_bytes(JSON_LENGTH, 'big')
+    jsonBytes = bytes(jsonPayload, "utf-8")
 
-    # print(metaSizeFile)
-    # print(bin(metaSizeFile))
-    # print(metaSizeFile.to_bytes(length=8, byteorder='big'))
+    payloadBytes1 = bytes(jsonData, "utf-8")
+    payloadBytes2 = bytes(textData, "utf-8")
 
-    metaBytesSize = metaSize.to_bytes(META_LENGTH, 'big')
-    metaBytes = bytes(meta, "utf-8")
+    # SEGMENT HEADER
+    segments = json.dumps({
+        "vectorfile": {
+            "size": jsonDataLength,
+            "mime_type": "application/json",
+            "random_key": "value of random key"
+        },
+        "logfile":
+            {
+                "size": textDataLength,
+                "mime_type": "application/txt",
+                "filename": "textfile.txt",
+        }}
+    )
+    segmentsBytesLength = len(segments)
+    segmentsBytesSize = segmentsBytesLength.to_bytes(SEGMENTS_LENGTH, 'big')
+    segmentsBytes = bytes(segments, "utf-8")
 
-    payloadBytes1 = bytearray()
-    payloadBytes1.append(payloadSize)
-    payloadBytes2 = bytearray()
-    payloadBytes2.append(payloadSize)
+    totalBytes = payloadNameLength + segmentsBytesLength + \
+        jsonByteLength + jsonDataLength + textDataLength
 
+    s.sendall(totalBytes.to_bytes(PAYLOAD_LENGTH, 'big'))
+    print(totalBytes)
+    # Payload name
     s.sendall(payloadNameSize)
     s.sendall(payloadNameByes)
-    s.sendall(metaBytesSize)
-    s.sendall(metaBytes)
+
+    # segments
+    s.sendall(segmentsBytesSize)
+    s.sendall(segmentsBytes)
+
+    # Json data
+    s.sendall(jsonByteSize)
+    s.sendall(jsonBytes)
+
+    # Segments data
     s.sendall(payloadBytes1)
     s.sendall(payloadBytes2)
 

@@ -1,30 +1,34 @@
 package no.fractal.socket.payload;
 
-import no.fractal.socket.Client;
+import com.google.gson.JsonElement;
 
-import no.fractal.socket.meta.AuthenticationMeta;
+import no.fractal.socket.meta.Segment;
 
-public class AuthenticationPayload extends PayloadBase<AuthenticationMeta> {
+public class AuthenticationPayload extends PayloadBase {
 
-	private AuthenticationMeta meta;
+	private String identificationId;
 
-	public AuthenticationPayload(Client client, AuthenticationMeta meta) {
-		super(client);
-		setMeta(meta);
-	}
-
-	private void setMeta(AuthenticationMeta meta) {
-		if (meta == null)
-			throw new IllegalArgumentException("Meta can not be null");
-
-		this.meta = meta;
+	public AuthenticationPayload() {
 	}
 
 	@Override
 	public void execute() {
 		System.out.println("AUTHENTICATION IS EXECUTED");
-		System.out.println("I have authfield: " + meta.getUsername());
 
+		System.out.println("I have ID: " + this.getIdentificationId());
+
+		Segment vectorFileSegment = this.segments.get("vectorfile");
+		System.out.println(vectorFileSegment.getFile().getName());
+
+		JsonElement randomKey = vectorFileSegment.get("random_key");
+		if (randomKey != null) {
+			System.out.println(randomKey.getAsString());
+		}
+
+	}
+
+	public String getIdentificationId() {
+		return identificationId;
 	}
 
 }
