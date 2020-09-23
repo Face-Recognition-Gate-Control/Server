@@ -4,6 +4,7 @@ import no.fractal.socket.meta.*;
 import no.fractal.socket.payload.AuthenticationPayload;
 import no.fractal.socket.payload.NoSuchPayloadException;
 import no.fractal.socket.payload.PayloadBase;
+import no.fractal.socket.payload.ThumbnailPayload;
 
 import java.io.BufferedInputStream;
 
@@ -22,7 +23,7 @@ public class FractalClient extends Client {
 	// Handles logging for the FractalClient
 	private static Logger LOGGER = Logger.getLogger(FractalClient.class.getName());
 
-	private FractalProtocol<Meta> protocol = new FractalProtocol<Meta>(new JsonMetaParser());
+	private FractalProtocol protocol = new FractalProtocol(new JsonMetaParser());
 
 	public FractalClient(Socket clientSocket, TcpServer server) throws IOException {
 		super(clientSocket, server);
@@ -49,7 +50,7 @@ public class FractalClient extends Client {
 			while (reading) {
 
 				// Blocks here until all header fields are red.
-				FractalProtocol<Meta>.PayloadBuilder payloadBuilder = protocol.readPayload(in);
+				FractalProtocol.PayloadBuilder payloadBuilder = protocol.readPayload(in);
 
 				// Headers extract
 				String payloadName = protocol.getId();
@@ -57,6 +58,7 @@ public class FractalClient extends Client {
 				try {
 					PayloadBase payload = switch (payloadName) {
 						case "authentication" -> payloadBuilder.createPayloadObject(AuthenticationPayload.class);
+						case "thumbnail" -> payloadBuilder.createPayloadObject(ThumbnailPayload.class);
 						default -> null;
 					};
 
@@ -73,6 +75,11 @@ public class FractalClient extends Client {
 					// SEND INVALID PAYLOAD NAME
 					LOGGER.log(Level.INFO, String.format("%s", e.getMessage()));
 				}
+
+				/**
+				 * Make sure all data for payload is cleared.
+				 */
+				protocol.clearStream(in);
 			}
 
 			this.getClientSocket().close();
@@ -80,6 +87,9 @@ public class FractalClient extends Client {
 		} catch (SocketException e) {
 			LOGGER.log(Level.SEVERE, e.getMessage());
 		} catch (IOException e) {
+			LOGGER.log(Level.SEVERE, e.getMessage());
+		} catch (Exception e) {
+			e.printStackTrace();
 			LOGGER.log(Level.SEVERE, e.getMessage());
 		}
 

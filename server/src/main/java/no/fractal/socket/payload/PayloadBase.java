@@ -1,6 +1,8 @@
 package no.fractal.socket.payload;
 
-import java.io.File;
+import java.util.Map;
+
+import no.fractal.socket.meta.Segment;
 
 /**
  * Abstract class for all payloads. All payloads can have segments (files)
@@ -8,7 +10,7 @@ import java.io.File;
  */
 public abstract class PayloadBase {
 
-	transient File[] segments;
+	transient Map<String, Segment> segments;
 
 	public PayloadBase() {
 	}
@@ -18,7 +20,7 @@ public abstract class PayloadBase {
 	 * 
 	 * @param segments
 	 */
-	public void setSegments(File[] segments) {
+	public void setSegments(Map<String, Segment> segments) {
 		this.segments = segments;
 	}
 
