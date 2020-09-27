@@ -135,7 +135,7 @@ public abstract class AbstractMessage {
             this.blob = blob;
 
             this.segmentMeta.put(keys.size.name(), String.valueOf(blob.length));
-            this.segmentMeta.put(keys.mime_type.name(), "application/bytes");
+            this.segmentMeta.put(keys.mime_type.name(), "application/octet-stream");
         }
 
 

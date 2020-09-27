@@ -21,12 +21,13 @@ public class StreamUtils {
         return jsonObject;
     }
 
-    public static void readImageToFile(BufferedInputStream inputStream, int byteSize, File savePath) throws IOException {
+    public static void readFileFromStream(BufferedInputStream inputStream, int byteSize, File savePath) throws IOException {
 
         FileOutputStream outputStream = new FileOutputStream(savePath);
 
         int remaining = byteSize;
         int bufferSize = 4096;
+
 
         byte[] buffer = new byte[bufferSize];
         int bytesRead = -1;
@@ -89,7 +90,7 @@ public class StreamUtils {
         byte[] buffer = new byte[bufferSize];
         int bytesRead = -1;
 
-        while ((bytesRead = inputStream.read(buffer)) < 0) {
+        while ((bytesRead = inputStream.read(buffer)) > 0) {
             outputStream.write(buffer, 0, bytesRead);
         }
     }
