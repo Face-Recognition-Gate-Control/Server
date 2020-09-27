@@ -17,8 +17,13 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.google.gson.JsonSyntaxException;
+import no.fractal.socket.send.MessageDispatcher;
 
 public class FractalClient extends Client {
+
+	private MessageDispatcher dispatcher;
+
+
 
 	// Handles logging for the FractalClient
 	private static Logger LOGGER = Logger.getLogger(FractalClient.class.getName());
@@ -31,8 +36,9 @@ public class FractalClient extends Client {
 
 	@Override
 	public void run() {
-		// initial setup
+		this.dispatcher = new MessageDispatcher(this.getOutputStream());
 		this.read();
+
 	}
 
 	/**
@@ -45,6 +51,7 @@ public class FractalClient extends Client {
 		try {
 
 			BufferedInputStream in = this.getInputReader();
+
 
 			boolean reading = true;
 			while (reading) {

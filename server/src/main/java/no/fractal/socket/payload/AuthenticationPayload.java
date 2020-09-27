@@ -3,10 +3,12 @@ package no.fractal.socket.payload;
 import com.google.gson.JsonElement;
 
 import no.fractal.socket.meta.Segment;
+import no.fractal.socket.send.messages.ValidationResponseMessage;
 
 public class AuthenticationPayload extends PayloadBase {
 
 	private String identificationId;
+
 
 	public AuthenticationPayload() {
 	}
@@ -24,6 +26,9 @@ public class AuthenticationPayload extends PayloadBase {
 		if (randomKey != null) {
 			System.out.println(randomKey.getAsString());
 		}
+
+		var msg = new ValidationResponseMessage(this.getIdentificationId(), 28739);
+		dispatcher.addMessage(msg);
 
 	}
 
