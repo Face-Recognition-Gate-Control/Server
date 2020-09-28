@@ -9,7 +9,7 @@ import java.util.UUID;
 
 public class GateQueries extends PsqlDb {
 
-    public static ArrayList<TensorData> getWorkerResourceManagerById() throws SQLException {
+    public static ArrayList<TensorData> getCurrentTensorData() throws SQLException {
         String query = "SELECT user_id, face_vec FROM login_referance;";
 
         ArrayList<TensorData> ret = new ArrayList<>();
