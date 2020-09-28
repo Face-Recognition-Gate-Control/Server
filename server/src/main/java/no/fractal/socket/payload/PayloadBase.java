@@ -3,12 +3,20 @@ package no.fractal.socket.payload;
 import java.util.Map;
 
 import no.fractal.socket.meta.Segment;
+import no.fractal.socket.send.MessageDispatcher;
 
 /**
  * Abstract class for all payloads. All payloads can have segments (files)
  * attached.
  */
 public abstract class PayloadBase {
+	// not ideal change possision
+	protected MessageDispatcher dispatcher;
+
+	public void setDispatcher(MessageDispatcher dispatcher) {
+		this.dispatcher = dispatcher;
+	}
+	// not ideal change possision
 
 	transient Map<String, Segment> segments;
 
