@@ -53,18 +53,23 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
     payloadBytes2 = bytes(textData, "utf-8")
 
     # SEGMENT HEADER
-    segments = json.dumps({
-        "vectorfile": {
-            "size": jsonDataLength,
-            "mime_type": "application/json",
-            "random_key": "value of random key"
+    segments = json.dumps([
+        {
+            "vectorfile":
+            {
+                "size": jsonDataLength,
+                "mime_type": "application/json",
+                "random_key": "value of random key"
+            }
         },
-        "logfile":
+        {
+            "logfile":
             {
                 "size": textDataLength,
                 "mime_type": "application/txt",
                 "filename": "textfile.txt",
-        }}
+            }
+        }]
     )
     segmentsBytesLength = len(segments)
     segmentsBytesSize = segmentsBytesLength.to_bytes(SEGMENTS_LENGTH, 'big')

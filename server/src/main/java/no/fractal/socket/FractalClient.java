@@ -78,7 +78,7 @@ public class FractalClient extends Client {
 				} catch (JsonSyntaxException e) {
 					// SEND INVALID META FOR PAYLOAD
 					LOGGER.log(Level.INFO, String.format("Invalid meta for: %s", payloadName));
-				} catch (NoSuchPayloadException e) {
+				} catch (NoSuchPayloadException | InvalidPayloadException e) {
 					// SEND INVALID PAYLOAD NAME
 					LOGGER.log(Level.INFO, String.format("%s", e.getMessage()));
 				}
