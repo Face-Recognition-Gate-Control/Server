@@ -52,8 +52,8 @@ services:
   web_server:
 
     build:
-      context: ./web/api
-      dockerfile: ./Dockerfile
+      context: ./web/
+      dockerfile: ./api/Dockerfile
 
     environment:
       <<: *postgres-login
