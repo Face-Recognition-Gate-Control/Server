@@ -1,38 +1,50 @@
 version: '3.8'
 
 
+
 x-DbLoggin:
   environment:
-    &db-login
-    SQLURL: "jdbc:postgresql://${POSTGRES_IP}:5432/${POSGRESS_USERNAME}"
-    POSGRESS_USER: "${POSGRESS_USERNAME}"
-    POSTGRES_DB: "${POSGRESS_DB_NAME}"
-    POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
+    &postgres-login
+    # the posgress user master password
+    POSTGRES_PASSWORD: "${POSTGRES_MASTER_PASSWORD}"
+
+    USER_USERNAME: "${POSGRESS_USER_USERNAME}"
+    USER_DB_NAME: "${POSGRESS_USER_DB}"
+    USER_PASSWORD: "${POSGRESS_USER_PASSWORD}"
+
+    SQLURL: "jdbc:postgresql://${POSTGRES_IP}:5432/${POSGRESS_USER_USERNAME}"
+  networks:
+    &postgres-ip
+    ipv4_address: "${POSTGRES_IP}"
 
 
 services:
   postgres_db:
     image: postgres
 
+
     environment:
-      << :  *db-login
-#      PGDATA: "/var/lib/postgresql/data/pgdata"
-
-
-    volumes:
-#      - type: volume
-#        source: db_data
-#        target: /var/lib/postgresql/data
-      - type: bind
-        source: ./docker_files/posgress/db_init_scripts
-        target: /docker-entrypoint-initdb.d
+      << : *postgres-login
+      PGDATA: "/var/lib/postgresql/data/pgdata"
+      AVAL: "abcd"
 
     networks:
-      internal:
-        ipv4_address: "${POSTGRES_IP}"
+      local_network: *postgres-ip
 
-#    ports:
-#      - "5432:5432"
+
+    ports:
+      - "5432:5432"
+
+    volumes:
+      - type: volume
+        source: postgres_db
+        target: /var/lib/postgresql/data
+
+      - type: bind
+        source: ./docker_files/db_init
+        target: /docker-entrypoint-initdb.d
+
+
 
     restart: unless-stopped
 
@@ -45,7 +57,7 @@ services:
       dockerfile: ./Dockerfile
 
     environment:
-      <<: *db-login
+      <<: *postgres-login
 
     volumes:
       - type: volume
@@ -138,7 +150,8 @@ services:
 
 
 networks:
-  internal:
+  local_network:
+    external: false
     ipam:
       driver: default
       config:
@@ -149,7 +162,7 @@ networks:
 
 volumes:
   # posgres db
-  db_data:
+  postgres_db:
 
   # thumbnail images
   fractal_thumbnail_images:
