@@ -64,6 +64,7 @@ public class MessageDispatcher {
 
                 AbstractMessage message = messageQueue.remove(0);
                 message.writeToStream(this.outputStream);
+                this.outputStream.flush();
 
             } catch (Exception e) {
                 e.printStackTrace();
