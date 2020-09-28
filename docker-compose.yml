@@ -26,7 +26,6 @@ services:
     environment:
       << : *postgres-login
       PGDATA: "/var/lib/postgresql/data/pgdata"
-      AVAL: "abcd"
 
     networks:
       local_network: *postgres-ip
@@ -83,7 +82,6 @@ services:
     restart: unless-stopped
 
   server:
-    container_name: docker_manager
 
     build:
       context: ./server
@@ -91,7 +89,7 @@ services:
 
 
     environment:
-      <<: *db-login
+      <<: *postgres-login
 
 
     volumes:
