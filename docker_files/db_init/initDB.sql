@@ -1,3 +1,5 @@
+\c fractal
+
 CREATE TABLE IF NOT EXISTS users(
     id         uuid primary key    not null,
     firstname  text                not null,
