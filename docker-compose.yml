@@ -68,7 +68,7 @@ services:
 
 
     networks:
-      internal:
+      local_network:
         ipv4_address: "${WEBSERVER_IP}"
 
 
@@ -99,7 +99,7 @@ services:
 
 
     networks:
-      internal:
+      local_network:
       frontend:
 
     depends_on:
