@@ -44,13 +44,16 @@ public class DbTensorCache {
     private DbTensorCache() {
         executor = Executors.newFixedThreadPool(NUM_THREADS);
         try {
-            tensorData = GateQueries.getWorkerResourceManagerById();
+            tensorData = GateQueries.getCurrentTensorData();
 
         } catch (Exception e) {
             e.printStackTrace();
         }
 
     }
+
+
+
 
     /**
      * compairs the provided Tensor data with the database to many seartch ops or
@@ -60,6 +63,7 @@ public class DbTensorCache {
      * @return the highest scored comparison result
      */
     public ComparisonResult getClosestMatch(TensorData searchData) {
+        // todo: check if db has changed here
         try {
             updatePending.acquire();
             currentSearching.acquire(1);
@@ -102,6 +106,10 @@ public class DbTensorCache {
             return null;
         }
 
+    }
+
+    private boolean hasDbChanged(){
+        return true;
     }
 
     /**
