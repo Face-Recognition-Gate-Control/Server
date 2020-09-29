@@ -4,6 +4,7 @@ import no.fractal.TensorComparison.ComparisonResult;
 import no.fractal.TensorComparison.TensorComparator;
 import no.fractal.database.Datatypes.TensorData;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.concurrent.*;
 import java.util.stream.Collectors;
@@ -20,7 +21,7 @@ public class DbTensorCache {
 
     /**
      * returns instance
-     * 
+     *
      * @return instance
      */
     public static DbTensorCache getInstance() {
@@ -35,6 +36,9 @@ public class DbTensorCache {
     // max paralel sertch ops
     private static final int CONCURRENT_SEARCHES = 5;
 
+    private long lastTableChangeTime = 0;
+    private boolean isAdding;
+
     private ExecutorService executor;
 
     private ArrayList<TensorData> tensorData;
@@ -44,13 +48,15 @@ public class DbTensorCache {
     private DbTensorCache() {
         executor = Executors.newFixedThreadPool(NUM_THREADS);
         try {
-            tensorData = GateQueries.getCurrentTensorData();
-
+            updateDb();
         } catch (Exception e) {
             e.printStackTrace();
         }
 
     }
+
+
+
 
 
 
@@ -62,8 +68,8 @@ public class DbTensorCache {
      * @param searchData the data to compair
      * @return the highest scored comparison result
      */
-    public ComparisonResult getClosestMatch(TensorData searchData) {
-        // todo: check if db has changed here
+    public ComparisonResult getClosestMatch(TensorData searchData) throws SQLException {
+        updateIfChanged();
         try {
             updatePending.acquire();
             currentSearching.acquire(1);
@@ -108,30 +114,40 @@ public class DbTensorCache {
 
     }
 
-    private boolean hasDbChanged(){
-        return true;
+    /**
+     * chek if the database has changed the tensortable update the local cash if so
+     * @throws SQLException
+     */
+    private synchronized void updateIfChanged() throws SQLException {
+        if (!isAdding){
+            long lastChange = GateQueries.getLastTensorTableUpdate();
+            if (this.lastTableChangeTime != lastChange){
+                this.isAdding = true;
+                this.lastTableChangeTime = lastChange;
+                updateDb();
+            }
+        }
+
     }
 
     /**
-     * adds a datapoint to the local cash
-     *
-     * this shold be called from wherever tensor data is put in to the db
-     *
-     * @param newData
+     * Updates the values in the db
      */
-    public void addDatapoint(TensorData newData) {
+    private void updateDb() {
 
         try {
             updatePending.acquire();
             currentSearching.acquire(CONCURRENT_SEARCHES);
 
-            // addynes goes here
+            tensorData = GateQueries.getCurrentTensorData();
 
             currentSearching.release(CONCURRENT_SEARCHES);
             updatePending.release();
         } catch (Exception e) {
             e.printStackTrace();
+            this.isAdding = false;
         }
+        this.isAdding = false;
 
     }
 

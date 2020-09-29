@@ -8,12 +8,15 @@ import java.util.UUID;
  */
 public class User {
     public final UUID id;
-    public final String name;
+    public final String firstName;
+    public final String lastName;
 
-    public User(UUID id, String name) {
+    public User(UUID id, String firstName, String lastName) {
         this.id = id;
-        this.name = name;
+        this.firstName = firstName;
+        this.lastName = lastName;
     }
+
 
     public File getUserImage(){
         return null;

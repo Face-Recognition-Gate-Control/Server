@@ -1,7 +1,9 @@
 package no.fractal.server;
 
 import no.fractal.database.Datatypes.GateStation;
+import no.fractal.database.GateQueries;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.UUID;
 
@@ -16,6 +18,17 @@ public class StationManager {
 
     public GateStation registerStation(UUID gateId){
         return null;
+    }
+
+    /**
+     * cheks if the loggin is valid
+     * @param stationId the id for the station to chek
+     * @param logginKey the loggin key for the station
+     * @return wheter the loggin is valid
+     * @throws SQLException
+     */
+    public boolean IsStationValid(UUID stationId, String logginKey) throws SQLException {
+        return GateQueries.isStationLoginValid(stationId, logginKey);
     }
 
 

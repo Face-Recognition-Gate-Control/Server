@@ -15,11 +15,14 @@
 out
 gen
 
-# VSCODE 
+# VSCODE
+
 .vscode
+
 .settings
 .classpath
 .project
+
 
 server/target
 
