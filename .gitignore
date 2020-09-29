@@ -15,7 +15,13 @@
 out
 gen
 
+# VSCODE
 
+.vscode
+
+.settings
+.classpath
+.project
 
 
 server/target

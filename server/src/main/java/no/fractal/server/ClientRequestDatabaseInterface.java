@@ -5,12 +5,11 @@ import no.fractal.database.Datatypes.TensorData;
 import no.fractal.database.Datatypes.User;
 import no.fractal.database.DbTensorCache;
 import no.fractal.database.GateQueries;
-import no.fractal.server.corutenes.OldNewAddTableEntryRemoverTimerTaskRutine;
+import no.fractal.server.corutenes.OldEntryRemover;
 import no.fractal.util.FileUtils;
 
 import java.io.File;
 import java.sql.SQLException;
-import java.util.Timer;
 import java.util.UUID;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -21,10 +20,10 @@ import java.util.concurrent.TimeUnit;
      */
 
 
-public class FractalServer {
+public class ClientRequestDatabaseInterface {
 
 
-    private static FractalServer instance;
+    private static ClientRequestDatabaseInterface instance;
     public final File imageSaveDir;
     public final File imagePermSaveDir;
     public final File imageTmpSaveDir;
@@ -37,7 +36,7 @@ public class FractalServer {
     private ScheduledExecutorService scheduledExecutor = Executors
             .newSingleThreadScheduledExecutor();
 
-    public FractalServer() {
+    public ClientRequestDatabaseInterface() {
         nodeUrl = System.getenv("NODE_URL");
         imageSaveDir = new File("fractal_thumbnail_images");
         imagePermSaveDir = new File(imageSaveDir, "perm_storage");
@@ -46,9 +45,9 @@ public class FractalServer {
         this.stationManager = new StationManager();
     }
 
-    public static FractalServer getInstance() {
+    public static ClientRequestDatabaseInterface getInstance() {
         if (instance == null) {
-            instance = new FractalServer();
+            instance = new ClientRequestDatabaseInterface();
         }
         return instance;
     }
@@ -131,7 +130,7 @@ public class FractalServer {
      */
     private void startCorutines() {
         this.scheduledExecutor.scheduleAtFixedRate(
-                new OldNewAddTableEntryRemoverTimerTaskRutine(ALLOWED_AGE_FOR_THE_NEW_STUF),
+                new OldEntryRemover(ALLOWED_AGE_FOR_THE_NEW_STUF),
                 0L,
                 CLEANUP_INTERVAL,
                 TimeUnit.SECONDS

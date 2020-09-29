@@ -14,11 +14,11 @@ import java.util.UUID;
  * Responsible for deletiong the useres that where offered a chanse to make a accont but declined
  *
  */
-public class OldNewAddTableEntryRemoverTimerTaskRutine extends TimerTask {
+public class OldEntryRemover extends TimerTask {
 
     private final long killAgeInMillis; // 100*60*60*24
 
-    public OldNewAddTableEntryRemoverTimerTaskRutine(long killAgeInMillis) {
+    public OldEntryRemover(long killAgeInMillis) {
         this.killAgeInMillis = killAgeInMillis;
     }
 
