@@ -7,8 +7,10 @@ import java.io.File;
 import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class GateQueries extends PsqlDb {
@@ -103,7 +105,6 @@ public class GateQueries extends PsqlDb {
         });
 
         return ret.get();
-
     }
 
     public static long getLastTensorTableUpdate() throws SQLException {
