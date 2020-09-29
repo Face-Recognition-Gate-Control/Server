@@ -12,10 +12,14 @@ x-DbLoggin:
     USER_DB_NAME: "${POSGRESS_USER_DB}"
     USER_PASSWORD: "${POSGRESS_USER_PASSWORD}"
 
-    SQLURL: "jdbc:postgresql://${POSTGRES_IP}:5432/${POSGRESS_USER_USERNAME}"
+    SQLURL: "jdbc:postgresql://${POSTGRES_IP}:5432/${POSGRESS_USER_DB}"
   networks:
     &postgres-ip
     ipv4_address: "${POSTGRES_IP}"
+
+
+
+
 
 
 services:
@@ -26,14 +30,11 @@ services:
     environment:
       << : *postgres-login
       PGDATA: "/var/lib/postgresql/data/pgdata"
-      AVAL: "abcd"
 
     networks:
       local_network: *postgres-ip
 
 
-    ports:
-      - "5432:5432"
 
     volumes:
       - type: volume
@@ -53,8 +54,8 @@ services:
   web_server:
 
     build:
-      context: ./web/api
-      dockerfile: ./Dockerfile
+      context: ./web/
+      dockerfile: ./api/Dockerfile
 
     environment:
       <<: *postgres-login
@@ -69,7 +70,7 @@ services:
 
 
     networks:
-      internal:
+      local_network:
         ipv4_address: "${WEBSERVER_IP}"
 
 
@@ -83,7 +84,6 @@ services:
     restart: unless-stopped
 
   server:
-    container_name: docker_manager
 
     build:
       context: ./server
@@ -91,7 +91,8 @@ services:
 
 
     environment:
-      <<: *db-login
+      <<: *postgres-login
+      NODE_URL: "${NODE_URL}"
 
 
     volumes:
@@ -101,7 +102,7 @@ services:
 
 
     networks:
-      internal:
+      local_network:
       frontend:
 
     depends_on:

@@ -8,8 +8,8 @@ import java.sql.*;
 abstract class PsqlDb {
 
     private static final String url = System.getenv("SQLURL");
-    private static final String dbUser = System.getenv("POSGRESS_USER");
-    private static final String dbPassword = System.getenv("POSGRESS_PASSWORD");
+    private static final String dbUser = System.getenv("USER_USERNAME");
+    private static final String dbPassword = System.getenv("POSGRESS_USER_PASSWORD");
 
     protected static final DebugLogger allQueries = new DebugLogger(false);
     protected static final DebugLogger errorQueries = new DebugLogger(true);

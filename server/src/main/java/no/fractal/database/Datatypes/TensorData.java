@@ -2,8 +2,10 @@ package no.fractal.database.Datatypes;
 
 import no.fractal.util.ArrayUtils.BigDecimalArrays;
 
+import java.lang.reflect.Array;
 import java.math.BigDecimal;
 import java.math.MathContext;
+import java.util.Arrays;
 import java.util.UUID;
 
 /**
@@ -48,6 +50,23 @@ public class TensorData {
                 .sumElements(
                         BigDecimalArrays.elementSquare(BigDecimalArrays.elementSubtract(this.tensor, other.tensor)))
                 .divide(BigDecimal.valueOf(tensor.length)).sqrt(MathContext.DECIMAL32).floatValue();
+    }
+
+    /**
+     * returns the array as an sql formated string that is '{a1,a2,a3,a4...,an}'
+     * @return
+     */
+    public String asSQLString(){
+        StringBuilder builder = new StringBuilder();
+
+        builder.append("'{");
+        for (BigDecimal val : tensor){
+            builder.append(val +",");
+        }
+
+        builder.deleteCharAt(builder.length() -1);
+        builder.append("}'");
+        return builder.toString();
     }
 
 }
