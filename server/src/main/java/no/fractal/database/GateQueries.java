@@ -106,6 +106,38 @@ public class GateQueries extends PsqlDb {
 
     }
 
+    public static long getLastTensorTableUpdate() throws SQLException {
+        String query = String.format(
+                "SELECT last_change FROM updates_table where id = '%s';", "new_user_queue");
+
+        AtomicLong ret = new AtomicLong();
+        sqlQuery(query, resultSet -> {
+            ret.set(resultSet.getLong("last_change"));
+        });
+
+        return ret.get();
+
+    }
+
+    public static HashMap<UUID, File> removeTimedOutIdsFromNewQueue(long timeLimit) throws SQLException {
+
+        String query = String.format(
+                "DELETE FROM new_user_queue WHERE added_ts > %d RETURNING tmp_id, file_name;", timeLimit);
+
+        HashMap<UUID, File> ret = new HashMap<>();
+
+        sqlQuery(query, resultSet -> {
+            UUID uuid = resultSet.getString("tmp_id") != null ? UUID.fromString(resultSet.getString("tmp_id")) : null;
+            File file = resultSet.getString("file_name") != null ? new File("file_name") : null;
+            ret.put(uuid, file);
+        });
+
+
+
+        return ret;
+
+    }
+
 
 
 
