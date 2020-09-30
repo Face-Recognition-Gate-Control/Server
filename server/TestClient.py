@@ -19,15 +19,15 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
     s.connect((HOST, PORT))
 
     # SEGMENT 1
-    jsonData = json.dumps({"arraydata": [
-        {
-            "data": "text",
-            "number": 20000
-        }
-    ],
-        "field": "some field data"
-    })
+    jsonData = json.dumps({
+        "arraydata": [
+            {
+                "data": "text",
+                "number": 20000
+            }
+        ], "field": "some field data"})
     jsonDataLength = len(jsonData)
+    print(jsonDataLength)
 
     # SEGMENT 2
     textData = "I AM SOME TEXT HERE AND I WANT TO BE IN A FILE"
@@ -49,8 +49,8 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
     jsonByteSize = jsonByteLength.to_bytes(JSON_LENGTH, 'big')
     jsonBytes = bytes(jsonPayload, "utf-8")
 
-    payloadBytes1 = bytes(jsonData, "utf-8")
-    payloadBytes2 = bytes(textData, "utf-8")
+    payloadBytes1 = bytes(textData, "utf-8")
+    payloadBytes2 = bytes(jsonData, "utf-8")
 
     # SEGMENT HEADER
     segments = json.dumps([
@@ -59,7 +59,8 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             {
                 "size": jsonDataLength,
                 "mime_type": "application/json",
-                "random_key": "value of random key"
+                "random_key": "value of random key",
+                "filename": "SUPERGOODFILE1",
             }
         },
         {
@@ -67,7 +68,7 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             {
                 "size": textDataLength,
                 "mime_type": "application/txt",
-                "filename": "textfile.txt",
+                "filename": "SUPERGOODFILE2",
             }
         }]
     )
@@ -109,6 +110,6 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
     #     s.send(l)
     #     l = f.read(1024)
     # f.close()
-
-    data = s.recv(1024)
-print('Received', repr(data))
+    # data = s.recv(50).decode('UTF-8')
+    # print(f"{data}")
+# print('Received', repr(data))
