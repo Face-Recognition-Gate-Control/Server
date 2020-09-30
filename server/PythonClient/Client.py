@@ -120,6 +120,12 @@ class FractalReader:
         jsondata = StreamHelper.readBytesToString(
             reciever, jsonLen)
         print(jsondata)
+        sj = json.loads(segments)
+        for a in sj:
+            k = next(iter(a.values()))
+            size = k["size"]
+            print(size)
+            pass
 
 
 class Segment(metaclass=abc.ABCMeta):
