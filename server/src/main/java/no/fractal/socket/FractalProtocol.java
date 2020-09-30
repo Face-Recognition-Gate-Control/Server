@@ -5,7 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonParser;
@@ -161,7 +161,7 @@ public class FractalProtocol {
 	 * @return map of segment header
 	 */
 	private Map<String, Segment> getParsedSegments() {
-		var keyedSegments = new HashMap<String, Segment>();
+		var keyedSegments = new LinkedHashMap<String, Segment>();
 		try {
 			String segments = this.getSegments();
 			JsonArray segmentsArray = JsonParser.parseString(segments).getAsJsonArray();
