@@ -10,12 +10,16 @@ import mimetypes
 
 HOST = 'localhost'    # The remote host
 PORT = 9876         # The same port as used by the server
+
 # TOTAL PAYLOAD SIZE
 PAYLOAD_LENGTH = 4
+
 # SIZE OF THE PAYLOAD IDENTIFIER
 PAYLOAD_NAME_LENGTH = 2
+
 # SIZE OF SEGMENTS HEADER
 SEGMENTS_LENGTH = 4
+
 # SIZE OF JSON PAYLOAD
 JSON_LENGTH = 4
 
@@ -47,51 +51,47 @@ class Segment(metaclass=abc.ABCMeta):
     _META_KEY_MIME_TYPE = "mime_type"
     _META_KEY_FILE_NAME = "filename"
 
-    _segmentMeta = {}
+    def __init__(self):
+        super().__init__()
+        self.segmentMeta = {}
 
     @abc.abstractmethod
     def writeToStream(self):
         pass
 
     def getSegmentSize(self):
-        return self._segmentMeta.get(self._META_KEY_SIZE)
+        return self.segmentMeta.get(self._META_KEY_SIZE)
 
     def getMeta(self):
-        return self._segmentMeta
+        return self.segmentMeta
 
     def setSegmentSize(self, size: Type[int]):
-        self._segmentMeta[self._META_KEY_SIZE] = size
+        self.segmentMeta[self._META_KEY_SIZE] = size
 
     def setSegmentMimeType(self, mimeType: Type[str]):
-        self._segmentMeta[self._META_KEY_MIME_TYPE] = mimeType
+        self.segmentMeta[self._META_KEY_MIME_TYPE] = mimeType
 
     def setSegmentFilename(self, fileName: Type[str]):
-        self._segmentMeta[self._META_KEY_FILE_NAME] = fileName
+        self.segmentMeta[self._META_KEY_FILE_NAME] = fileName
 
 
 class JsonSegment(Segment):
 
-    # JSON String from Json.dumps
-    _jsonString = ""
-
     def __init__(self, jsonString: str):
         super().__init__()
-        self._jsonString = jsonString
+        self.jsonString = jsonString
         self.setSegmentSize(len(jsonString))
         self.setSegmentMimeType("application/json")
 
     def writeToStream(self, sendFunction: SendFunction):
-        sendFunction(bytes(self._jsonString, ENCODING))
+        sendFunction(bytes(self.jsonString, ENCODING))
 
 
 class FileSegment(Segment):
 
-    _file: Type[BufferedReader]
-
     def __init__(self, file: Type[BufferedReader]):
         super().__init__()
         self._file = file
-        print(f"FILE SIZE:", os.path.getsize(file.name))
         self.setSegmentSize(os.path.getsize(file.name))
         self.setSegmentMimeType(mimetypes.guess_type(file.name)[0])
         fileName = file.name.split("/")
@@ -101,7 +101,6 @@ class FileSegment(Segment):
         reader = self._file.read(256)
 
         while (reader):
-            print("sending.....")
             sendFunction(reader)
             reader = self._file.read(256)
 
@@ -110,25 +109,18 @@ class FileSegment(Segment):
 
 class Payload:
 
-    # Holds all the segments to send
-    _segments = {}
-
-    # Json data to send aka payload body
-    # Like parameters etc...
-    _jsonBody = "{}"
-
     def __init__(self, payloadname: str):
         self.payloadname = payloadname
+        self.segemnts = {}
+        self.jsonBody = "{}"
 
     # Adds a segment to the payload
     def addSegment(self, name: str, segment: Segment):
-        print(f"ADDING SEGMENT WITH KEY: {name}")
-        print(f"SEGMENT HAS VALUE: {segment.getMeta()}\n")
-        self._segments[name] = segment
+        self.segments[name] = segment
 
     # Adds json string data payload: string from json.dumps
     def addJsonData(self, jsonString):
-        self._jsonBody = jsonString
+        self.jsonBody = jsonString
 
     # Writes the payload to the stream of the socket
     def writeToStream(self, sendAll: SendFunction):
@@ -146,13 +138,7 @@ class Payload:
         # SEGMENTS SIZE AND META
         segments = []
         segmentSize = 0
-        print("LOOPING OVER SEGMENTS \n\n")
-        print(self._segments.get("JSONSEGMENT").getMeta())
-        for (key, r) in self._segments.items():
-            print(f"KEY: {key}")
-            print(f"VALUE")
-            print(r.getMeta())
-            print("\n")
+        for (key, r) in self.segments.items():
             segments.append({key: r.getMeta()})
             segmentSize += r.getSegmentSize()
             totalPayloadSize += r.getSegmentSize()
@@ -167,9 +153,9 @@ class Payload:
         totalPayloadSize += segmentMetaLength
 
         # JSON BODY
-        jsonBodyLength = len(self._jsonBody)
+        jsonBodyLength = len(self.jsonBody)
         jsonBodyBytesSize = jsonBodyLength.to_bytes(JSON_LENGTH, ENDIANES)
-        jsonBodyBytes = bytes(self._jsonBody, ENCODING)
+        jsonBodyBytes = bytes(self.jsonBody, ENCODING)
         totalPayloadSize += jsonBodyLength
 
         totalPayloadByteSize = totalPayloadSize.to_bytes(
@@ -196,7 +182,7 @@ class Payload:
         sendAll(jsonBodyBytes)
 
         # SEGMENTS
-        for segment in self._segments.values():
+        for segment in self.segments.values():
             segment.writeToStream(sendAll)
 
 
