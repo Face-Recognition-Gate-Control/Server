@@ -111,7 +111,7 @@ class Payload:
 
     def __init__(self, payloadname: str):
         self.payloadname = payloadname
-        self.segemnts = {}
+        self.segments = {}
         self.jsonBody = "{}"
 
     # Adds a segment to the payload
