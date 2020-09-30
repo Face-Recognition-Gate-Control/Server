@@ -1,3 +1,4 @@
+import struct
 import socket
 import time
 import os
@@ -15,7 +16,7 @@ PORT = 9876         # The same port as used by the server
 PAYLOAD_LENGTH = 4
 
 # SIZE OF THE PAYLOAD IDENTIFIER
-PAYLOAD_NAME_LENGTH = 2
+PAYLOAD_NAME_LENGTH = 4
 
 # SIZE OF SEGMENTS HEADER
 SEGMENTS_LENGTH = 4
@@ -29,6 +30,9 @@ ENCODING = "UTF-8"
 
 # Mimics Python socket.sendall signature
 SendFunction = NewType('SendFunction', Callable[[bytes, int], None])
+RecieveFunction = NewType('RecieveFunction', Callable[[bytes, int], None])
+
+# RESPONSIBLE FOR CONNECTION TO SERVER
 
 
 class FractalClient:
@@ -41,8 +45,81 @@ class FractalClient:
     def getSendAllFunction(self):
         return SendFunction(self.socket.sendall)
 
+    def getReciever(self):
+        return self.socket.recv
+        pass
 
+
+# CONNECT TO SERVER
 client = FractalClient(HOST, PORT)
+
+reciever = client.getReciever()
+UserId = NewType('UserId', int)
+
+
+class StreamHelper:
+
+    byteOrder = "big"  # big or little
+
+    @staticmethod
+    def readByte(reader: RecieveFunction, signed: bool = False):
+        return int.from_bytes(
+            reader(1), byteorder=StreamHelper.byteOrder, signed=signed)
+
+    @staticmethod
+    def readShort(reader: RecieveFunction, signed: bool = False):
+        return int.from_bytes(
+            reader(2), byteorder=StreamHelper.byteOrder, signed=signed)
+        pass
+
+    @staticmethod
+    def readInt(reader: RecieveFunction, signed: bool = False):
+        return int.from_bytes(
+            reader(4), byteorder=StreamHelper.byteOrder, signed=signed)
+        pass
+
+    @staticmethod
+    def readLong(reader: RecieveFunction, signed: bool = False):
+        return int.from_bytes(
+            reader(8), byteorder=StreamHelper.byteOrder, signed=signed)
+        pass
+
+    @staticmethod
+    def readFloat(reader: RecieveFunction):
+        struct.unpack('f', reader(4))
+
+    @staticmethod
+    def readDouble(reader: RecieveFunction):
+        struct.unpack('f', reader(8))
+
+    @staticmethod
+    def readBytesToString(reader: RecieveFunction, nBytes):
+        return reader(nBytes).decode(ENCODING)
+
+# RESPONSIBLE FOR READING DATA FROM SERVER
+
+
+class FractalReader:
+
+    def __init__(self):
+        super().__init__()
+
+    def read(self, reciever: RecieveFunction):
+        payloadlen = StreamHelper.readInt(reciever)
+        print(payloadlen)
+        payloadNameLen = StreamHelper.readInt(reciever)
+        print(payloadNameLen)
+        payloadName = StreamHelper.readBytesToString(
+            reciever, payloadNameLen)
+        print(payloadName)
+        segmentsLen = StreamHelper.readInt(reciever)
+        segments = StreamHelper.readBytesToString(
+            reciever, segmentsLen)
+        print(segments)
+        jsonLen = StreamHelper.readInt(reciever)
+        jsondata = StreamHelper.readBytesToString(
+            reciever, jsonLen)
+        print(jsondata)
 
 
 class Segment(metaclass=abc.ABCMeta):
@@ -55,7 +132,7 @@ class Segment(metaclass=abc.ABCMeta):
         super().__init__()
         self.segmentMeta = {}
 
-    @abc.abstractmethod
+    @ abc.abstractmethod
     def writeToStream(self):
         pass
 
@@ -89,7 +166,7 @@ class JsonSegment(Segment):
 
 class FileSegment(Segment):
 
-    def __init__(self, file: Type[BufferedReader]):
+    def __init__(self, file: BufferedReader):
         super().__init__()
         self._file = file
         self.setSegmentSize(os.path.getsize(file.name))
@@ -204,3 +281,5 @@ payload.addSegment("FILESEGMENT", FileSegment(
     open("./PythonClient/files/pom.xml", "rb")))
 
 payload.writeToStream(client.getSendAllFunction())
+
+FractalReader().read(client.getReciever())
