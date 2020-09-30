@@ -24,7 +24,7 @@ public class FractalProtocol {
 	/**
 	 * Byte size of the ID header
 	 */
-	private final int ID_LENGTH = 2;
+	private final int ID_LENGTH = 4;
 
 	/**
 	 * Byte size of the segment header

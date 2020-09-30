@@ -3,7 +3,6 @@ package no.fractal.socket.send.messages;
 import no.fractal.socket.send.AbstractMessage;
 import org.json.JSONObject;
 
-import java.io.File;
 import java.util.HashMap;
 
 public class ValidationResponseMessage extends AbstractMessage {
@@ -17,7 +16,7 @@ public class ValidationResponseMessage extends AbstractMessage {
         a.put("param_2", uid);
         a.put("param_3", String.valueOf(magic));
         // -- example -- //
-        this.addSegment(new JsonSegment(new JSONObject(a)));
+        this.addSegment("JsonsegmentYes", new JsonSegment(new JSONObject(a)));
 
     }
 }
