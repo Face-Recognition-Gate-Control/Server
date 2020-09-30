@@ -123,8 +123,8 @@ class FractalReader:
         sj = json.loads(segments)
         for a in sj:
             k = next(iter(a.values()))
-            size = k["size"]
-            print(size)
+            size = int(k["size"])
+            print(StreamHelper.readBytesToString(reciever, size))
             pass
 
 
