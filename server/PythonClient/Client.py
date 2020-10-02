@@ -7,6 +7,8 @@ import abc
 from typing import List, Type, Callable, NewType
 from io import BufferedReader
 import mimetypes
+import math
+import uuid
 
 
 HOST = 'localhost'    # The remote host
@@ -27,6 +29,8 @@ JSON_LENGTH = 4
 ENDIANES = "big"
 
 ENCODING = "UTF-8"
+
+TMP_DIR = "./tmp/"
 
 # Mimics Python socket.sendall signature
 SendFunction = NewType('SendFunction', Callable[[bytes, int], None])
@@ -105,34 +109,78 @@ class FractalReader:
         super().__init__()
 
     def read(self, reciever: RecieveFunction):
+        # Length of paylaod in bytes
         payloadlen = StreamHelper.readInt(reciever)
-        print(payloadlen)
+
+        # Read payload name length
         payloadNameLen = StreamHelper.readInt(reciever)
-        print(payloadNameLen)
+        # Read payload name
         payloadName = StreamHelper.readBytesToString(
             reciever, payloadNameLen)
-        print(payloadName)
+
+        # Read segments length
         segmentsLen = StreamHelper.readInt(reciever)
+        # Read segments
         segments = StreamHelper.readBytesToString(
             reciever, segmentsLen)
-        print(segments)
+
+        # Read JSON payload length
         jsonLen = StreamHelper.readInt(reciever)
+        # Read JSON payload
         jsondata = StreamHelper.readBytesToString(
             reciever, jsonLen)
-        print(jsondata)
-        sj = json.loads(segments)
-        for a in sj:
-            k = next(iter(a.values()))
-            size = int(k["size"])
-            print(StreamHelper.readBytesToString(reciever, size))
-            pass
+
+        # parse JSON payload data
+        payloadData = json.loads(jsondata)
+
+        # parse segment JSON payload data
+        parsed_segments = json.loads(segments)
+
+        return RecievedPayload(payloadData, self.readSegments(reciever, parsed_segments))
+
+    def readSegments(self, reciever, parsed_segments):
+        segmentDict = {}
+        for segment in parsed_segments:
+            segmentKey = next(iter(segment.keys()))
+            segmentMeta = next(iter(segment.values()))
+            size = int(segmentMeta["size"])
+            file_name = ""
+            if Segment._META_KEY_FILE_NAME in segmentMeta:
+                file_name = segmentMeta[Segment._META_KEY_FILE_NAME]
+            else:
+                file_name = str(uuid.uuid1())
+
+            fileFullPath = TMP_DIR + file_name
+            f = open(TMP_DIR + file_name, 'wb')
+            buffer = 25
+            remaining = size
+            l = reciever(min(buffer, remaining))
+            while (l):
+                remaining -= len(l)
+                f.write(l)
+                l = reciever(min(buffer, remaining))
+            f.close()
+            segmentDict[segmentKey] = RecivedSegment(segmentMeta, fileFullPath)
+        return segmentDict
+
+
+class RecivedSegment:
+    def __init__(self, segmentMeta, fileName):
+        self.segmentMeta = segmentMeta
+        self.fileName = fileName
+
+
+class RecievedPayload:
+    def __init__(self, payloadData, segments):
+        self.payloadData = payloadData
+        self.segments = segments
 
 
 class Segment(metaclass=abc.ABCMeta):
 
     _META_KEY_SIZE = "size"
     _META_KEY_MIME_TYPE = "mime_type"
-    _META_KEY_FILE_NAME = "filename"
+    _META_KEY_FILE_NAME = "file_name"
 
     def __init__(self):
         super().__init__()
@@ -288,4 +336,4 @@ payload.addSegment("FILESEGMENT", FileSegment(
 
 payload.writeToStream(client.getSendAllFunction())
 
-FractalReader().read(client.getReciever())
+q = FractalReader().read(client.getReciever())
