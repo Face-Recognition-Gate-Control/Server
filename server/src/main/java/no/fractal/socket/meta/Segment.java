@@ -15,7 +15,7 @@ public class Segment {
 
 	private final String SEGMENT_SIZE = "size";
 	private final String MIME_TYPE = "mime_type";
-	private final String FILE_NAME = "filename";
+	private final String FILE_NAME = "file_name";
 
 	private JsonObject segmentObject;
 	transient private File file;
