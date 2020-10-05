@@ -1,20 +1,16 @@
 package no.fractal.socket;
 
 import java.io.BufferedInputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
-
-import com.google.gson.Gson;
-
-import com.google.gson.JsonObject;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonParser;
-
 import no.fractal.socket.meta.Segment;
+import no.fractal.socket.payload.InvalidPayloadException;
 import no.fractal.socket.payload.PayloadBase;
 import no.fractal.util.Parser;
 
@@ -28,7 +24,7 @@ public class FractalProtocol {
 	/**
 	 * Byte size of the ID header
 	 */
-	private final int ID_LENGTH = 2;
+	private final int ID_LENGTH = 4;
 
 	/**
 	 * Byte size of the segment header
@@ -165,16 +161,21 @@ public class FractalProtocol {
 	 * @return map of segment header
 	 */
 	private Map<String, Segment> getParsedSegments() {
-		var keyedSegments = new HashMap<String, Segment>();
+		var keyedSegments = new LinkedHashMap<String, Segment>();
 		try {
 			String segments = this.getSegments();
-			JsonObject segmentObject = JsonParser.parseString(segments).getAsJsonObject();
-			segmentObject.entrySet().forEach((jsonSegment) -> {
-				keyedSegments.put(jsonSegment.getKey(), new Segment(jsonSegment.getValue().getAsJsonObject()));
+			JsonArray segmentsArray = JsonParser.parseString(segments).getAsJsonArray();
+			segmentsArray.forEach((segment) -> {
+				var segmentObject = segment.getAsJsonObject();
+				var key = (String) segmentObject.keySet().toArray()[0];
+				keyedSegments.put(key, new Segment(segmentObject.get(key).getAsJsonObject()));
+
 			});
 
-		} catch (Exception e) {
-			System.out.println(e.getMessage());
+		} catch (IndexOutOfBoundsException e) {
+			throw new InvalidPayloadException("The payload is missing segment identifier: key for the segment");
+		} catch (IllegalStateException e) {
+			throw new InvalidPayloadException("The payload is not a valid \n " + e.getMessage());
 		}
 		return keyedSegments;
 	}

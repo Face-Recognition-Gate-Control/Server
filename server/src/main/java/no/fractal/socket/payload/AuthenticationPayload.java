@@ -9,7 +9,6 @@ public class AuthenticationPayload extends PayloadBase {
 
 	private String identificationId;
 
-
 	public AuthenticationPayload() {
 	}
 

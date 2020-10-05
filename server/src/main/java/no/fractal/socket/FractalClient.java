@@ -2,6 +2,7 @@ package no.fractal.socket;
 
 import no.fractal.socket.meta.*;
 import no.fractal.socket.payload.AuthenticationPayload;
+import no.fractal.socket.payload.InvalidPayloadException;
 import no.fractal.socket.payload.NoSuchPayloadException;
 import no.fractal.socket.payload.PayloadBase;
 import no.fractal.socket.payload.ThumbnailPayload;
@@ -22,8 +23,6 @@ import no.fractal.socket.send.MessageDispatcher;
 public class FractalClient extends Client {
 
 	private MessageDispatcher dispatcher;
-
-
 
 	// Handles logging for the FractalClient
 	private static Logger LOGGER = Logger.getLogger(FractalClient.class.getName());
@@ -52,7 +51,6 @@ public class FractalClient extends Client {
 
 			BufferedInputStream in = this.getInputReader();
 
-
 			boolean reading = true;
 			while (reading) {
 
@@ -73,12 +71,12 @@ public class FractalClient extends Client {
 						throw new NoSuchPayloadException("Can not find the payload with name: " + payloadName);
 					}
 					// Execute the payload
-
+					payload.setDispatcher(dispatcher);
 					payload.execute();
 				} catch (JsonSyntaxException e) {
 					// SEND INVALID META FOR PAYLOAD
 					LOGGER.log(Level.INFO, String.format("Invalid meta for: %s", payloadName));
-				} catch (NoSuchPayloadException e) {
+				} catch (NoSuchPayloadException | InvalidPayloadException e) {
 					// SEND INVALID PAYLOAD NAME
 					LOGGER.log(Level.INFO, String.format("%s", e.getMessage()));
 				}
