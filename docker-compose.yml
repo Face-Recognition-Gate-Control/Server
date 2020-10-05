@@ -12,10 +12,14 @@ x-DbLoggin:
     USER_DB_NAME: "${POSGRESS_USER_DB}"
     USER_PASSWORD: "${POSGRESS_USER_PASSWORD}"
 
-    SQLURL: "jdbc:postgresql://${POSTGRES_IP}:5432/${POSGRESS_USER_USERNAME}"
+    SQLURL: "jdbc:postgresql://${POSTGRES_IP}:5432/${POSGRESS_USER_DB}"
   networks:
     &postgres-ip
     ipv4_address: "${POSTGRES_IP}"
+
+
+
+
 
 
 services:
@@ -88,6 +92,7 @@ services:
 
     environment:
       <<: *postgres-login
+      NODE_URL: "${NODE_URL}"
 
 
     volumes:

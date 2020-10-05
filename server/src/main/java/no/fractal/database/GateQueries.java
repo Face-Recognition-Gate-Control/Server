@@ -1,11 +1,17 @@
 package no.fractal.database;
 
 import no.fractal.database.Datatypes.TensorData;
+import no.fractal.database.Datatypes.User;
 
+import java.io.File;
 import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class GateQueries extends PsqlDb {
 
@@ -24,6 +30,114 @@ public class GateQueries extends PsqlDb {
         return ret;
     }
 
+    public static User getUser(UUID userID) throws SQLException {
+
+        String query = String.format(
+                "SELECT firstname, lastname FROM users where id = '%s';", userID.toString());
+
+        AtomicReference<User> ret = new AtomicReference<>();
+
+        sqlQuery(query, resultSet -> {
+            ret.set(new User(
+                    userID,
+                    resultSet.getString("firstname"),
+                    resultSet.getString("lastname")
+            ));
+        });
+
+        return ret.get();
+    }
+
+    public static void registerUserEnteredRoom(UUID user_id, UUID stationId) throws SQLException {
+        String query = String.format(
+                "INSERT INTO user_enter_events (user_id, station_id)  VALUES ('%s', '%s');",
+                user_id,
+                stationId);
+
+        sqlUpdate(query);
+    }
+
+    public static void addUserToNewQueue(UUID user_id, TensorData tensorData, UUID stationId) throws SQLException {
+        String query = String.format(
+                "INSERT INTO new_user_queue (tmp_id, face_vec, station_id)  VALUES ('%s', %s, '%s');",
+                user_id,
+                tensorData.asSQLString(),
+                stationId);
+
+        sqlUpdate(query);
+    }
+
+    public static void addImageToWaitQue(UUID user_id, File imgFile) throws SQLException {
+        String query = String.format(
+                "UPDATE new_user_queue SET file_name='%s' where tmp_id='%s';",
+                imgFile.toString(),
+                user_id);
+
+        sqlUpdate(query);
+    }
+
+    public static boolean isIdInNewQue(UUID userId) throws SQLException {
+        String query = String.format(
+                "SELECT tmp_id FROM new_user_queue where tmp_id = '%s';", userId.toString());
+
+        AtomicBoolean ret = new AtomicBoolean(false);
+
+        sqlQuery(query, resultSet -> {
+            ret.set(resultSet.first());
+        });
+
+        return ret.get();
+
+    }
+
+    public static boolean isStationLoginValid(UUID stationId, String stationSecret) throws SQLException {
+        String query = String.format(
+                "SELECT login_key FROM stations where id = '%s';", stationId.toString());
+
+        AtomicBoolean ret = new AtomicBoolean(false);
+
+        sqlQuery(query, resultSet -> {
+            if (resultSet.first()){
+                if (resultSet.getString("login_key").equals(stationSecret)){
+                    ret.set(true);
+                }
+            }
+        });
+
+        return ret.get();
+    }
+
+    public static long getLastTensorTableUpdate() throws SQLException {
+        String query = String.format(
+                "SELECT last_change FROM updates_table where id = '%s';", "new_user_queue");
+
+        AtomicLong ret = new AtomicLong();
+        sqlQuery(query, resultSet -> {
+            ret.set(resultSet.getLong("last_change"));
+        });
+
+        return ret.get();
+
+    }
+
+    public static HashMap<UUID, File> removeTimedOutIdsFromNewQueue(long timeLimit) throws SQLException {
+
+        String query = String.format(
+                "DELETE FROM new_user_queue WHERE added_ts > %d RETURNING tmp_id, file_name;", timeLimit);
+
+        HashMap<UUID, File> ret = new HashMap<>();
+
+        sqlQuery(query, resultSet -> {
+            UUID uuid = resultSet.getString("tmp_id") != null ? UUID.fromString(resultSet.getString("tmp_id")) : null;
+            File file = resultSet.getString("file_name") != null ? new File("file_name") : null;
+            ret.put(uuid, file);
+        });
+
+
+
+        return ret;
+
+    }
 
 
 
