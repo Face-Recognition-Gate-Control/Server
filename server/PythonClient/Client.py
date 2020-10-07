@@ -10,6 +10,8 @@ import mimetypes
 import math
 import uuid
 
+from StreamHelpers import *
+
 
 HOST = 'localhost'    # The remote host
 PORT = 9876         # The same port as used by the server
@@ -26,15 +28,17 @@ SEGMENTS_LENGTH = 4
 # SIZE OF JSON PAYLOAD
 JSON_LENGTH = 4
 
-ENDIANES = "big"
+# The order of the bytes from the stream little or big
+BYTE_ORDER = "big"
 
+# Encoding for strings
 ENCODING = "UTF-8"
 
 TMP_DIR = "./tmp/"
 
 # Mimics Python socket.sendall signature
-SendFunction = NewType('SendFunction', Callable[[bytes, int], None])
-RecieveFunction = NewType('RecieveFunction', Callable[[bytes, int], None])
+Send_function = NewType('Send_function', Callable[[bytes, int], None])
+Recieve_function = NewType('Recieve_function', Callable[[bytes, int], None])
 
 # RESPONSIBLE FOR CONNECTION TO SERVER
 
@@ -42,137 +46,100 @@ RecieveFunction = NewType('RecieveFunction', Callable[[bytes, int], None])
 class FractalClient:
 
     def __init__(self, host: str, port: int):
-        pass
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.socket.connect((host, port))
 
-    def getSendAllFunction(self):
-        return SendFunction(self.socket.sendall)
+    def get_send_all_function(self):
+        return Send_function(self.socket.sendall)
 
-    def getReciever(self):
+    def get_receiver_function(self):
         return self.socket.recv
-        pass
 
 
 # CONNECT TO SERVER
 client = FractalClient(HOST, PORT)
 
-reciever = client.getReciever()
-UserId = NewType('UserId', int)
+reciever = client.get_receiver_function()
 
-
-class StreamHelper:
-
-    byteOrder = "big"  # big or little
-
-    @staticmethod
-    def readByte(reader: RecieveFunction, signed: bool = False):
-        return int.from_bytes(
-            reader(1), byteorder=StreamHelper.byteOrder, signed=signed)
-
-    @staticmethod
-    def readShort(reader: RecieveFunction, signed: bool = False):
-        return int.from_bytes(
-            reader(2), byteorder=StreamHelper.byteOrder, signed=signed)
-        pass
-
-    @staticmethod
-    def readInt(reader: RecieveFunction, signed: bool = False):
-        return int.from_bytes(
-            reader(4), byteorder=StreamHelper.byteOrder, signed=signed)
-        pass
-
-    @staticmethod
-    def readLong(reader: RecieveFunction, signed: bool = False):
-        return int.from_bytes(
-            reader(8), byteorder=StreamHelper.byteOrder, signed=signed)
-        pass
-
-    @staticmethod
-    def readFloat(reader: RecieveFunction):
-        struct.unpack('f', reader(4))
-
-    @staticmethod
-    def readDouble(reader: RecieveFunction):
-        struct.unpack('f', reader(8))
-
-    @staticmethod
-    def readBytesToString(reader: RecieveFunction, nBytes):
-        return reader(nBytes).decode(ENCODING)
 
 # RESPONSIBLE FOR READING DATA FROM SERVER
-
-
 class FractalReader:
 
-    def __init__(self):
-        super().__init__()
-
-    def read(self, reciever: RecieveFunction):
+    # Reads the full payload from the stream of the provided byte stream read function.
+    # It returns the payload when it is finished reading
+    def read(self, reciever: Recieve_function):
         # Length of paylaod in bytes
-        payloadlen = StreamHelper.readInt(reciever)
+        payload_length = read_int(reciever)
 
         # Read payload name length
-        payloadNameLen = StreamHelper.readInt(reciever)
+        payload_name_length = read_int(reciever)
         # Read payload name
-        payloadName = StreamHelper.readBytesToString(
-            reciever, payloadNameLen)
+        payload_name = read_bytes_to_string(
+            reciever, payload_name_length)
 
         # Read segments length
-        segmentsLen = StreamHelper.readInt(reciever)
+        segment_length = read_int(reciever)
         # Read segments
-        segments = StreamHelper.readBytesToString(
-            reciever, segmentsLen)
+        segments = read_bytes_to_string(
+            reciever, segment_length)
 
         # Read JSON payload length
-        jsonLen = StreamHelper.readInt(reciever)
+        json_length = read_int(reciever)
         # Read JSON payload
-        jsondata = StreamHelper.readBytesToString(
-            reciever, jsonLen)
+        json_data = read_bytes_to_string(
+            reciever, json_length)
 
         # parse JSON payload data
-        payloadData = json.loads(jsondata)
+        payload_data = json.loads(json_data)
 
         # parse segment JSON payload data
         parsed_segments = json.loads(segments)
 
-        return RecievedPayload(payloadData, self.readSegments(reciever, parsed_segments))
+        return RecievedPayload(payload_data, self.readSegments(reciever, parsed_segments))
 
+    # Reads the actual file segments parsed from header, and builds
+    # the dictionary for it to retrieve the files with provided meta data.
     def readSegments(self, reciever, parsed_segments):
         segmentDict = {}
         for segment in parsed_segments:
-            segmentKey = next(iter(segment.keys()))
-            segmentMeta = next(iter(segment.values()))
-            size = int(segmentMeta["size"])
+            segment_key = next(iter(segment.keys()))
+            segment_meta = next(iter(segment.values()))
+            size = int(segment_meta["size"])
             file_name = ""
-            if Segment._META_KEY_FILE_NAME in segmentMeta:
-                file_name = segmentMeta[Segment._META_KEY_FILE_NAME]
+            if Segment._META_KEY_FILE_NAME in segment_meta:
+                file_name = segment_meta[Segment._META_KEY_FILE_NAME]
             else:
                 file_name = str(uuid.uuid1())
 
-            fileFullPath = TMP_DIR + file_name
-            f = open(TMP_DIR + file_name, 'wb')
-            buffer = 25
+            file_full_path = TMP_DIR + file_name
+            tempt_segment_file = open(TMP_DIR + file_name, 'wb')
+            buffer = 4096
             remaining = size
-            l = reciever(min(buffer, remaining))
-            while (l):
-                remaining -= len(l)
-                f.write(l)
-                l = reciever(min(buffer, remaining))
-            f.close()
-            segmentDict[segmentKey] = RecivedSegment(segmentMeta, fileFullPath)
+            received_bytes = reciever(min(buffer, remaining))
+            while (received_bytes):
+                remaining -= len(received_bytes)
+                tempt_segment_file.write(received_bytes)
+                received_bytes = reciever(min(buffer, remaining))
+            tempt_segment_file.close()
+            segmentDict[segment_key] = RecivedSegment(
+                segment_meta, file_full_path)
         return segmentDict
+
+# Holder class for received segments
 
 
 class RecivedSegment:
-    def __init__(self, segmentMeta, fileName):
-        self.segmentMeta = segmentMeta
-        self.fileName = fileName
+    def __init__(self, segment_meta, file_name):
+        self.segment_meta = segment_meta
+        self.file_name = file_name
+
+# Holder class for received payloads, includes payload data< JSON and
+# segments< Files
 
 
 class RecievedPayload:
-    def __init__(self, payloadData, segments):
-        self.payloadData = payloadData
+    def __init__(self, payload_data, segments):
+        self.payload_data = payload_data
         self.segments = segments
 
 
@@ -184,38 +151,38 @@ class Segment(metaclass=abc.ABCMeta):
 
     def __init__(self):
         super().__init__()
-        self.segmentMeta = {}
+        self.segment_meta = {}
 
     @ abc.abstractmethod
-    def writeToStream(self):
+    def write_to_stream(self, send_function: Send_function):
         pass
 
-    def getSegmentSize(self):
-        return self.segmentMeta.get(self._META_KEY_SIZE)
+    def get_segment_size(self):
+        return self.segment_meta.get(self._META_KEY_SIZE)
 
-    def getMeta(self):
-        return self.segmentMeta
+    def get_meta(self):
+        return self.segment_meta
 
-    def setSegmentSize(self, size: Type[int]):
-        self.segmentMeta[self._META_KEY_SIZE] = size
+    def set_segment_size(self, size: int):
+        self.segment_meta[self._META_KEY_SIZE] = size
 
-    def setSegmentMimeType(self, mimeType: Type[str]):
-        self.segmentMeta[self._META_KEY_MIME_TYPE] = mimeType
+    def set_segment_mime_type(self, mimeType: str):
+        self.segment_meta[self._META_KEY_MIME_TYPE] = mimeType
 
-    def setSegmentFilename(self, fileName: Type[str]):
-        self.segmentMeta[self._META_KEY_FILE_NAME] = fileName
+    def set_segment_file_name(self, file_name: str):
+        self.segment_meta[self._META_KEY_FILE_NAME] = file_name
 
 
 class JsonSegment(Segment):
 
-    def __init__(self, jsonString: str):
+    def __init__(self, json_string: str):
         super().__init__()
-        self.jsonString = jsonString
-        self.setSegmentSize(len(jsonString))
-        self.setSegmentMimeType("application/json")
+        self.json_string = json_string
+        self.set_segment_size(len(json_string))
+        self.set_segment_mime_type("application/json")
 
-    def writeToStream(self, sendFunction: SendFunction):
-        sendFunction(bytes(self.jsonString, ENCODING))
+    def write_to_stream(self, send_function: Send_function):
+        send_function(bytes(self.json_string, ENCODING))
 
 
 class FileSegment(Segment):
@@ -223,16 +190,16 @@ class FileSegment(Segment):
     def __init__(self, file: BufferedReader):
         super().__init__()
         self._file = file
-        self.setSegmentSize(os.path.getsize(file.name))
-        self.setSegmentMimeType(mimetypes.guess_type(file.name)[0])
-        fileName = file.name.split("/")
-        self.setSegmentFilename(fileName[len(fileName) - 1])
+        self.set_segment_size(os.path.getsize(file.name))
+        self.set_segment_mime_type(mimetypes.guess_type(file.name)[0])
+        file_name = file.name.split("/")
+        self.set_segment_file_name(file_name[-1])
 
-    def writeToStream(self, sendFunction: SendFunction):
+    def write_to_stream(self, send_function: Send_function):
         reader = self._file.read(256)
 
         while (reader):
-            sendFunction(reader)
+            send_function(reader)
             reader = self._file.read(256)
 
         self._file.close()
@@ -240,90 +207,91 @@ class FileSegment(Segment):
 
 class Payload:
 
-    def __init__(self, payloadname: str):
-        self.payloadname = payloadname
+    def __init__(self, payload_name: str):
+        self.payload_name = payload_name
         self.segments = {}
-        self.jsonBody = "{}"
+        self.json_body = "{}"
 
     # Adds a segment to the payload
-    def addSegment(self, name: str, segment: Segment):
+    def add_segment(self, name: str, segment: Segment):
         self.segments[name] = segment
 
     # Adds json string data payload: string from json.dumps
-    def addJsonData(self, jsonString):
-        self.jsonBody = jsonString
+    def add_json_data(self, json_string):
+        self.json_body = json_string
 
     # Writes the payload to the stream of the socket
-    def writeToStream(self, sendAll: SendFunction):
+    def write_to_stream(self, send_all: Send_function):
         # HOLDS TOTAL PAYLOAD SIZE
-        totalPayloadSize = 0
+        total_payload_size = 0
 
         # PAYLOAD NAME
-        payloadNameLength = len(self.payloadname)
-        payloadNameByteSize = payloadNameLength.to_bytes(
-            PAYLOAD_NAME_LENGTH, ENDIANES)
-        payloadNameBytes = bytes(self.payloadname, ENCODING)
+        payload_name_length = len(self.payload_name)
+        payload_name_bytes_size = payload_name_length.to_bytes(
+            PAYLOAD_NAME_LENGTH, BYTE_ORDER)
+        payload_name_bytes = bytes(self.payload_name, ENCODING)
 
-        totalPayloadSize += payloadNameLength
+        total_payload_size += payload_name_length
 
         # SEGMENTS SIZE AND META
         segments = []
-        segmentSize = 0
-        for (key, r) in self.segments.items():
-            segments.append({key: r.getMeta()})
-            segmentSize += r.getSegmentSize()
-            totalPayloadSize += r.getSegmentSize()
-        # print(f"TOTAL SEGMENT SIZE ", segmentSize)
+        segment_size = 0
+        for (segment_identifier, segment) in self.segments.items():
+            segments.append({segment_identifier: segment.get_meta()})
+            segment_size += segment.get_segment_size()
+            total_payload_size += segment.get_segment_size()
+        # print(f"TOTAL SEGMENT SIZE ", segment_size)
         # PARSE META TO JSON AND GET LENGTH
-        segmentsJson = json.dumps(segments)
-        segmentMetaLength = len(segmentsJson)
-        segmentMetaByteSize = segmentMetaLength.to_bytes(
-            SEGMENTS_LENGTH, ENDIANES)
-        segmentMetaBytes = bytes(segmentsJson, ENCODING)
+        segment_json = json.dumps(segments)
+        segment_meta_length = len(segment_json)
+        segment_meta_byte_size = segment_meta_length.to_bytes(
+            SEGMENTS_LENGTH, BYTE_ORDER)
+        segment_meta_bytes = bytes(segment_json, ENCODING)
 
-        totalPayloadSize += segmentMetaLength
+        total_payload_size += segment_meta_length
 
         # JSON BODY
-        jsonBodyLength = len(self.jsonBody)
-        jsonBodyBytesSize = jsonBodyLength.to_bytes(JSON_LENGTH, ENDIANES)
-        jsonBodyBytes = bytes(self.jsonBody, ENCODING)
-        totalPayloadSize += jsonBodyLength
+        json_body_length = len(self.json_body)
+        json_body_byte_size = json_body_length.to_bytes(
+            JSON_LENGTH, BYTE_ORDER)
+        json_body_bytes = bytes(self.json_body, ENCODING)
+        total_payload_size += json_body_length
 
-        totalPayloadByteSize = totalPayloadSize.to_bytes(
-            PAYLOAD_LENGTH, ENDIANES)
+        total_payload_bytes = total_payload_size.to_bytes(
+            PAYLOAD_LENGTH, BYTE_ORDER)
 
         ## START WRITING ##
 
         # TOTAL PAYLOAD SIZE
-        sendAll(totalPayloadByteSize)
+        send_all(total_payload_bytes)
 
         # PAYLOAD NAME SIZE
-        sendAll(payloadNameByteSize)
+        send_all(payload_name_bytes_size)
         # PAYLOAD NAME
-        sendAll(payloadNameBytes)
+        send_all(payload_name_bytes)
 
         # SEGMENT META SIZE
-        sendAll(segmentMetaByteSize)
+        send_all(segment_meta_byte_size)
         # SEGMENT META
-        sendAll(segmentMetaBytes)
+        send_all(segment_meta_bytes)
 
-        # JSON LENGTH
-        sendAll(jsonBodyBytesSize)
+        # JSON f
+        send_all(json_body_byte_size)
         # JSON DATA
-        sendAll(jsonBodyBytes)
+        send_all(json_body_bytes)
 
         # SEGMENTS
         for segment in self.segments.values():
-            segment.writeToStream(sendAll)
+            segment.write_to_stream(send_all)
 
 
-# q = open("./PythonClient/q/pom.xml", 'rb')
+# q = open("./q/pom.xml", 'rb')
 # FileSegment(q)
 
 payload = Payload("authentication")
-payload.addJsonData(json.dumps({"identificationId": "RANDOMSTRING HERE"}))
+payload.add_json_data(json.dumps({"identificationId": "RANDOMSTRING HERE"}))
 
-payload.addSegment("JSONSEGMENT", JsonSegment(json.dumps({
+payload.add_segment("JSONSEGMENT", JsonSegment(json.dumps({
     "arraydata": [
         {
             "data": "text",
@@ -331,9 +299,9 @@ payload.addSegment("JSONSEGMENT", JsonSegment(json.dumps({
         }
     ], "field": "some field data"})))
 
-payload.addSegment("FILESEGMENT", FileSegment(
-    open("./PythonClient/files/pom.xml", "rb")))
+payload.add_segment("FILESEGMENT", FileSegment(
+    open("./files/pom.xml", "rb")))
 
-payload.writeToStream(client.getSendAllFunction())
+payload.write_to_stream(client.get_send_all_function())
 
-q = FractalReader().read(client.getReciever())
+q = FractalReader().read(client.get_receiver_function())
