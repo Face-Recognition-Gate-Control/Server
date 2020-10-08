@@ -1,5 +1,7 @@
 package no.fractal.database.Datatypes;
 
+import no.fractal.server.ClientRequestDatabaseInterface;
+
 import java.io.File;
 import java.util.UUID;
 
@@ -19,6 +21,6 @@ public class User {
 
 
     public File getUserImage(){
-        return null;
+        return new File(ClientRequestDatabaseInterface.getInstance().imagePermSaveDir, id.toString());
     }
 }

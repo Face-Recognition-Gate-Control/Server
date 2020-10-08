@@ -29,6 +29,15 @@ public class TensorData {
 
     /**
      * The tensor should be of size 512
+     *  @param tensor tensor array
+     * 
+     */
+    public TensorData(BigDecimal[] tensor) {
+        this(tensor, null);
+    }
+
+    /**
+     * The tensor should be of size 512
      * 
      * @param tensor tensor array
      * @param id     id of the tensor

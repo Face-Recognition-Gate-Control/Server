@@ -82,13 +82,12 @@ public class ClientRequestDatabaseInterface {
      * Cheks if the provided id is in the wait que if it is, a registration url is generated and returned
      *
      * @param userId the id of the new user
-     * @param gateId the id og of the gate used to register
      * @return a strig with the url
      * @throws SQLException
      */
-    public String getNewRegistrationURL(UUID userId, UUID gateId) throws SQLException {
+    public String getNewRegistrationURL(UUID userId) throws SQLException {
         if (GateQueries.isIdInNewQue(userId)) {
-            return this.nodeUrl + "/" + userId + gateId;
+            return this.nodeUrl + "/" + userId;
         }
 
         return null;

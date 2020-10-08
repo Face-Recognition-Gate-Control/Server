@@ -1,7 +1,8 @@
-package no.fractal.socket.messages.recive;
+package no.fractal.socket.payload;
 
 import java.util.Map;
 
+import no.fractal.socket.FractalClient;
 import no.fractal.socket.meta.Segment;
 import no.fractal.socket.send.MessageDispatcher;
 
@@ -16,9 +17,16 @@ public abstract class PayloadBase {
 	public void setDispatcher(MessageDispatcher dispatcher) {
 		this.dispatcher = dispatcher;
 	}
+
+	protected FractalClient client;
+
+	public void setClient(FractalClient client) {
+		this.client = client;
+	}
+
 	// not ideal change possision
 
-	transient Map<String, Segment> segments;
+	public Map<String, Segment> segments;
 
 	public PayloadBase() {
 	}

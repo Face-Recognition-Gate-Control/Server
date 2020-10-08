@@ -1,4 +1,4 @@
-package no.fractal.socket.messages.recive;
+package no.fractal.socket.payload;
 
 /**
  * Describes an exception where the payload do not exist.
