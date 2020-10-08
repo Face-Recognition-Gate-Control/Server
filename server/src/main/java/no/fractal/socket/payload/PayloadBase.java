@@ -26,7 +26,7 @@ public abstract class PayloadBase {
 
 	// not ideal change possision
 
-	public Map<String, Segment> segments;
+	protected Map<String, Segment> segments;
 
 	public PayloadBase() {
 	}
