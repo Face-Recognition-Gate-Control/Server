@@ -2,6 +2,7 @@ package no.fractal.socket.messages.recive;
 
 import java.util.Map;
 
+import no.fractal.socket.FractalClient;
 import no.fractal.socket.meta.Segment;
 import no.fractal.socket.send.MessageDispatcher;
 
@@ -10,15 +11,23 @@ import no.fractal.socket.send.MessageDispatcher;
  * attached.
  */
 public abstract class PayloadBase {
-	// not ideal change possision
-	protected MessageDispatcher dispatcher;
+
+	protected transient MessageDispatcher dispatcher;
 
 	public void setDispatcher(MessageDispatcher dispatcher) {
 		this.dispatcher = dispatcher;
 	}
-	// not ideal change possision
 
-	transient Map<String, Segment> segments;
+	protected transient FractalClient client;
+
+	public void setClient(FractalClient client) {
+		this.client = client;
+	}
+
+	/**
+	 * Holds all segments attached to this payload
+	 */
+	protected transient Map<String, Segment> segments;
 
 	public PayloadBase() {
 	}
@@ -33,10 +42,7 @@ public abstract class PayloadBase {
 	}
 
 	/**
-	 * Executes the payload instructions for this payload. The meta includes all
-	 * data for reading the payload.
-	 * 
-	 * @param meta meta header for this payload
+	 * Executes the payload instructions for this payload.
 	 */
 	public abstract void execute();
 

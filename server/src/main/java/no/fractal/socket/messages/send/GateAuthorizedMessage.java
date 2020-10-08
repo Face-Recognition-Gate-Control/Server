@@ -2,9 +2,6 @@ package no.fractal.socket.messages.send;
 
 import com.google.gson.JsonObject;
 import no.fractal.socket.send.AbstractMessage;
-import org.json.JSONObject;
-
-import java.util.HashMap;
 
 public class GateAuthorizedMessage extends AbstractMessage {
     public static final String MESSAGE_TYPE = "gate_authorized";

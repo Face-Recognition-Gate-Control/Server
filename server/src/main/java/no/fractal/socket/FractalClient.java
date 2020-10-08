@@ -1,11 +1,16 @@
 package no.fractal.socket;
 
 import no.fractal.socket.meta.*;
-import no.fractal.socket.messages.recive.AuthenticationPayload;
+
+import no.fractal.socket.messages.recive.GateAuthorizationPayload;
+import no.fractal.socket.messages.recive.PingPayload;
+import no.fractal.socket.messages.recive.UserAuthorizationPayload;
+import no.fractal.socket.messages.recive.UserEnteredPayload;
 import no.fractal.socket.payload.InvalidPayloadException;
+import no.fractal.socket.messages.recive.UserThumbnailPayload;
+
 import no.fractal.socket.messages.recive.NoSuchPayloadException;
 import no.fractal.socket.messages.recive.PayloadBase;
-import no.fractal.socket.messages.recive.ThumbnailPayload;
 
 import java.io.BufferedInputStream;
 
@@ -14,6 +19,7 @@ import java.io.IOException;
 import java.net.Socket;
 import java.net.SocketException;
 
+import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -23,6 +29,15 @@ import no.fractal.socket.send.MessageDispatcher;
 public class FractalClient extends Client {
 
 	private MessageDispatcher dispatcher;
+	private UUID GateId;
+
+	public UUID getGateId() {
+		return GateId;
+	}
+
+	public void setGateId(UUID gateId) {
+		this.GateId = gateId;
+	}
 
 	// Handles logging for the FractalClient
 	private static Logger LOGGER = Logger.getLogger(FractalClient.class.getName());
@@ -37,7 +52,6 @@ public class FractalClient extends Client {
 	public void run() {
 		this.dispatcher = new MessageDispatcher(this.getOutputStream());
 		this.read();
-
 	}
 
 	/**
@@ -62,8 +76,11 @@ public class FractalClient extends Client {
 
 				try {
 					PayloadBase payload = switch (payloadName) {
-						case "authentication" -> payloadBuilder.createPayloadObject(AuthenticationPayload.class);
-						case "thumbnail" -> payloadBuilder.createPayloadObject(ThumbnailPayload.class);
+						case "gate_authorization" -> payloadBuilder.createPayloadObject(GateAuthorizationPayload.class);
+						case "user_authorization" -> payloadBuilder.createPayloadObject(UserAuthorizationPayload.class);
+						case "user_thumbnail" -> payloadBuilder.createPayloadObject(UserThumbnailPayload.class);
+						case "user_entered" -> payloadBuilder.createPayloadObject(UserEnteredPayload.class);
+						case "gate_ping" -> payloadBuilder.createPayloadObject(PingPayload.class);
 						default -> null;
 					};
 
@@ -72,6 +89,7 @@ public class FractalClient extends Client {
 					}
 					// Execute the payload
 					payload.setDispatcher(dispatcher);
+					payload.setClient(this);
 					payload.execute();
 				} catch (JsonSyntaxException e) {
 					// SEND INVALID META FOR PAYLOAD
