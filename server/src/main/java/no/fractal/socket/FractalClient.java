@@ -1,14 +1,16 @@
 package no.fractal.socket;
 
 import no.fractal.socket.meta.*;
+
 import no.fractal.socket.messages.recive.GateAuthorizationPayload;
 import no.fractal.socket.messages.recive.PingPayload;
 import no.fractal.socket.messages.recive.UserAuthorizationPayload;
 import no.fractal.socket.messages.recive.UserEnteredPayload;
 import no.fractal.socket.payload.InvalidPayloadException;
-import no.fractal.socket.payload.NoSuchPayloadException;
-import no.fractal.socket.payload.PayloadBase;
 import no.fractal.socket.messages.recive.UserThumbnailPayload;
+
+import no.fractal.socket.messages.recive.NoSuchPayloadException;
+import no.fractal.socket.messages.recive.PayloadBase;
 
 import java.io.BufferedInputStream;
 
