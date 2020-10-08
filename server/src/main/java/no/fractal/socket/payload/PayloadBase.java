@@ -11,7 +11,7 @@ import no.fractal.socket.send.MessageDispatcher;
  * attached.
  */
 public abstract class PayloadBase {
-	// not ideal change possision
+
 	protected MessageDispatcher dispatcher;
 
 	public void setDispatcher(MessageDispatcher dispatcher) {
@@ -24,8 +24,9 @@ public abstract class PayloadBase {
 		this.client = client;
 	}
 
-	// not ideal change possision
-
+	/**
+	 * Holds all segments attached to this payload
+	 */
 	protected Map<String, Segment> segments;
 
 	public PayloadBase() {
@@ -41,10 +42,7 @@ public abstract class PayloadBase {
 	}
 
 	/**
-	 * Executes the payload instructions for this payload. The meta includes all
-	 * data for reading the payload.
-	 * 
-	 * @param meta meta header for this payload
+	 * Executes the payload instructions for this payload.
 	 */
 	public abstract void execute();
 
