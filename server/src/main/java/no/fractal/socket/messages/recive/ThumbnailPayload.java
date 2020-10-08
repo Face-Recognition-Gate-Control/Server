@@ -1,4 +1,4 @@
-package no.fractal.socket.payload;
+package no.fractal.socket.messages.recive;
 
 public class ThumbnailPayload extends PayloadBase {
 
