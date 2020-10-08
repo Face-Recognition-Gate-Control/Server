@@ -2,6 +2,9 @@ package no.fractal.socket;
 
 import no.fractal.socket.meta.*;
 import no.fractal.socket.messages.recive.GateAuthorizationPayload;
+import no.fractal.socket.messages.recive.PingPayload;
+import no.fractal.socket.messages.recive.UserAuthorizationPayload;
+import no.fractal.socket.messages.recive.UserEnteredPayload;
 import no.fractal.socket.payload.InvalidPayloadException;
 import no.fractal.socket.payload.NoSuchPayloadException;
 import no.fractal.socket.payload.PayloadBase;
@@ -71,8 +74,11 @@ public class FractalClient extends Client {
 
 				try {
 					PayloadBase payload = switch (payloadName) {
-						case "authentication" -> payloadBuilder.createPayloadObject(GateAuthorizationPayload.class);
-						case "thumbnail" -> payloadBuilder.createPayloadObject(UserThumbnailPayload.class);
+						case "gate_authorization" -> payloadBuilder.createPayloadObject(GateAuthorizationPayload.class);
+						case "user_authorization" -> payloadBuilder.createPayloadObject(UserAuthorizationPayload.class);
+						case "user_thumbnail" -> payloadBuilder.createPayloadObject(UserThumbnailPayload.class);
+						case "user_entered" -> payloadBuilder.createPayloadObject(UserEnteredPayload.class);
+						case "gate_ping" -> payloadBuilder.createPayloadObject(PingPayload.class);
 						default -> null;
 					};
 
