@@ -45,21 +45,18 @@ Recieve_function = NewType('Recieve_function', Callable[[bytes, int], None])
 
 class FractalClient:
 
-    def __init__(self, host: str, port: int):
+    def __init__(self, host: str, port: int, reader):
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.socket.connect((host, port))
+        self.reader = reader
 
-    def get_send_all_function(self):
-        return Send_function(self.socket.sendall)
+    # Sends the payload to the server
+    def send_payload(self, payload):
+        payload.write_to_stream(self.socket.sendall)
 
-    def get_receiver_function(self):
-        return self.socket.recv
-
-
-# CONNECT TO SERVER
-client = FractalClient(HOST, PORT)
-
-reciever = client.get_receiver_function()
+    # Read a payload from the server connection stream
+    def read_payload(self):
+        return self.reader.read(self.socket.recv)
 
 
 # RESPONSIBLE FOR READING DATA FROM SERVER
@@ -67,6 +64,7 @@ class FractalReader:
 
     # Reads the full payload from the stream of the provided byte stream read function.
     # It returns the payload when it is finished reading
+    # THIS IS BLOCKING
     def read(self, reciever: Recieve_function):
         # Length of paylaod in bytes
         payload_length = read_int(reciever)
@@ -285,9 +283,10 @@ class Payload:
             segment.write_to_stream(send_all)
 
 
-# q = open("./q/pom.xml", 'rb')
-# FileSegment(q)
+# CONNECT TO SERVER
+client = FractalClient(HOST, PORT, FractalReader())
 
+# CREATE PAYLOADS
 payload = Payload("authentication")
 payload.add_json_data(json.dumps({"identificationId": "RANDOMSTRING HERE"}))
 
@@ -302,6 +301,8 @@ payload.add_segment("JSONSEGMENT", JsonSegment(json.dumps({
 payload.add_segment("FILESEGMENT", FileSegment(
     open("./files/pom.xml", "rb")))
 
-payload.write_to_stream(client.get_send_all_function())
+# SEND PAYLOAD
+client.send_payload(payload)
 
-q = FractalReader().read(client.get_receiver_function())
+# RECEIVE PAYLOADS
+receivedPyloadisHere = client.read_payload()
