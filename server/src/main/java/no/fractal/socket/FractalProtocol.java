@@ -11,7 +11,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonParser;
 import no.fractal.socket.meta.Segment;
 import no.fractal.socket.payload.InvalidPayloadException;
-import no.fractal.socket.payload.PayloadBase;
+import no.fractal.socket.messages.recive.PayloadBase;
 import no.fractal.util.Parser;
 
 public class FractalProtocol {

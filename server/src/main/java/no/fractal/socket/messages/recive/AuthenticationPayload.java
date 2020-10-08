@@ -1,9 +1,9 @@
-package no.fractal.socket.payload;
+package no.fractal.socket.messages.recive;
 
 import com.google.gson.JsonElement;
 
 import no.fractal.socket.meta.Segment;
-import no.fractal.socket.send.messages.ValidationResponseMessage;
+import no.fractal.socket.messages.send.ValidationResponseMessage;
 
 public class AuthenticationPayload extends PayloadBase {
 

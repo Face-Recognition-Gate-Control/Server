@@ -1,4 +1,4 @@
-package no.fractal.socket.send.messages;
+package no.fractal.socket.messages.send;
 
 import no.fractal.socket.send.AbstractMessage;
 import org.json.JSONObject;
