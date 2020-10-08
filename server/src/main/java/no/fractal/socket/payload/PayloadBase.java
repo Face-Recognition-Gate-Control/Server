@@ -18,7 +18,7 @@ public abstract class PayloadBase {
 		this.dispatcher = dispatcher;
 	}
 
-	protected FractalClient client;
+	protected transient FractalClient client;
 
 	public void setClient(FractalClient client) {
 		this.client = client;
