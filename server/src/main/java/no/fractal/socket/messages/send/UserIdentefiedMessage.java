@@ -20,11 +20,11 @@ public class UserIdentefiedMessage  extends AbstractMessage {
     public UserIdentefiedMessage(File thumbnail, UUID sessionId, String message, boolean allowed) {
         super(MESSAGE_TYPE);
 
-        JsonObject unnecessaryTemporaryObjectPgaBadJsonLib = new JsonObject();
-        unnecessaryTemporaryObjectPgaBadJsonLib.addProperty("session_id", sessionId.toString());
-        unnecessaryTemporaryObjectPgaBadJsonLib.addProperty("message", message);
-        unnecessaryTemporaryObjectPgaBadJsonLib.addProperty("access_granted", allowed);
-        this.addJsonBody(unnecessaryTemporaryObjectPgaBadJsonLib);
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.addProperty("session_id", sessionId.toString());
+        jsonObject.addProperty("message", message);
+        jsonObject.addProperty("access_granted", allowed);
+        this.addJsonBody(jsonObject);
 
         FileSegment fileSegment = new FileSegment(thumbnail);
 

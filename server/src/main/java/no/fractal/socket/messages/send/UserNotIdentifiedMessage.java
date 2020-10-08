@@ -17,10 +17,10 @@ public class UserNotIdentifiedMessage  extends AbstractMessage {
     public UserNotIdentifiedMessage(UUID sessionId, String registrationUrl) {
         super(MESSAGE_TYPE);
 
-        JsonObject unnecessaryTemporaryObjectPgaBadJsonLib = new JsonObject();
-        unnecessaryTemporaryObjectPgaBadJsonLib.addProperty("session_id", sessionId.toString());
-        unnecessaryTemporaryObjectPgaBadJsonLib.addProperty("registration_url", registrationUrl);
-        this.addJsonBody(unnecessaryTemporaryObjectPgaBadJsonLib);
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.addProperty("session_id", sessionId.toString());
+        jsonObject.addProperty("registration_url", registrationUrl);
+        this.addJsonBody(jsonObject);
 
     }
 }

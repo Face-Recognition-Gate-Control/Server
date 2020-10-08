@@ -17,9 +17,9 @@ public class GateAuthorizedMessage extends AbstractMessage {
     public GateAuthorizedMessage(String stationName) {
         super(MESSAGE_TYPE);
 
-        JsonObject unnecessaryTemporaryObjectPgaBadJsonLib = new JsonObject();
-        unnecessaryTemporaryObjectPgaBadJsonLib.addProperty("station_name", stationName);
-        this.addJsonBody(unnecessaryTemporaryObjectPgaBadJsonLib);
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.addProperty("station_name", stationName);
+        this.addJsonBody(jsonObject);
 
     }
 }
