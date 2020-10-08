@@ -12,7 +12,7 @@ import no.fractal.socket.send.MessageDispatcher;
  */
 public abstract class PayloadBase {
 
-	protected MessageDispatcher dispatcher;
+	protected transient MessageDispatcher dispatcher;
 
 	public void setDispatcher(MessageDispatcher dispatcher) {
 		this.dispatcher = dispatcher;
@@ -27,7 +27,7 @@ public abstract class PayloadBase {
 	/**
 	 * Holds all segments attached to this payload
 	 */
-	protected Map<String, Segment> segments;
+	protected transient Map<String, Segment> segments;
 
 	public PayloadBase() {
 	}
