@@ -5,13 +5,13 @@ import no.fractal.socket.send.AbstractMessage;
 
 import java.util.UUID;
 
-public class UserNotIdentifiedMessage  extends AbstractMessage {
+public class UserNotIdentifiedMessage extends AbstractMessage {
     public static final String MESSAGE_TYPE = "user_unidentified";
 
     /**
      * builds the not identefied message
      *
-     * @param sessionId the id of the reg user -> is ok -> answer exchange
+     * @param sessionId       the id of the reg user -> is ok -> answer exchange
      * @param registrationUrl the url to show for registration
      */
     public UserNotIdentifiedMessage(UUID sessionId, String registrationUrl) {
@@ -24,4 +24,3 @@ public class UserNotIdentifiedMessage  extends AbstractMessage {
 
     }
 }
-

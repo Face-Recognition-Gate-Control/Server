@@ -1,9 +1,8 @@
 package no.fractal.socket.messages.send;
 
-import com.google.gson.JsonObject;
 import no.fractal.socket.send.AbstractMessage;
 
-public class PongMessage  extends AbstractMessage {
+public class PongMessage extends AbstractMessage {
     public static final String MESSAGE_TYPE = "pong";
 
     /**
@@ -15,4 +14,3 @@ public class PongMessage  extends AbstractMessage {
         super(MESSAGE_TYPE);
     }
 }
-

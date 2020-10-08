@@ -17,15 +17,30 @@ public class GateAuthorizationPayload extends PayloadBase {
 	@Override
 	public void execute() {
 		try {
-			boolean validationOk = ClientRequestDatabaseInterface.getInstance().stationManager.IsStationValid(UUID.fromString(station_uid),login_key);
+			boolean validationOk = ClientRequestDatabaseInterface.getInstance().stationManager
+					.IsStationValid(UUID.fromString(station_uid), login_key);
 
-			if (validationOk){
+			if (validationOk) {
 				GateAuthorizedMessage gateAuthorizedMessage = new GateAuthorizedMessage("mabye remove bro");
 				this.dispatcher.addMessage(gateAuthorizedMessage);
 			}
 
-		} catch (Exception e){
+		} catch (Exception e) {
 			// TODO; Implement login failure handlin
 		}
+	}
+
+	/**
+	 * @return the login_key
+	 */
+	public String getLogin_key() {
+		return login_key;
+	}
+
+	/**
+	 * @return the station_uid
+	 */
+	public String getStation_uid() {
+		return station_uid;
 	}
 }

@@ -12,18 +12,21 @@ public class UserEnteredPayload extends PayloadBase {
     public UserEnteredPayload() {
     }
 
-    /**
-     * Executes the payload instructions for this payload. The meta includes all
-     * data for reading the payload.
-     */
     @Override
     public void execute() {
         try {
-            ClientRequestDatabaseInterface.getInstance().registerUserEntering(UUID.fromString(session_id), this.client.getGateId());
-        } catch (Exception e){
+            ClientRequestDatabaseInterface.getInstance().registerUserEntering(UUID.fromString(session_id),
+                    this.client.getGateId());
+        } catch (Exception e) {
             // TODO; Implement login failure handlin
         }
 
+    }
 
+    /**
+     * @return the session_id
+     */
+    public String getSession_id() {
+        return session_id;
     }
 }
