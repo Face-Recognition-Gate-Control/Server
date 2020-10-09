@@ -22,7 +22,7 @@ public class TcpServer {
 
 	private ServerSocket welcomeSocket;
 
-	private Map<String, Client> connectedClients = new HashMap<>();
+	private Map<String, FractalClient> authorizedClients = new HashMap<>();
 
 	public TcpServer() {
 	}
@@ -47,10 +47,11 @@ public class TcpServer {
 			while (true) {
 				try {
 					Socket clientSocket = this.welcomeSocket.accept();
-					FractalClient client = new FractalClient(clientSocket, this);
-					this.connectedClients.put(client.getClientID(), client);
-					pool.execute(client);
-					LOGGER.log(Level.INFO, String.format("A new client connected: %s", client.getClientID()));
+					pool.execute(new ClientHandler(clientSocket, this, (FractalClient client) -> {
+						client.run();
+						this.authorizedClients.put(client.getClientID(), client);
+						LOGGER.log(Level.INFO, String.format("Authorized client with id: %s", client.getClientID()));
+					}));
 				} catch (IOException e) {
 					LOGGER.log(Level.SEVERE, e.getMessage(), e);
 				}
