@@ -2,7 +2,6 @@ package no.fractal.socket.messages.recive;
 
 import no.fractal.server.ClientRequestDatabaseInterface;
 import no.fractal.socket.meta.Segment;
-import no.fractal.socket.payload.PayloadBase;
 
 import java.util.UUID;
 

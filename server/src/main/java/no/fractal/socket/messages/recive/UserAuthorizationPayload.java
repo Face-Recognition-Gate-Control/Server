@@ -7,7 +7,6 @@ import no.fractal.database.DbTensorCache;
 import no.fractal.server.ClientRequestDatabaseInterface;
 import no.fractal.socket.messages.send.UserIdentefiedMessage;
 import no.fractal.socket.messages.send.UserNotIdentifiedMessage;
-import no.fractal.socket.payload.PayloadBase;
 import no.fractal.socket.send.AbstractMessage;
 
 import java.math.BigDecimal;
