@@ -39,6 +39,11 @@ public abstract class Client implements Runnable {
 	private String clientId;
 
 	/**
+	 * Flag for clients authorization status
+	 */
+	private boolean authorized;
+
+	/**
 	 * Creates the client socket. Creates the input reader.
 	 *
 	 * @param clientSocket the client socket
@@ -128,6 +133,21 @@ public abstract class Client implements Runnable {
 
 	public Socket getClientSocket() {
 		return this.clientSocket;
+	}
+
+	public void setAuthorized(boolean authorized) {
+		this.authorized = authorized;
+	}
+
+	public boolean isAuthorized() {
+		return this.authorized;
+	}
+
+	public void closeClient() {
+		try {
+			this.clientSocket.close();
+		} catch (IOException e) {
+		}
 	}
 
 	/**
