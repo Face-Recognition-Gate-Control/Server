@@ -69,23 +69,14 @@ public class FractalClient extends Client {
 			while (reading) {
 
 				// Blocks here until all header fields are red.
-				FractalProtocol.PayloadBuilder payloadBuilder = protocol.readPayload(in);
+				FractalProtocol.PayloadData payloadData = protocol.readPayloadData(in);
 
-				// Headers extract
-				String payloadName = protocol.getId();
 
 				try {
-					PayloadBase payload = switch (payloadName) {
-						case "gate_authorization" -> payloadBuilder.createPayloadObject(GateAuthorizationPayload.class);
-						case "user_authorization" -> payloadBuilder.createPayloadObject(UserAuthorizationPayload.class);
-						case "user_thumbnail" -> payloadBuilder.createPayloadObject(UserThumbnailPayload.class);
-						case "user_entered" -> payloadBuilder.createPayloadObject(UserEnteredPayload.class);
-						case "gate_ping" -> payloadBuilder.createPayloadObject(PingPayload.class);
-						default -> null;
-					};
+					PayloadBase payload = payloadBuilder.apply(payloadData);
 
 					if (payload == null) {
-						throw new NoSuchPayloadException("Can not find the payload with name: " + payloadName);
+						throw new NoSuchPayloadException("Can not find the payload with name: " + payloadData.getId());
 					}
 					// Execute the payload
 					payload.setDispatcher(dispatcher);
@@ -93,7 +84,7 @@ public class FractalClient extends Client {
 					payload.execute();
 				} catch (JsonSyntaxException e) {
 					// SEND INVALID META FOR PAYLOAD
-					LOGGER.log(Level.INFO, String.format("Invalid meta for: %s", payloadName));
+					LOGGER.log(Level.INFO, String.format("Invalid meta for: %s", payloadData.getId()));
 				} catch (NoSuchPayloadException | InvalidPayloadException e) {
 					// SEND INVALID PAYLOAD NAME
 					LOGGER.log(Level.INFO, String.format("%s", e.getMessage()));
@@ -117,5 +108,7 @@ public class FractalClient extends Client {
 		}
 
 	}
+
+
 
 }
