@@ -47,10 +47,7 @@ public class FractalProtocol {
 
 	private String jsonPayload;
 
-	private Parser parser;
-
-	public FractalProtocol(Parser parser) {
-		this.parser = parser;
+	public FractalProtocol() {
 	}
 
 	public int getIdHeaderBytesLength() {
@@ -64,15 +61,17 @@ public class FractalProtocol {
 	/**
 	 * Reads the full payload from the input stream. This operation is blocking.
 	 * 
-	 * @param in stream reader
+	 * @param inputStream stream reader
 	 * @throws IOException thrown if stream is closed
 	 */
-	public PayloadBuilder readPayload(BufferedInputStream in) throws IOException {
-		this.remainingPayloadBytes = this.readByteSize(in, PAYLOAD_LENGTH);
-		this.id = this.readHeader(in, ID_LENGTH);
-		this.segments = this.readHeader(in, SEGMENT_LENGTH);
-		this.jsonPayload = this.readHeader(in, JSON_LENGTH);
-		return new PayloadBuilder(this.readSegmentFiles(in));
+	public PayloadData readPayloadData(BufferedInputStream inputStream) throws IOException {
+		this.remainingPayloadBytes = this.readByteSize(inputStream, PAYLOAD_LENGTH);
+
+		String id = this.readHeader(inputStream, ID_LENGTH);
+		String segmentsString = this.readHeader(inputStream, SEGMENT_LENGTH);
+		String jsonPayload = this.readHeader(inputStream, JSON_LENGTH);
+
+		return new PayloadData(this.readSegmentFiles(inputStream, segmentsString), id, segmentsString, jsonPayload);
 	}
 
 	private void reduceRemaingPayloadBytes(int bytesRed) {
@@ -139,11 +138,11 @@ public class FractalProtocol {
 	/**
 	 * Returns a list of all file segments from a request.
 	 * 
-	 * @param in input stream for reading files
+	 * @param inputStream input stream for reading files
 	 * @return map of all segments
 	 */
-	private Map<String, Segment> readSegmentFiles(BufferedInputStream in) {
-		Map<String, Segment> segments = getParsedSegments();
+	private Map<String, Segment> readSegmentFiles(BufferedInputStream inputStream, String segmentStr) {
+		Map<String, Segment> segments = getParsedSegments(segmentStr);
 
 		var sr = new SegmentReader();
 		segments.forEach((key, segment) -> {
