@@ -57,6 +57,7 @@ public class UnauthorizedClient extends Client {
 				}
 				// Execute the payload
 				payload.setDispatcher(dispatcher);
+				payload.setClient(this);
 				payload.execute();
 			} catch (JsonSyntaxException e) {
 				// SEND INVALID META FOR PAYLOAD
