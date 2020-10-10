@@ -1,5 +1,7 @@
 package no.fractal.socket;
 
+import no.fractal.socket.messages.recive.*;
+
 import java.io.IOException;
 import java.net.Socket;
 import java.util.Timer;
@@ -48,7 +50,8 @@ public class ClientHandler implements Runnable {
 	@Override
 	public void run() {
 		try {
-			final var unauthorizedClient = new UnauthorizedClient(clientSocket, server);
+			final var unauthorizedClient = new FractalClient(clientSocket, server);
+			unauthorizedClient.setPayloadBuilder(ClientHandler::unauthorizedClientPayloadBuilder);
 			LOGGER.log(Level.INFO, "Unautorized client connected...");
 
 			Runnable task = () -> {
@@ -65,15 +68,33 @@ public class ClientHandler implements Runnable {
 			future.cancel(false);
 
 			if (unauthorizedClient.isAuthorized()) {
-				var authorizedClient = new FractalClient(clientSocket, server);
-				authorizedClient.setClientID(unauthorizedClient.getClientID());
-				authorizedClient.setAuthorized(unauthorizedClient.isAuthorized());
-				this.authorizedCallback.accept(authorizedClient);
+				unauthorizedClient.setPayloadBuilder(ClientHandler::verifiedClientPayloadBuilder);
+				this.authorizedCallback.accept(unauthorizedClient);
 			}
 
 		} catch (IOException e) {
 			LOGGER.log(Level.WARNING, "Socket IO error", e);
 		}
 	}
+
+	public static PayloadBase verifiedClientPayloadBuilder(FractalProtocol.PayloadData payloadData){
+		return switch (payloadData.getId()) {
+			case "gate_authorization" -> FractalProtocol.BuildPayloadObject(GateAuthorizationPayload.class, payloadData);
+			case "user_authorization" -> FractalProtocol.BuildPayloadObject(UserAuthorizationPayload.class, payloadData);
+			case "user_thumbnail" -> FractalProtocol.BuildPayloadObject(UserThumbnailPayload.class, payloadData);
+			case "user_entered" -> FractalProtocol.BuildPayloadObject(UserEnteredPayload.class, payloadData);
+			case "gate_ping" -> FractalProtocol.BuildPayloadObject(PingPayload.class, payloadData);
+			default -> null;
+		};
+	}
+	public static PayloadBase unauthorizedClientPayloadBuilder(FractalProtocol.PayloadData payloadData){
+		return switch (payloadData.getId()) {
+			case "gate_authorization" -> FractalProtocol.BuildPayloadObject(GateAuthorizationPayload.class, payloadData);
+			default -> null;
+		};
+	}
+
+
+
 
 }

@@ -20,6 +20,8 @@ import java.net.Socket;
 import java.net.SocketException;
 
 import java.util.UUID;
+import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -30,6 +32,8 @@ public class FractalClient extends Client {
 
 	private MessageDispatcher dispatcher;
 	private UUID GateId;
+
+	private Function<FractalProtocol.PayloadData, PayloadBase> payloadBuilder = payloadData -> null;
 
 	public UUID getGateId() {
 		return GateId;
@@ -42,10 +46,14 @@ public class FractalClient extends Client {
 	// Handles logging for the FractalClient
 	private static Logger LOGGER = Logger.getLogger(FractalClient.class.getName());
 
-	private FractalProtocol protocol = new FractalProtocol(new JsonMetaParser());
+	private FractalProtocol protocol = new FractalProtocol();
 
 	public FractalClient(Socket clientSocket, TcpServer server) throws IOException {
 		super(clientSocket, server);
+	}
+
+	public void setPayloadBuilder(Function<FractalProtocol.PayloadData, PayloadBase> payloadBuilder) {
+		this.payloadBuilder = payloadBuilder;
 	}
 
 	@Override
