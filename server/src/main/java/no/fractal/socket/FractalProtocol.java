@@ -9,9 +9,10 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonParser;
+import no.fractal.socket.messages.recive.*;
+import no.fractal.socket.meta.JsonMetaParser;
 import no.fractal.socket.meta.Segment;
 import no.fractal.socket.payload.InvalidPayloadException;
-import no.fractal.socket.messages.recive.PayloadBase;
 import no.fractal.util.Parser;
 
 public class FractalProtocol {
@@ -41,16 +42,10 @@ public class FractalProtocol {
 	 */
 	private int remainingPayloadBytes = 0;
 
-	private String id;
 
-	private String segments;
+	private static final Parser parser = new JsonMetaParser();
 
-	private String jsonPayload;
-
-	private Parser parser;
-
-	public FractalProtocol(Parser parser) {
-		this.parser = parser;
+	public FractalProtocol() {
 	}
 
 	public int getIdHeaderBytesLength() {
@@ -64,15 +59,17 @@ public class FractalProtocol {
 	/**
 	 * Reads the full payload from the input stream. This operation is blocking.
 	 * 
-	 * @param in stream reader
+	 * @param inputStream stream reader
 	 * @throws IOException thrown if stream is closed
 	 */
-	public PayloadBuilder readPayload(BufferedInputStream in) throws IOException {
-		this.remainingPayloadBytes = this.readByteSize(in, PAYLOAD_LENGTH);
-		this.id = this.readHeader(in, ID_LENGTH);
-		this.segments = this.readHeader(in, SEGMENT_LENGTH);
-		this.jsonPayload = this.readHeader(in, JSON_LENGTH);
-		return new PayloadBuilder(this.readSegmentFiles(in));
+	public PayloadData readPayloadData(BufferedInputStream inputStream) throws IOException {
+		this.remainingPayloadBytes = this.readByteSize(inputStream, PAYLOAD_LENGTH);
+
+		String id = this.readHeader(inputStream, ID_LENGTH);
+		String segmentsString = this.readHeader(inputStream, SEGMENT_LENGTH);
+		String jsonPayload = this.readHeader(inputStream, JSON_LENGTH);
+
+		return new PayloadData(this.readSegmentFiles(inputStream, segmentsString), id, segmentsString, jsonPayload);
 	}
 
 	private void reduceRemaingPayloadBytes(int bytesRed) {
@@ -139,15 +136,15 @@ public class FractalProtocol {
 	/**
 	 * Returns a list of all file segments from a request.
 	 * 
-	 * @param in input stream for reading files
+	 * @param inputStream input stream for reading files
 	 * @return map of all segments
 	 */
-	private Map<String, Segment> readSegmentFiles(BufferedInputStream in) {
-		Map<String, Segment> segments = getParsedSegments();
+	private Map<String, Segment> readSegmentFiles(BufferedInputStream inputStream, String segmentStr) {
+		Map<String, Segment> segments = getParsedSegments(segmentStr);
 
 		var sr = new SegmentReader();
 		segments.forEach((key, segment) -> {
-			segment.setFile(sr.writeSegmentToTemp(in, segment));
+			segment.setFile(sr.writeSegmentToTemp(inputStream, segment));
 			reduceRemaingPayloadBytes(segment.getSize());
 		});
 
@@ -160,11 +157,10 @@ public class FractalProtocol {
 	 * 
 	 * @return map of segment header
 	 */
-	private Map<String, Segment> getParsedSegments() {
+	private Map<String, Segment> getParsedSegments(String segmentStr) {
 		var keyedSegments = new LinkedHashMap<String, Segment>();
 		try {
-			String segments = this.getSegments();
-			JsonArray segmentsArray = JsonParser.parseString(segments).getAsJsonArray();
+			JsonArray segmentsArray = JsonParser.parseString(segmentStr).getAsJsonArray();
 			segmentsArray.forEach((segment) -> {
 				var segmentObject = segment.getAsJsonObject();
 				var key = (String) segmentObject.keySet().toArray()[0];
@@ -181,53 +177,50 @@ public class FractalProtocol {
 	}
 
 	/**
-	 * Returns the segment data fetched from the data header
-	 * 
-	 * @return segment data fetched from data header
+	 * Creates a payload object from the defined type, and inject data from segment,
+	 * and all file segments.
+	 *
+	 * @param <E> type of the payload
+	 * @param t   type of the payload
+	 * @return payload object
 	 */
-	public String getSegments() {
-		return this.segments;
+	public static  <E extends PayloadBase> E BuildPayloadObject(Class<E> t, PayloadData payloadData) {
+		E payload = parser.parse(t, payloadData.jsonPayloadString);
+		payload.setSegments(payloadData.segments);
+		return payload;
 	}
 
-	/**
-	 * Returns the json string payload
-	 * 
-	 * @return json string payload
-	 */
-	public String getJsonPayload() {
-		return this.jsonPayload;
-	}
 
-	/**
-	 * Returns the packet id from the data header
-	 * 
-	 * @return packet id from the data header
-	 */
-	public String getId() {
-		return this.id;
-	}
+	public class PayloadData {
 
-	public class PayloadBuilder {
+		private Map<String, Segment> segments;
 
-		Map<String, Segment> segments;
+		private String id;
 
-		public PayloadBuilder(Map<String, Segment> segments) {
-			this.segments = segments;
-		}
+		private String segmentString;
+
+		private String jsonPayloadString;
 
 		/**
-		 * Creates a payload object from the defined type, and inject data from segment,
-		 * and all file segments.
-		 * 
-		 * @param <E> type of the payload
-		 * @param t   type of the payload
-		 * @return payload object
+		 * Returns the packet id from the data header
+		 *
+		 * @return packet id from the data header
 		 */
-		public <E extends PayloadBase> E createPayloadObject(Class<E> t) {
-			E payload = parser.parse(t, getJsonPayload());
-			payload.setSegments(segments);
-			return payload;
+		public String getId() {
+			return this.id;
 		}
+
+
+		public PayloadData(Map<String, Segment> segments, String id, String segmentString, String jsonPayloadString) {
+			this.segments = segments;
+			this.id = id;
+			this.segmentString = segmentString;
+			this.jsonPayloadString = jsonPayloadString;
+		}
+
+
+
+
 	}
 
 }

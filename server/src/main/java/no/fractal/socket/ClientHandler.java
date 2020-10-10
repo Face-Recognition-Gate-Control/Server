@@ -1,10 +1,12 @@
 package no.fractal.socket;
 
+import no.fractal.socket.messages.recive.*;
+
 import java.io.IOException;
 import java.net.Socket;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.concurrent.ExecutorService;
+import java.util.concurrent.*;
 import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -32,12 +34,12 @@ public class ClientHandler implements Runnable {
 
 	private Socket clientSocket;
 
-	ExecutorService pool;
+	private static ScheduledExecutorService scheduledExecutor = Executors.newSingleThreadScheduledExecutor();
 
 	/**
 	 * Callback function for when a client has successfully authorized
 	 */
-	Consumer<FractalClient> authorizedCallback;
+	private Consumer<FractalClient> authorizedCallback;
 
 	ClientHandler(Socket clientSocket, TcpServer server, Consumer<FractalClient> authorizedCallback) {
 		this.server = server;
@@ -48,32 +50,51 @@ public class ClientHandler implements Runnable {
 	@Override
 	public void run() {
 		try {
-			final var unauthorizedClient = new UnauthorizedClient(clientSocket, server);
+			final var unauthorizedClient = new FractalClient(clientSocket, server);
+			unauthorizedClient.setPayloadBuilder(ClientHandler::unauthorizedClientPayloadBuilder);
 			LOGGER.log(Level.INFO, "Unautorized client connected...");
 
-			TimerTask task = new TimerTask() {
-				public void run() {
-					unauthorizedClient.closeClient();
-					LOGGER.log(Level.INFO, "Closed client for not authorizing...");
-				}
+			Runnable task = () -> {
+				unauthorizedClient.closeClient();
+				LOGGER.log(Level.INFO, "Closed client for not authorizing...");
 			};
-			Timer timer = new Timer("UnauthorizedTimer");
-			timer.schedule(task, UNATHORIZED_CONNECTION_TIME);
+
+			ScheduledFuture future = ClientHandler.scheduledExecutor.schedule(task, UNATHORIZED_CONNECTION_TIME, TimeUnit.MILLISECONDS);
 
 			while (!unauthorizedClient.isAuthorized() && !unauthorizedClient.getClientSocket().isClosed()) {
 				unauthorizedClient.read();
 			}
-			timer.cancel();
+
+			future.cancel(false);
+
 			if (unauthorizedClient.isAuthorized()) {
-				var authorizedClient = new FractalClient(clientSocket, server);
-				authorizedClient.setClientID(unauthorizedClient.getClientID());
-				authorizedClient.setAuthorized(unauthorizedClient.isAuthorized());
-				this.authorizedCallback.accept(authorizedClient);
+				unauthorizedClient.setPayloadBuilder(ClientHandler::verifiedClientPayloadBuilder);
+				this.authorizedCallback.accept(unauthorizedClient);
 			}
 
 		} catch (IOException e) {
 			LOGGER.log(Level.WARNING, "Socket IO error", e);
 		}
 	}
+
+	public static PayloadBase verifiedClientPayloadBuilder(FractalProtocol.PayloadData payloadData){
+		return switch (payloadData.getId()) {
+			case "gate_authorization" -> FractalProtocol.BuildPayloadObject(GateAuthorizationPayload.class, payloadData);
+			case "user_authorization" -> FractalProtocol.BuildPayloadObject(UserAuthorizationPayload.class, payloadData);
+			case "user_thumbnail" -> FractalProtocol.BuildPayloadObject(UserThumbnailPayload.class, payloadData);
+			case "user_entered" -> FractalProtocol.BuildPayloadObject(UserEnteredPayload.class, payloadData);
+			case "gate_ping" -> FractalProtocol.BuildPayloadObject(PingPayload.class, payloadData);
+			default -> null;
+		};
+	}
+	public static PayloadBase unauthorizedClientPayloadBuilder(FractalProtocol.PayloadData payloadData){
+		return switch (payloadData.getId()) {
+			case "gate_authorization" -> FractalProtocol.BuildPayloadObject(GateAuthorizationPayload.class, payloadData);
+			default -> null;
+		};
+	}
+
+
+
 
 }
