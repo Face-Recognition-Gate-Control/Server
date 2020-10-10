@@ -24,7 +24,7 @@ public class GateQueries extends PsqlDb {
             ret.add(new TensorData(
                     (BigDecimal[]) resultSet.getArray("face_vec").getArray(),
                     UUID.fromString(resultSet.getString("user_id"))
-                    ));
+            ));
         });
 
         return ret;
@@ -52,7 +52,8 @@ public class GateQueries extends PsqlDb {
         String query = String.format(
                 "INSERT INTO user_enter_events (user_id, station_id)  VALUES ('%s', '%s');",
                 user_id,
-                stationId);
+                stationId
+        );
 
         sqlUpdate(query);
     }
@@ -62,7 +63,8 @@ public class GateQueries extends PsqlDb {
                 "INSERT INTO new_user_queue (tmp_id, face_vec, station_id)  VALUES ('%s', %s, '%s');",
                 user_id,
                 tensorData.asSQLString(),
-                stationId);
+                stationId
+        );
 
         sqlUpdate(query);
     }
@@ -71,7 +73,8 @@ public class GateQueries extends PsqlDb {
         String query = String.format(
                 "UPDATE new_user_queue SET file_name='%s' where tmp_id='%s';",
                 imgFile.toString(),
-                user_id);
+                user_id
+        );
 
         sqlUpdate(query);
     }
@@ -94,17 +97,12 @@ public class GateQueries extends PsqlDb {
         String query = String.format(
                 "SELECT login_key FROM stations where id = '%s';", stationId.toString());
 
-        AtomicBoolean ret = new AtomicBoolean(false);
+        AtomicBoolean stationValid = new AtomicBoolean(false);
 
         sqlQuery(query, resultSet -> {
-            if (resultSet.first()){
-                if (resultSet.getString("login_key").equals(stationSecret)){
-                    ret.set(true);
-                }
-            }
+            stationValid.set(resultSet.getString("login_key").equals(stationSecret));
         });
-
-        return ret.get();
+        return stationValid.get();
     }
 
     public static long getLastTensorTableUpdate() throws SQLException {
@@ -134,12 +132,9 @@ public class GateQueries extends PsqlDb {
         });
 
 
-
         return ret;
 
     }
-
-
 
 
     // examples
