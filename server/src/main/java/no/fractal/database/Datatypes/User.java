@@ -14,13 +14,13 @@ public class User {
     public final String lastName;
 
     public User(UUID id, String firstName, String lastName) {
-        this.id = id;
+        this.id        = id;
         this.firstName = firstName;
-        this.lastName = lastName;
+        this.lastName  = lastName;
     }
 
 
-    public File getUserImage(){
+    public File getUserImage() {
         return new File(ClientRequestDatabaseInterface.getInstance().imagePermSaveDir, id.toString());
     }
 }

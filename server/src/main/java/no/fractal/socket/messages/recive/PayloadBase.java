@@ -1,11 +1,10 @@
 package no.fractal.socket.messages.recive;
 
-import java.util.Map;
-
 import no.fractal.socket.Client;
-import no.fractal.socket.FractalClient;
 import no.fractal.socket.meta.Segment;
 import no.fractal.socket.send.MessageDispatcher;
+
+import java.util.Map;
 
 /**
  * Abstract class for all payloads. All payloads can have segments (files)
@@ -13,38 +12,36 @@ import no.fractal.socket.send.MessageDispatcher;
  */
 public abstract class PayloadBase {
 
-	protected transient MessageDispatcher dispatcher;
+    protected transient MessageDispatcher dispatcher;
+    protected transient Client client;
+    /**
+     * Holds all segments attached to this payload
+     */
+    protected transient Map<String, Segment> segments;
 
-	public void setDispatcher(MessageDispatcher dispatcher) {
-		this.dispatcher = dispatcher;
-	}
+    public PayloadBase() {
+    }
 
-	protected transient Client client;
+    public void setDispatcher(MessageDispatcher dispatcher) {
+        this.dispatcher = dispatcher;
+    }
 
-	public void setClient(Client client) {
-		this.client = client;
-	}
+    public void setClient(Client client) {
+        this.client = client;
+    }
 
-	/**
-	 * Holds all segments attached to this payload
-	 */
-	protected transient Map<String, Segment> segments;
+    /**
+     * Sets the segments for this payload
+     *
+     * @param segments
+     */
+    public void setSegments(Map<String, Segment> segments) {
+        this.segments = segments;
+    }
 
-	public PayloadBase() {
-	}
-
-	/**
-	 * Sets the segments for this payload
-	 * 
-	 * @param segments
-	 */
-	public void setSegments(Map<String, Segment> segments) {
-		this.segments = segments;
-	}
-
-	/**
-	 * Executes the payload instructions for this payload.
-	 */
-	public abstract void execute();
+    /**
+     * Executes the payload instructions for this payload.
+     */
+    public abstract void execute();
 
 }

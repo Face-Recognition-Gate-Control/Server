@@ -15,8 +15,15 @@ import java.util.logging.Logger;
 
 public class FractalClient extends Client {
 
+    // Handles logging for the FractalClient
+    private static final Logger LOGGER = Logger.getLogger(FractalClient.class.getName());
+    private final FractalProtocol protocol = new FractalProtocol();
     private MessageDispatcher dispatcher;
-    private UUID              GateId;
+    private UUID GateId;
+
+    public FractalClient(Socket clientSocket, TcpServer server) throws IOException {
+        super(clientSocket, server);
+    }
 
     public UUID getGateId() {
         return GateId;
@@ -24,15 +31,6 @@ public class FractalClient extends Client {
 
     public void setGateId(UUID gateId) {
         this.GateId = gateId;
-    }
-
-    // Handles logging for the FractalClient
-    private static Logger LOGGER = Logger.getLogger(FractalClient.class.getName());
-
-    private FractalProtocol protocol = new FractalProtocol();
-
-    public FractalClient(Socket clientSocket, TcpServer server) throws IOException {
-        super(clientSocket, server);
     }
 
     @Override

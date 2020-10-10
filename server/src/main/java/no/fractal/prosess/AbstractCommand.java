@@ -29,7 +29,7 @@ public abstract class AbstractCommand {
 
     private boolean isBlocking = false;
 
-    private int timeoutSeconds = -1;
+    private int timeoutSeconds = - 1;
     private Consumer<Process> onTimeout = null;
 
     /**
@@ -37,7 +37,7 @@ public abstract class AbstractCommand {
      *
      * @param timeoutSeconds the timeout in seconds for the process
      */
-    public void setTimeout(int timeoutSeconds){
+    public void setTimeout(int timeoutSeconds) {
 
         this.timeoutSeconds = timeoutSeconds;
     }
@@ -47,7 +47,7 @@ public abstract class AbstractCommand {
      *
      * @param onTimeout the consumer to run the prosess object is supplied
      */
-    public void setOnTimeout(Consumer<Process> onTimeout){
+    public void setOnTimeout(Consumer<Process> onTimeout) {
         this.onTimeout = onTimeout;
     }
 
@@ -138,14 +138,14 @@ public abstract class AbstractCommand {
         // it seems that if the io is not drained the process can block or even dedlock
         if (this.outputFile != null) {
             builder.redirectOutput(ProcessBuilder.Redirect.appendTo(outputFile));
-        } else if (!keepOutput) {
+        } else if (! keepOutput) {
             builder.redirectOutput(new File("/dev/null"));
         }
 
 
         if (this.errorFile != null) {
             builder.redirectError(ProcessBuilder.Redirect.appendTo(errorFile));
-        } else if (!keepError) {
+        } else if (! keepError) {
             builder.redirectError(new File("/dev/null"));
         }
 
@@ -154,26 +154,25 @@ public abstract class AbstractCommand {
         }
 
 
-
         Process process = null;
         try {
             process = builder.start();
 
 
-            if (this.timeoutSeconds > 0){
+            if (this.timeoutSeconds > 0) {
                 Process processCopy = process;
                 Thread t = new Thread(() -> {
                     try {
-                        if (!processCopy.waitFor(this.timeoutSeconds, TimeUnit.SECONDS)){
+                        if (! processCopy.waitFor(this.timeoutSeconds, TimeUnit.SECONDS)) {
                             // if the timeout is reached before the process is complete
                             processCopy.destroy();
-                            if(this.onTimeout != null){
+                            if (this.onTimeout != null) {
                                 onTimeout.accept(processCopy);
                             }
 
                             // give the process 5 sec to shut down if not complete kill it forcefully
                             Thread.sleep(5000);
-                            if(processCopy.isAlive()){
+                            if (processCopy.isAlive()) {
                                 processCopy.destroyForcibly();
                             }
                         }
@@ -195,7 +194,8 @@ public abstract class AbstractCommand {
 
         } catch (IOException e) {
             e.printStackTrace();
-        } catch (InterruptedException e){} // this means the process was interrupted likely due to a timeout
+        } catch (InterruptedException e) {
+        } // this means the process was interrupted likely due to a timeout
 
         return process;
     }

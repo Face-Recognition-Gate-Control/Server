@@ -16,21 +16,21 @@ public class MessageDispatcher {
     /**
      * Message queue for messages to be sent
      */
-    private Vector<AbstractMessage> messageQueue = new Vector<AbstractMessage>();;
+    private final Vector<AbstractMessage> messageQueue = new Vector<AbstractMessage>();
 
     /**
      * The stream it will write to
      */
-    private BufferedOutputStream outputStream;
+    private final BufferedOutputStream outputStream;
 
     /**
      * Thread the dispatcher is running on
      */
-    private Thread dispatchThread;
+    private final Thread dispatchThread;
 
     /**
      * Binds the outputstream and start the dispatchet thread.
-     * 
+     *
      * @param bufferedOutputStream the stream we want to transfer to
      */
     public MessageDispatcher(BufferedOutputStream bufferedOutputStream) {
@@ -43,7 +43,7 @@ public class MessageDispatcher {
 
     /**
      * Adds a message to the queue, it wakes the thread when message is added.
-     * 
+     *
      * @param message the message to send to the client
      */
     public synchronized void addMessage(AbstractMessage message) {

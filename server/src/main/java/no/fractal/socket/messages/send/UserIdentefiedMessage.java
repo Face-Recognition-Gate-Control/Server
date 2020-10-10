@@ -6,7 +6,7 @@ import no.fractal.socket.send.AbstractMessage;
 import java.io.File;
 import java.util.UUID;
 
-public class UserIdentefiedMessage  extends AbstractMessage {
+public class UserIdentefiedMessage extends AbstractMessage {
     public static final String MESSAGE_TYPE = "user_identified";
 
     /**
@@ -14,8 +14,8 @@ public class UserIdentefiedMessage  extends AbstractMessage {
      *
      * @param thumbnail the thumbnail file
      * @param sessionId the id of the of the reg user -> is ok -> answer exchange
-     * @param message the message to show
-     * @param allowed wheter or not to allow the user throghhghgrohgohgo
+     * @param message   the message to show
+     * @param allowed   wheter or not to allow the user throghhghgrohgohgo
      */
     public UserIdentefiedMessage(File thumbnail, UUID sessionId, String message, boolean allowed) {
         super(MESSAGE_TYPE);

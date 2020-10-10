@@ -15,14 +15,10 @@ public class TcpServer {
     private static final Logger LOGGER = Logger.getLogger(TcpServer.class.getName());
 
     private final int MAX_THREADS = 10;
-
-    private int port = 9876;
-
-    private String host = "localhost";
-
-    private ServerSocket welcomeSocket;
-
     private final Map<String, FractalClient> authorizedClients = new HashMap<>();
+    private int port = 9876;
+    private String host = "localhost";
+    private ServerSocket welcomeSocket;
 
     public TcpServer() {
     }

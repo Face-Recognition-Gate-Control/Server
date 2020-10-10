@@ -21,28 +21,23 @@ import java.util.logging.Logger;
  */
 public class ClientHandler implements Runnable {
 
-    private static Logger LOGGER = Logger.getLogger(TcpServer.class.getName());
-
     /**
      * How many milliseconds a client can stay unathorized before the socket is
      * closed
      */
     private static final long UNATHORIZED_CONNECTION_TIME = 3000L;
-
-    private TcpServer server;
-
-    private Socket clientSocket;
-
-    private static ScheduledExecutorService scheduledExecutor = Executors.newSingleThreadScheduledExecutor();
-
+    private static final Logger LOGGER = Logger.getLogger(TcpServer.class.getName());
+    private static final ScheduledExecutorService scheduledExecutor = Executors.newSingleThreadScheduledExecutor();
+    private final TcpServer server;
+    private final Socket clientSocket;
     /**
      * Callback function for when a client has successfully authorized
      */
-    private Consumer<FractalClient> authorizedCallback;
+    private final Consumer<FractalClient> authorizedCallback;
 
     ClientHandler(Socket clientSocket, TcpServer server, Consumer<FractalClient> authorizedCallback) {
-        this.server = server;
-        this.clientSocket = clientSocket;
+        this.server             = server;
+        this.clientSocket       = clientSocket;
         this.authorizedCallback = authorizedCallback;
     }
 
@@ -53,7 +48,7 @@ public class ClientHandler implements Runnable {
             LOGGER.log(Level.INFO, "Unautorized client connected...");
             unauthorizedClient.run();
             Runnable task = () -> {
-                if (!unauthorizedClient.isAuthorized()) {
+                if (! unauthorizedClient.isAuthorized()) {
                     unauthorizedClient.closeClient();
                     LOGGER.log(Level.INFO, "Closed client for not authorizing...");
                 } else {

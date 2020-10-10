@@ -48,6 +48,7 @@ public abstract class Client implements Runnable {
      *
      * @param clientSocket the client socket
      * @param server       the server
+     *
      * @throws IOException              thrown if there are problems creating the
      *                                  input stream reader
      * @throws IllegalArgumentException thrown if socket or server is null
@@ -57,24 +58,6 @@ public abstract class Client implements Runnable {
         this.setServer(server);
         this.createInputReader();
         this.createOutputStream();
-    }
-
-    /**
-     * Creates the input stream reader and assigns it to locald field.
-     *
-     * @throws IOException thrown if we cant create the reader
-     */
-    private void createInputReader() throws IOException {
-        this.streamInput = new BufferedInputStream(clientSocket.getInputStream());
-    }
-
-    /**
-     * Creates the output stream for this socket.
-     *
-     * @throws IOException thrown if unable to create stream
-     */
-    private void createOutputStream() throws IOException {
-        this.streamOutput = new BufferedOutputStream(clientSocket.getOutputStream());
     }
 
     /**
@@ -95,23 +78,15 @@ public abstract class Client implements Runnable {
         return this.streamOutput;
     }
 
-    /**
-     * Sets the client socket.
-     *
-     * @param clientSocket the socket of the client
-     * @throws IllegalArgumentException if socket is null
-     */
-    private void setClientSocket(Socket clientSocket) {
-        if (clientSocket == null) {
-            throw new IllegalArgumentException();
-        }
-        this.clientSocket = clientSocket;
+    protected TcpServer getServer() {
+        return this.server;
     }
 
     /**
      * Sets the server instance reference
      *
      * @param server the server instance
+     *
      * @throws IllegalArgumentException if socket is null
      */
     private void setServer(TcpServer server) {
@@ -121,28 +96,38 @@ public abstract class Client implements Runnable {
         this.server = server;
     }
 
-    protected TcpServer getServer() {
-        return this.server;
+    public String getClientID() {
+        return this.clientId;
     }
 
     public void setClientID(String clientId) {
         this.clientId = clientId;
     }
 
-    public String getClientID() {
-        return this.clientId;
-    }
-
     public Socket getClientSocket() {
         return this.clientSocket;
     }
 
-    public void setAuthorized(boolean authorized) {
-        this.authorized = authorized;
+    /**
+     * Sets the client socket.
+     *
+     * @param clientSocket the socket of the client
+     *
+     * @throws IllegalArgumentException if socket is null
+     */
+    private void setClientSocket(Socket clientSocket) {
+        if (clientSocket == null) {
+            throw new IllegalArgumentException();
+        }
+        this.clientSocket = clientSocket;
     }
 
     public boolean isAuthorized() {
         return this.authorized;
+    }
+
+    public void setAuthorized(boolean authorized) {
+        this.authorized = authorized;
     }
 
     public void closeClient() {
@@ -150,6 +135,24 @@ public abstract class Client implements Runnable {
             this.clientSocket.close();
         } catch (IOException e) {
         }
+    }
+
+    /**
+     * Creates the input stream reader and assigns it to locald field.
+     *
+     * @throws IOException thrown if we cant create the reader
+     */
+    private void createInputReader() throws IOException {
+        this.streamInput = new BufferedInputStream(clientSocket.getInputStream());
+    }
+
+    /**
+     * Creates the output stream for this socket.
+     *
+     * @throws IOException thrown if unable to create stream
+     */
+    private void createOutputStream() throws IOException {
+        this.streamOutput = new BufferedOutputStream(clientSocket.getOutputStream());
     }
 
     /**

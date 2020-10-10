@@ -22,35 +22,6 @@ public class UserAuthorizationPayload extends PayloadBase {
     }
 
     /**
-     * Executes the payload instructions for this payload. The meta includes all
-     * data for reading the payload.
-     */
-    @Override
-    public void execute() {
-        TensorData tensorData = new TensorData(tensor);
-
-        try {
-            ComparisonResult closest = DbTensorCache.getInstance().getClosestMatch(tensorData);
-            AbstractMessage returnMessage = null;
-            if (closest.diffValue < 0.6) {
-                User user = ClientRequestDatabaseInterface.getInstance().getUser(closest.id);
-                returnMessage = new UserIdentefiedMessage(user.getUserImage(), UUID.fromString(session_id),
-                        "you can go throgh", true);
-            } else {
-                UUID uuid = UUID.randomUUID();
-                String registrationUrl = ClientRequestDatabaseInterface.getInstance().getNewRegistrationURL(uuid);
-                returnMessage = new UserNotIdentifiedMessage(uuid, registrationUrl);
-            }
-
-            dispatcher.addMessage(returnMessage);
-
-        } catch (Exception e) {
-            // TODO; Implement login failure handlin
-        }
-
-    }
-
-    /**
      * @return the session_id
      */
     public String getSession_id() {
@@ -62,5 +33,35 @@ public class UserAuthorizationPayload extends PayloadBase {
      */
     public BigDecimal[] getTensor() {
         return tensor;
+    }
+
+    /**
+     * Executes the payload instructions for this payload. The meta includes all
+     * data for reading the payload.
+     */
+    @Override
+    public void execute() {
+        TensorData tensorData = new TensorData(tensor);
+
+        try {
+            ComparisonResult closest       = DbTensorCache.getInstance().getClosestMatch(tensorData);
+            AbstractMessage  returnMessage = null;
+            if (closest.diffValue < 0.6) {
+                User user = ClientRequestDatabaseInterface.getInstance().getUser(closest.id);
+                returnMessage = new UserIdentefiedMessage(user.getUserImage(), UUID.fromString(session_id),
+                                                          "you can go throgh", true
+                );
+            } else {
+                UUID   uuid            = UUID.randomUUID();
+                String registrationUrl = ClientRequestDatabaseInterface.getInstance().getNewRegistrationURL(uuid);
+                returnMessage = new UserNotIdentifiedMessage(uuid, registrationUrl);
+            }
+
+            dispatcher.addMessage(returnMessage);
+
+        } catch (Exception e) {
+            // TODO; Implement login failure handlin
+        }
+
     }
 }
