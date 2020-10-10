@@ -5,17 +5,17 @@ package no.fractal.socket.messages.recive;
  */
 public class NoSuchPayloadException extends RuntimeException {
 
-	private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-	public NoSuchPayloadException() {
-	}
+    public NoSuchPayloadException() {
+    }
 
-	public NoSuchPayloadException(String message) {
-		super(message);
-	}
+    public NoSuchPayloadException(String message) {
+        super(message);
+    }
 
-	public NoSuchPayloadException(String message, Throwable cause) {
-		super(message, cause);
-	}
+    public NoSuchPayloadException(String message, Throwable cause) {
+        super(message, cause);
+    }
 
 }

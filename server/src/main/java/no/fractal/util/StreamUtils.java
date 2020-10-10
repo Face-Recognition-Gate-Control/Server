@@ -23,13 +23,13 @@ public class StreamUtils {
 
         FileOutputStream outputStream = new FileOutputStream(savePath);
 
-        int remaining = byteSize;
+        int remaining  = byteSize;
         int bufferSize = 4096;
 
-        byte[] buffer = new byte[bufferSize];
-        int bytesRead = -1;
+        byte[] buffer    = new byte[bufferSize];
+        int    bytesRead = - 1;
 
-        while ((bytesRead = inputStream.read(buffer, 0, Math.min(remaining, bufferSize))) != -1) {
+        while ((bytesRead = inputStream.read(buffer, 0, Math.min(remaining, bufferSize))) != - 1) {
             remaining -= bufferSize;
 
             outputStream.write(buffer, 0, bytesRead);
@@ -84,8 +84,8 @@ public class StreamUtils {
             throws IOException {
         BufferedInputStream inputStream = new BufferedInputStream(new FileInputStream(file));
 
-        byte[] buffer = new byte[bufferSize];
-        int bytesRead = -1;
+        byte[] buffer    = new byte[bufferSize];
+        int    bytesRead = - 1;
 
         while ((bytesRead = inputStream.read(buffer)) > 0) {
             outputStream.write(buffer, 0, bytesRead);

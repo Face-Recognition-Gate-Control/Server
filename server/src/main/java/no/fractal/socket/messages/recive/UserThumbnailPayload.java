@@ -7,27 +7,28 @@ import java.util.UUID;
 
 public class UserThumbnailPayload extends PayloadBase {
 
-	private String session_id;
+    private String session_id;
 
-	public UserThumbnailPayload() {
-	}
+    public UserThumbnailPayload() {
+    }
 
-	@Override
-	public void execute() {
-		Segment segment = this.segments.get("thumbnail");
-		try {
-			ClientRequestDatabaseInterface.getInstance().registerImageToUser(UUID.fromString(session_id),
-					segment.getFile());
-		} catch (Exception e) {
-			// TODO; Implement login failure handlin
-		}
-	}
+    /**
+     * @return the session_id
+     */
+    public String getSession_id() {
+        return session_id;
+    }
 
-	/**
-	 * @return the session_id
-	 */
-	public String getSession_id() {
-		return session_id;
-	}
+    @Override
+    public void execute() {
+        Segment segment = this.segments.get("thumbnail");
+        try {
+            ClientRequestDatabaseInterface.getInstance().registerImageToUser(UUID.fromString(session_id),
+                                                                             segment.getFile()
+            );
+        } catch (Exception e) {
+            // TODO; Implement login failure handlin
+        }
+    }
 
 }

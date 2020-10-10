@@ -12,7 +12,6 @@ import java.util.UUID;
 
 /**
  * Responsible for deletiong the useres that where offered a chanse to make a accont but declined
- *
  */
 public class OldEntryRemover extends TimerTask {
 
@@ -26,12 +25,12 @@ public class OldEntryRemover extends TimerTask {
     @Override
     public void run() {
         try {
-            long currentTime = Instant.now().getEpochSecond();
-            long killTime = currentTime + killAgeInMillis;
-            HashMap<UUID, File> res = GateQueries.removeTimedOutIdsFromNewQueue(killTime);
+            long                currentTime = Instant.now().getEpochSecond();
+            long                killTime    = currentTime + killAgeInMillis;
+            HashMap<UUID, File> res         = GateQueries.removeTimedOutIdsFromNewQueue(killTime);
 
-            for (Map.Entry<UUID, File> entry : res.entrySet()){
-                if (entry.getValue() != null){
+            for (Map.Entry<UUID, File> entry : res.entrySet()) {
+                if (entry.getValue() != null) {
                     boolean suc = entry.getValue().delete();
                     System.out.printf(
                             "deleted: id-%s with a image at %s the operation was %s",
@@ -41,7 +40,7 @@ public class OldEntryRemover extends TimerTask {
                     );
                 }
             }
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
 

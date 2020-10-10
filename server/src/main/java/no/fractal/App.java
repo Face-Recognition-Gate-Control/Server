@@ -4,7 +4,6 @@ import no.fractal.socket.TcpServer;
 
 /**
  * Hello world!
- *
  */
 public class App {
 
@@ -14,7 +13,8 @@ public class App {
      */
     static {
         System.setProperty("java.util.logging.SimpleFormatter.format",
-                "[%1$tb %1$td %1$tY] [%1$tT] %2$s%n%4$s: %5$s%n");
+                           "[%1$tb %1$td %1$tY] [%1$tT] %2$s%n%4$s: %5$s%n"
+        );
     }
 
     public static void main(String[] args) {

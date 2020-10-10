@@ -1,17 +1,18 @@
 package no.fractal.socket.send;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 import no.fractal.util.StreamUtils;
 import org.json.JSONObject;
 
-import java.io.*;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
-
-import com.google.gson.Gson;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
 
 public abstract class AbstractMessage {
 
@@ -21,27 +22,31 @@ public abstract class AbstractMessage {
 
     protected AbstractMessage(String messageType) {
         this.messageType = messageType;
-        this.segments = new LinkedHashMap<String, Segment>();
+        this.segments    = new LinkedHashMap<String, Segment>();
     }
 
-    protected void addSegment(String name, Segment segment) {
-        this.segments.put(name, segment);
-    }
-
-    protected void addJsonBody(JsonObject body) {
-        this.body = body;
+    private String getSegmentMetaAsJsonString() {
+        JsonArray segmentArray = new JsonArray();
+        var       gson         = new Gson();
+        segments.forEach((key, val) -> {
+            var jObject = new JsonObject();
+            jObject.add(key, gson.toJsonTree(val.getSegmentMeta()));
+            segmentArray.add(jObject);
+        });
+        return gson.toJson(segmentArray);
     }
 
     public void writeToStream(BufferedOutputStream outputStream) throws IOException {
 
-        byte[] typeBytes = this.messageType.getBytes();
+        byte[] typeBytes    = this.messageType.getBytes();
         byte[] segmentBytes = getSegmentMetaAsJsonString().getBytes();
-        byte[] bodyBytes = this.body.toString().getBytes();
+        byte[] bodyBytes    = this.body.toString().getBytes();
 
         // byte count
         int payloadSize = 0;
-        if (!segments.isEmpty())
+        if (! segments.isEmpty()) {
             payloadSize += segments.values().stream().map(Segment::getBodyByteSize).reduce(Integer::sum).get();
+        }
         payloadSize += segmentBytes.length;
         payloadSize += typeBytes.length;
         payloadSize += 16; // 4B(Payload Size) + 4B(Payload ID Size) + 4B(Segment Size) + 4B (Body Size)
@@ -66,15 +71,12 @@ public abstract class AbstractMessage {
         }
     }
 
-    private String getSegmentMetaAsJsonString() {
-        JsonArray segmentArray = new JsonArray();
-        var gson = new Gson();
-        segments.forEach((key, val) -> {
-            var jObject = new JsonObject();
-            jObject.add(key, gson.toJsonTree(val.getSegmentMeta()));
-            segmentArray.add(jObject);
-        });
-        return gson.toJson(segmentArray);
+    protected void addSegment(String name, Segment segment) {
+        this.segments.put(name, segment);
+    }
+
+    protected void addJsonBody(JsonObject body) {
+        this.body = body;
     }
 
     private abstract static class Segment {
@@ -100,6 +102,8 @@ public abstract class AbstractMessage {
     }
 
     public static class FileSegment extends Segment {
+        private final File file;
+
         public FileSegment(File file) {
             super(new HashMap<>());
             this.file = file;
@@ -114,8 +118,6 @@ public abstract class AbstractMessage {
             }
 
         }
-
-        private final File file;
 
         @Override
         public void writeToStream(BufferedOutputStream outputStream) throws IOException {
