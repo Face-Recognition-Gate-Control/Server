@@ -1,8 +1,7 @@
 package no.fractal.socket;
 
 import com.google.gson.JsonSyntaxException;
-import no.fractal.socket.messages.recive.NoSuchPayloadException;
-import no.fractal.socket.messages.recive.PayloadBase;
+import no.fractal.socket.messages.recive.*;
 import no.fractal.socket.payload.InvalidPayloadException;
 import no.fractal.socket.send.MessageDispatcher;
 
@@ -11,7 +10,6 @@ import java.io.IOException;
 import java.net.Socket;
 import java.net.SocketException;
 import java.util.UUID;
-import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -19,8 +17,6 @@ public class FractalClient extends Client {
 
     private MessageDispatcher dispatcher;
     private UUID              GateId;
-
-    private Function<FractalProtocol.PayloadData, PayloadBase> payloadBuilder = payloadData -> null;
 
     public UUID getGateId() {
         return GateId;
@@ -39,10 +35,6 @@ public class FractalClient extends Client {
         super(clientSocket, server);
     }
 
-    public void setPayloadBuilder(Function<FractalProtocol.PayloadData, PayloadBase> payloadBuilder) {
-        this.payloadBuilder = payloadBuilder;
-    }
-
     @Override
     public void run() {
         this.read();
@@ -53,7 +45,7 @@ public class FractalClient extends Client {
      * payload handlers.
      */
     @Override
-    public void read() {
+    protected void read() {
         try {
 
             BufferedInputStream in = this.getInputReader();
@@ -67,7 +59,8 @@ public class FractalClient extends Client {
 
 
                 try {
-                    PayloadBase payload = payloadBuilder.apply(payloadData);
+                    PayloadBase payload = this.isAuthorized() ? authorizedPayloads(payloadData) : unauthorizedPayloads(
+                            payloadData);
 
                     if (payload == null) {
                         throw new NoSuchPayloadException("Can not find the payload with name: " + payloadData.getId());
@@ -101,6 +94,30 @@ public class FractalClient extends Client {
             LOGGER.log(Level.SEVERE, e.getMessage());
         }
 
+    }
+
+    private PayloadBase authorizedPayloads(FractalProtocol.PayloadData payloadData) {
+        return switch (payloadData.getId()) {
+            case "gate_authorization" -> FractalProtocol.BuildPayloadObject(GateAuthorizationPayload.class,
+                                                                            payloadData
+            );
+            case "user_authorization" -> FractalProtocol.BuildPayloadObject(UserAuthorizationPayload.class,
+                                                                            payloadData
+            );
+            case "user_thumbnail" -> FractalProtocol.BuildPayloadObject(UserThumbnailPayload.class, payloadData);
+            case "user_entered" -> FractalProtocol.BuildPayloadObject(UserEnteredPayload.class, payloadData);
+            case "gate_ping" -> FractalProtocol.BuildPayloadObject(PingPayload.class, payloadData);
+            default -> null;
+        };
+    }
+
+    private PayloadBase unauthorizedPayloads(FractalProtocol.PayloadData payloadData) {
+        return switch (payloadData.getId()) {
+            case "gate_authorization" -> FractalProtocol.BuildPayloadObject(GateAuthorizationPayload.class,
+                                                                            payloadData
+            );
+            default -> null;
+        };
     }
 
 

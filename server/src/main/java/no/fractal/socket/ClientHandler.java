@@ -1,12 +1,11 @@
 package no.fractal.socket;
 
-import no.fractal.socket.messages.recive.*;
-
 import java.io.IOException;
 import java.net.Socket;
-import java.util.Timer;
-import java.util.TimerTask;
-import java.util.concurrent.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -22,79 +21,54 @@ import java.util.logging.Logger;
  */
 public class ClientHandler implements Runnable {
 
-	private static Logger LOGGER = Logger.getLogger(TcpServer.class.getName());
+    private static Logger LOGGER = Logger.getLogger(TcpServer.class.getName());
 
-	/**
-	 * How many milliseconds a client can stay unathorized before the socket is
-	 * closed
-	 */
-	private static final long UNATHORIZED_CONNECTION_TIME = 3000L;
+    /**
+     * How many milliseconds a client can stay unathorized before the socket is
+     * closed
+     */
+    private static final long UNATHORIZED_CONNECTION_TIME = 3000L;
 
-	private TcpServer server;
+    private TcpServer server;
 
-	private Socket clientSocket;
+    private Socket clientSocket;
 
-	private static ScheduledExecutorService scheduledExecutor = Executors.newSingleThreadScheduledExecutor();
+    private static ScheduledExecutorService scheduledExecutor = Executors.newSingleThreadScheduledExecutor();
 
-	/**
-	 * Callback function for when a client has successfully authorized
-	 */
-	private Consumer<FractalClient> authorizedCallback;
+    /**
+     * Callback function for when a client has successfully authorized
+     */
+    private Consumer<FractalClient> authorizedCallback;
 
-	ClientHandler(Socket clientSocket, TcpServer server, Consumer<FractalClient> authorizedCallback) {
-		this.server = server;
-		this.clientSocket = clientSocket;
-		this.authorizedCallback = authorizedCallback;
-	}
+    ClientHandler(Socket clientSocket, TcpServer server, Consumer<FractalClient> authorizedCallback) {
+        this.server = server;
+        this.clientSocket = clientSocket;
+        this.authorizedCallback = authorizedCallback;
+    }
 
-	@Override
-	public void run() {
-		try {
-			final var unauthorizedClient = new FractalClient(clientSocket, server);
-			unauthorizedClient.setPayloadBuilder(ClientHandler::unauthorizedClientPayloadBuilder);
-			LOGGER.log(Level.INFO, "Unautorized client connected...");
+    @Override
+    public void run() {
+        try {
+            final var unauthorizedClient = new FractalClient(clientSocket, server);
+            LOGGER.log(Level.INFO, "Unautorized client connected...");
+            unauthorizedClient.run();
+            Runnable task = () -> {
+                if (!unauthorizedClient.isAuthorized()) {
+                    unauthorizedClient.closeClient();
+                    LOGGER.log(Level.INFO, "Closed client for not authorizing...");
+                } else {
+                    this.authorizedCallback.accept(unauthorizedClient);
+                }
+            };
+            ScheduledFuture<?> future = ClientHandler.scheduledExecutor.schedule(task,
+                                                                                 UNATHORIZED_CONNECTION_TIME,
+                                                                                 TimeUnit.MILLISECONDS
+            );
 
-			Runnable task = () -> {
-				unauthorizedClient.closeClient();
-				LOGGER.log(Level.INFO, "Closed client for not authorizing...");
-			};
-
-			ScheduledFuture future = ClientHandler.scheduledExecutor.schedule(task, UNATHORIZED_CONNECTION_TIME, TimeUnit.MILLISECONDS);
-
-			while (!unauthorizedClient.isAuthorized() && !unauthorizedClient.getClientSocket().isClosed()) {
-				unauthorizedClient.read();
-			}
-
-			future.cancel(false);
-
-			if (unauthorizedClient.isAuthorized()) {
-				unauthorizedClient.setPayloadBuilder(ClientHandler::verifiedClientPayloadBuilder);
-				this.authorizedCallback.accept(unauthorizedClient);
-			}
-
-		} catch (IOException e) {
-			LOGGER.log(Level.WARNING, "Socket IO error", e);
-		}
-	}
-
-	public static PayloadBase verifiedClientPayloadBuilder(FractalProtocol.PayloadData payloadData){
-		return switch (payloadData.getId()) {
-			case "gate_authorization" -> FractalProtocol.BuildPayloadObject(GateAuthorizationPayload.class, payloadData);
-			case "user_authorization" -> FractalProtocol.BuildPayloadObject(UserAuthorizationPayload.class, payloadData);
-			case "user_thumbnail" -> FractalProtocol.BuildPayloadObject(UserThumbnailPayload.class, payloadData);
-			case "user_entered" -> FractalProtocol.BuildPayloadObject(UserEnteredPayload.class, payloadData);
-			case "gate_ping" -> FractalProtocol.BuildPayloadObject(PingPayload.class, payloadData);
-			default -> null;
-		};
-	}
-	public static PayloadBase unauthorizedClientPayloadBuilder(FractalProtocol.PayloadData payloadData){
-		return switch (payloadData.getId()) {
-			case "gate_authorization" -> FractalProtocol.BuildPayloadObject(GateAuthorizationPayload.class, payloadData);
-			default -> null;
-		};
-	}
-
-
+        } catch (IOException e) {
+            LOGGER.log(Level.WARNING, "Socket IO error", e);
+        }
+    }
 
 
 }
