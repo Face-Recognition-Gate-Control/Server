@@ -1,6 +1,7 @@
 package no.fractal.socket.messages.recive;
 
 import no.fractal.server.ClientRequestDatabaseInterface;
+import no.fractal.socket.FractalClient;
 
 import java.util.UUID;
 
@@ -14,8 +15,12 @@ public class UserEnteredPayload extends PayloadBase {
     @Override
     public void execute() {
         try {
-            ClientRequestDatabaseInterface.getInstance().registerUserEntering(UUID.fromString(session_id),
-                    this.client.getGateId());
+            if (this.client instanceof FractalClient) {
+                var client = (FractalClient) this.client;
+                ClientRequestDatabaseInterface.getInstance().registerUserEntering(UUID.fromString(session_id),
+                        client.getGateId());
+            }
+
         } catch (Exception e) {
             // TODO; Implement login failure handlin
         }
