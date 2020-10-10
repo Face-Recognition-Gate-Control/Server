@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.net.Socket;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.concurrent.ExecutorService;
+import java.util.concurrent.*;
 import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -32,12 +32,12 @@ public class ClientHandler implements Runnable {
 
 	private Socket clientSocket;
 
-	ExecutorService pool;
+	private static ScheduledExecutorService scheduledExecutor = Executors.newSingleThreadScheduledExecutor();
 
 	/**
 	 * Callback function for when a client has successfully authorized
 	 */
-	Consumer<FractalClient> authorizedCallback;
+	private Consumer<FractalClient> authorizedCallback;
 
 	ClientHandler(Socket clientSocket, TcpServer server, Consumer<FractalClient> authorizedCallback) {
 		this.server = server;
@@ -51,19 +51,19 @@ public class ClientHandler implements Runnable {
 			final var unauthorizedClient = new UnauthorizedClient(clientSocket, server);
 			LOGGER.log(Level.INFO, "Unautorized client connected...");
 
-			TimerTask task = new TimerTask() {
-				public void run() {
-					unauthorizedClient.closeClient();
-					LOGGER.log(Level.INFO, "Closed client for not authorizing...");
-				}
+			Runnable task = () -> {
+				unauthorizedClient.closeClient();
+				LOGGER.log(Level.INFO, "Closed client for not authorizing...");
 			};
-			Timer timer = new Timer("UnauthorizedTimer");
-			timer.schedule(task, UNATHORIZED_CONNECTION_TIME);
+
+			ScheduledFuture future = ClientHandler.scheduledExecutor.schedule(task, UNATHORIZED_CONNECTION_TIME, TimeUnit.MILLISECONDS);
 
 			while (!unauthorizedClient.isAuthorized() && !unauthorizedClient.getClientSocket().isClosed()) {
 				unauthorizedClient.read();
 			}
-			timer.cancel();
+
+			future.cancel(false);
+
 			if (unauthorizedClient.isAuthorized()) {
 				var authorizedClient = new FractalClient(clientSocket, server);
 				authorizedClient.setClientID(unauthorizedClient.getClientID());
