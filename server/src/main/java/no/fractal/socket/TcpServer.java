@@ -7,7 +7,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -50,7 +49,7 @@ public class TcpServer {
                 try {
                     Socket clientSocket = this.welcomeSocket.accept();
 
-					pool.execute(new ClientHandler(clientSocket, this, this::addFractalClient));
+                    pool.execute(new ClientHandler(clientSocket, this, this::addFractalClient));
                 } catch (IOException e) {
                     LOGGER.log(Level.SEVERE, e.getMessage(), e);
                 }
@@ -60,10 +59,9 @@ public class TcpServer {
         }
     }
 
-    private void addFractalClient(FractalClient fractalClient){
+    private void addFractalClient(FractalClient fractalClient) {
         this.authorizedClients.put(fractalClient.getClientID(), fractalClient);
         LOGGER.log(Level.INFO, String.format("Authorized client with id: %s", fractalClient.getClientID()));
-        fractalClient.run();
     }
 
 }
