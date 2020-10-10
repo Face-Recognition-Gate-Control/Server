@@ -48,9 +48,9 @@ public class TcpServer {
 				try {
 					Socket clientSocket = this.welcomeSocket.accept();
 					pool.execute(new ClientHandler(clientSocket, this, (FractalClient client) -> {
-						client.run();
 						this.authorizedClients.put(client.getClientID(), client);
 						LOGGER.log(Level.INFO, String.format("Authorized client with id: %s", client.getClientID()));
+						client.run();
 					}));
 				} catch (IOException e) {
 					LOGGER.log(Level.SEVERE, e.getMessage(), e);
