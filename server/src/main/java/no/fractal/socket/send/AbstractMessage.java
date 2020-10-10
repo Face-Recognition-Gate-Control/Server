@@ -39,7 +39,9 @@ public abstract class AbstractMessage {
         byte[] bodyBytes = this.body.toString().getBytes();
 
         // byte count
-        int payloadSize = segments.values().stream().map(Segment::getBodyByteSize).reduce(Integer::sum).get();
+        int payloadSize = 0;
+        if (!segments.isEmpty())
+            payloadSize += segments.values().stream().map(Segment::getBodyByteSize).reduce(Integer::sum).get();
         payloadSize += segmentBytes.length;
         payloadSize += typeBytes.length;
         payloadSize += 16; // 4B(Payload Size) + 4B(Payload ID Size) + 4B(Segment Size) + 4B (Body Size)
