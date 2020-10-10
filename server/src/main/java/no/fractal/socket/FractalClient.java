@@ -53,7 +53,7 @@ public class FractalClient extends Client {
      * payload handlers.
      */
     @Override
-    protected void read() {
+    public void read() {
         try {
 
             BufferedInputStream in = this.getInputReader();

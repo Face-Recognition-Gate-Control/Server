@@ -153,6 +153,6 @@ public abstract class Client implements Runnable {
 	/**
 	 * Method for handling reading of the inputstream from the client
 	 */
-	protected abstract void read();
+	public abstract void read();
 
 }
