@@ -25,7 +25,7 @@ CREATE FUNCTION watch_user_data() RETURNS TRIGGER AS $$
 
 -- table with users
 CREATE TABLE IF NOT EXISTS users(
-    id         uuid primary key    not null,
+    id         serial primary key    not null,
     firstname  text                not null,
     lastname   text                not null,
     email      text                not null,
@@ -46,7 +46,7 @@ CREATE TABLE IF NOT EXISTS stations(
 
 -- when what user entered what station
 CREATE TABLE IF NOT EXISTS user_enter_events(
-   user_id        uuid references users(id)   not null,
+   user_id        serial references users(id)   not null,
    station_id     uuid references stations(id)   not null,
    enter_time     bigint DEFAULT extract(epoch from now())
 );
@@ -76,16 +76,16 @@ CREATE TABLE IF NOT EXISTS roles(
 
 CREATE TABLE IF NOT EXISTS user_roles(
     role_name      text references roles(role_name) ON DELETE RESTRICT  not null,
-    user_id        uuid references users(id)        ON DELETE CASCADE   not null
+    user_id        serial references users(id)        ON DELETE CASCADE   not null
 );
 
 CREATE TABLE IF NOT EXISTS thumbnails(
-    user_id        uuid references users(id)        ON DELETE CASCADE   not null,
+    user_id        serial references users(id)        ON DELETE CASCADE   not null,
     file_name      text                                                 not null
 );
 
 CREATE TABLE IF NOT EXISTS login_referance(
-    user_id        uuid references users(id)        ON DELETE CASCADE   not null,
+    user_id        serial references users(id)        ON DELETE CASCADE   not null,
     face_vec       numeric[]                                            not null,
     file_name      text                                                 not null
 );
@@ -112,5 +112,6 @@ CREATE TRIGGER watch_user_data
     ON login_referance
     EXECUTE FUNCTION watch_user_data();
 
-
 GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO fractal;
+
+GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO fractal;
