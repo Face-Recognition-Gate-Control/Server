@@ -1,30 +1,22 @@
 import UserType from '@/graphql/user/type'
-import { GraphQLFieldConfig, GraphQLInt, GraphQLList, GraphQLNonNull, GraphQLString } from 'graphql'
-import database from '@/loaders/postgres'
+import { GraphQLFieldConfig, GraphQLInt, GraphQLNonNull, GraphQLString } from 'graphql'
 import { UserService } from '@/Service/UserService'
+import { UserType as NewUserType } from '@/lib/user/User'
 
 let userSerivce: UserService
-
-type NewUser = {
-    fistname: string
-    lastname: string
-    email: string
-    telephone: number
-    password: string
-}
 
 var User: GraphQLFieldConfig<any, any, any> = {
     type: UserType,
     args: {
-        fistname: { type: new GraphQLNonNull(GraphQLString) },
+        firstname: { type: new GraphQLNonNull(GraphQLString) },
         lastname: { type: new GraphQLNonNull(GraphQLString) },
         email: { type: new GraphQLNonNull(GraphQLString) },
         telephone: { type: new GraphQLNonNull(GraphQLInt) },
         password: { type: new GraphQLNonNull(GraphQLString) },
     },
-    resolve: async (root: any, args: NewUser, context: any) => {
+    resolve: async (root: any, args: NewUserType, context: any) => {
         return await userSerivce.createUser({
-            firstname: args.fistname,
+            firstname: args.firstname,
             lastname: args.lastname,
             email: args.email,
             telephone: args.telephone,

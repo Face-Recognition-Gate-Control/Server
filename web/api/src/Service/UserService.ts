@@ -38,8 +38,9 @@ export class UserService {
     async createUser(user: UserType) {
         // TODO : VALIDATION, HASH PASSWORD
         try {
-            const newUser = new User(user)
-            return (await this._model.createUser(newUser)).rows[0]
+            const userToCreate = new User(user)
+            let newUserCreated = (await this._model.createUser(userToCreate)).rows[0]
+            return new User(newUserCreated)
         } catch (error) {
             logger.error(error)
         }
