@@ -22,5 +22,17 @@ export class UserService {
         return (await this._model.getAllUsers()).rows
     }
 
-    async createUser(user: User) {}
+    /**
+     * Creates a new user
+     * @param user user fields
+     */
+    async createUser(user: UserType) {
+        // TODO : VALIDATION, HASH PASSWORD
+        try {
+            const newUser = new User(user)
+            return (await this._model.createUser(newUser)).rows[0]
+        } catch (error) {
+            logger.error(error)
+        }
+    }
 }

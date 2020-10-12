@@ -23,13 +23,13 @@ var User: GraphQLFieldConfig<any, any, any> = {
         password: { type: new GraphQLNonNull(GraphQLString) },
     },
     resolve: async (root: any, args: NewUser, context: any) => {
-        // TODO : VALIDATION, HASH PASSWORD
-        return (
-            await database.query(
-                'INSERT INTO users (firstname, lastname, email, telephone, password) VALUES ($1, $2,$3,$4,$5) RETURNING *',
-                [args.fistname, args.lastname, args.email, args.telephone, args.password]
-            )
-        ).rows[0]
+        return await userSerivce.createUser({
+            firstname: args.fistname,
+            lastname: args.lastname,
+            email: args.email,
+            telephone: args.telephone,
+            password: args.password,
+        })
     },
 }
 
