@@ -1,57 +1,36 @@
-export type UserType = {
-    id?: number
-    firstname?: string
-    lastname?: string
-    email?: string
-    telephone?: number
-    password?: string
-    created?: number
+export interface StationType {
+    id?: string
+    login_key?: string
+    station_name?: string
+    last_checking?: number
 }
 
-export class User {
-    private _id?: number
-    private _firstname?: string
-    private _lastname?: string
-    private _email?: string
-    private _telephone?: number
-    private _password?: string
-    private _created?: number
+export class Station {
+    private _id?: string
+    private _login_key?: string
+    private _station_name?: string
+    private _last_checking?: number
 
-    constructor({ id, firstname, lastname, email, telephone, password, created }: UserType) {
+    constructor({ id, login_key, station_name, last_checking }: StationType) {
         this._id = id
-        this._firstname = firstname
-        this._lastname = lastname
-        this._email = email
-        this._telephone = telephone
-        this._password = password
-        this._created = created
+        this._login_key = login_key
+        this._station_name = station_name
+        this._last_checking = last_checking
     }
 
-    public get id(): number | undefined {
+    public get id(): string | undefined {
         return this._id
     }
 
-    public get firstname(): string | undefined {
-        return this._firstname
+    public get login_key(): string | undefined {
+        return this._login_key
     }
 
-    public get lastname(): string | undefined {
-        return this._lastname
+    public get station_name(): string | undefined {
+        return this._station_name
     }
 
-    public get email(): string | undefined {
-        return this._email
-    }
-
-    public get telephone(): number | undefined {
-        return this._telephone
-    }
-
-    public get created(): number | undefined {
-        return this._created
-    }
-
-    public get password(): string | undefined {
-        return this._password
+    public get last_checkin(): number | undefined {
+        return this._last_checking
     }
 }

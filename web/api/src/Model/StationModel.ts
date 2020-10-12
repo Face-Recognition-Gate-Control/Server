@@ -8,7 +8,7 @@ export class StationModel extends Model {
     }
 
     async getAllStations() {
-        return await database.query(`SELECT QW * FROM ${this.table}`)
+        return await database.query(`SELECT * FROM ${this.table}`)
     }
 
     async getStationById(id: string) {
