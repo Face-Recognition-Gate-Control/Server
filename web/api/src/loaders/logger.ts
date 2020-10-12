@@ -1,4 +1,3 @@
-import Logger from 'bunyan'
 import bunyan from 'bunyan'
 
 const loggerName = 'STDLOGGER'
@@ -10,6 +9,11 @@ const BunyanLogger = bunyan.createLogger({
     stream: process.stdout,
 })
 
+/**
+ * Alternaitve logger when developing.
+ * Implements all logger functions from bunyan
+ * but logs normal string instead of JSON.
+ */
 class ConsoleLogger {
     display(any?: any, message?: any) {
         console.log(message)

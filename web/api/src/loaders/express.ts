@@ -24,8 +24,18 @@ export default async ({ server }: { server: express.Application }) => {
         '/graphql',
         graphqlHTTP(async (req) => ({
             schema: generateSchema(),
+            /**
+             * Enable / disable Webinterface
+             */
             graphiql: true,
+            /**
+             * Context will be injected into all requests, and is accessible
+             * through context parameter.
+             */
             context: {
+                /**
+                 * HTTP - Express Request
+                 */
                 request: req,
                 protected: false,
             },

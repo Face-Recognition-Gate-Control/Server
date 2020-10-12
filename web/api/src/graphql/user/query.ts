@@ -2,7 +2,15 @@ import UserType from '@/graphql/user/type'
 import { UserService } from '@/Service/UserService'
 import { GraphQLFieldConfig, GraphQLInt, GraphQLList, GraphQLString } from 'graphql'
 
+/**
+ * QUERY contains all graphs which retrieves data.
+ */
+
 let userService: UserService
+
+/**
+ * Retrieves a single user by its id
+ */
 const User: GraphQLFieldConfig<any, any, { [id: string]: number }> = {
     type: UserType,
     args: {
@@ -13,6 +21,9 @@ const User: GraphQLFieldConfig<any, any, { [id: string]: number }> = {
     },
 }
 
+/**
+ * Retrieves all users in the database
+ */
 const Users: GraphQLFieldConfig<any, any, { [id: string]: number }> = {
     type: new GraphQLList(UserType),
     resolve: async () => {

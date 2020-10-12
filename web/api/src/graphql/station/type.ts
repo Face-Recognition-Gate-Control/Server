@@ -1,7 +1,12 @@
 import { GraphQLInt, GraphQLObjectType, GraphQLString } from 'graphql'
 
-let GateType = new GraphQLObjectType({
-    name: 'GateType',
+/**
+ * Describes the station type for GraphQL.
+ * This is required for GraphQL to understand how a station "looks like" and what
+ * types each field has.
+ */
+let StationType = new GraphQLObjectType({
+    name: 'StationType',
     fields: () => ({
         id: { type: GraphQLString },
         login_key: { type: GraphQLString },
@@ -11,4 +16,4 @@ let GateType = new GraphQLObjectType({
     description: 'Gate station',
 })
 
-export default GateType
+export default StationType

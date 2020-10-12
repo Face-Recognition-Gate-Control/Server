@@ -2,6 +2,10 @@ import { Client } from 'pg'
 import config from '@/config'
 import logger from '@/loaders/logger'
 
+/**
+ * Instantiates a new postgres Client.
+ * This will not connect on creation and reqires a connection call.
+ */
 const sql = new Client({
     host: config.database.host,
     user: config.database.user,

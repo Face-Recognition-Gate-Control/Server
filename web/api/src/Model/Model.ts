@@ -1,5 +1,6 @@
-import { table } from 'console'
-
+/**
+ * A Model represents a database handler/querier.
+ */
 export class Model {
     private _table: string
 

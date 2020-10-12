@@ -3,8 +3,15 @@ import { GraphQLFieldConfig, GraphQLInt, GraphQLNonNull, GraphQLString } from 'g
 import { UserService } from '@/Service/UserService'
 import { UserType as NewUserType } from '@/lib/user/User'
 
+/**
+ * MUTATION is for updating/creating new data entries
+ */
+
 let userSerivce: UserService
 
+/**
+ * Creates a new user
+ */
 var User: GraphQLFieldConfig<any, any, any> = {
     type: UserType,
     args: {

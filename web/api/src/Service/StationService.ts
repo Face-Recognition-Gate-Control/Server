@@ -1,6 +1,9 @@
 import { StationModel } from '@/Model/StationModel'
 import logger from '@/loaders/logger'
 
+/**
+ * Station serivce performes the business logic between Grapgql/API and Database.
+ */
 export class StationService {
     private _model: StationModel
 

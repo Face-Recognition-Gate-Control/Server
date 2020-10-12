@@ -5,6 +5,10 @@ import { UserService } from '@/Service/UserService'
 
 const userService = new UserService(new UserModel())
 
+/**
+ * Initializes the query/mutation graphs, and injects the service for
+ * handling all requests to the graphs
+ */
 export default {
     query: query(userService),
     mutation: mutation(userService),
