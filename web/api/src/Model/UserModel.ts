@@ -8,7 +8,7 @@ export class UserModel extends Model {
     }
 
     async getAllUsers() {
-        return await database.query(`SELECT QW * FROM ${this.table}`)
+        return await database.query(`SELECT * FROM ${this.table}`)
     }
 
     async getUserById(id: number) {
