@@ -7,5 +7,5 @@ const userService = new UserService(new UserModel())
 
 export default {
     query: query(userService),
-    mutation,
+    mutation: mutation(userService),
 }
