@@ -1,5 +1,6 @@
-import { User } from '@/lib/user/User'
+import { User, UserType } from '@/lib/user/User'
 import { UserModel } from '@/Model/UserModel'
+import logger from '@/loaders/logger'
 
 export class UserService {
     private _model: UserModel
@@ -12,14 +13,22 @@ export class UserService {
      * @param id id of the user to get
      */
     async getUser(id: number) {
-        return (await this._model.getUserById(id)).rows[0]
+        try {
+            return (await this._model.getUserById(id)).rows[0]
+        } catch (error) {
+            logger.error(error)
+        }
     }
 
     /**
      * Returns all users or null of no users are found
      */
     async getAllUsers() {
-        return (await this._model.getAllUsers()).rows
+        try {
+            return (await this._model.getAllUsers()).rows
+        } catch (error) {
+            logger.error(error)
+        }
     }
 
     /**
