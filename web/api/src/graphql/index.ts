@@ -15,7 +15,7 @@ const Query = new GraphQLObjectType({
  */
 const Mutation = new GraphQLObjectType({
     name: 'Mutation',
-    fields: () => ({ ...user.mutation }),
+    fields: () => ({ ...user.mutation, ...station.mutation }),
 })
 
 /**

@@ -1,3 +1,4 @@
+import { Station } from '@/lib/station/Station'
 import { User } from '@/lib/user/User'
 import database from '@/loaders/postgres'
 import { Model } from '@/Model/Model'
@@ -15,10 +16,11 @@ export class StationModel extends Model {
         return await database.query(`SELECT * FROM ${this.table} WHERE id = $1`, [id])
     }
 
-    // async createStation(station: Station) {
-    //     return await database.query(
-    //         `INSERT INTO ${this.table} (firstname, lastname, email, telephone, password) VALUES ($1, $2,$3,$4,$5) RETURNING *`,
-    //         [user.firstname, user.lastname, user.email, user.telephone, user.password]
-    //     )
-    // }
+    async createStation(station: Station) {
+        // TODO: FIX TYPO IN CHEKIN DATABASE!!
+        return await database.query(
+            `INSERT INTO ${this.table} (id, login_key, station_name, last_chekin) VALUES ($1, $2, $3, $4) RETURNING *`,
+            [station.id, station.login_key, station.station_name, station.last_checkin]
+        )
+    }
 }

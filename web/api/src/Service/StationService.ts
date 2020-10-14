@@ -1,5 +1,7 @@
 import { StationModel } from '@/Model/StationModel'
 import logger from '@/loaders/logger'
+import { Station, StationType } from '@/lib/station/Station'
+import { v4 as UUID } from 'uuid'
 
 /**
  * Station serivce performes the business logic between Grapgql/API and Database.
@@ -31,6 +33,26 @@ export class StationService {
             let q = (await this._model.getAllStations()).rows
             console.log(q)
             return q
+        } catch (error) {
+            logger.error(error)
+        }
+    }
+
+    /**
+     * Creates a new station and returns the newly created instance
+     * @param station station fields
+     */
+    async createStation(station: StationType) {
+        // TODO : VALIDATION, HASH PASSWORD
+        try {
+            station.id = UUID()
+            station.login_key = UUID()
+            station.last_checking = 0
+            const stationToCreate = new Station(station)
+            console.log(stationToCreate.last_checkin)
+
+            let newStationCreated = (await this._model.createStation(stationToCreate)).rows[0]
+            return new Station(newStationCreated)
         } catch (error) {
             logger.error(error)
         }

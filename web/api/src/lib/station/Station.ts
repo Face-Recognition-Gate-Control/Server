@@ -9,13 +9,13 @@ export class Station {
     private _id?: string
     private _login_key?: string
     private _station_name?: string
-    private _last_checking?: number
+    private _last_checkin?: number
 
     constructor({ id, login_key, station_name, last_checking }: StationType) {
         this._id = id
         this._login_key = login_key
         this._station_name = station_name
-        this._last_checking = last_checking
+        this._last_checkin = last_checking
     }
 
     public get id(): string | undefined {
@@ -31,6 +31,6 @@ export class Station {
     }
 
     public get last_checkin(): number | undefined {
-        return this._last_checking
+        return this._last_checkin
     }
 }
