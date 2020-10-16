@@ -16,7 +16,7 @@ public class UserAuthorizationPayload extends PayloadBase {
 
     private String session_id;
 
-    private BigDecimal[] tensor;
+    private double[] tensor;
 
     public UserAuthorizationPayload() {
     }
@@ -31,7 +31,7 @@ public class UserAuthorizationPayload extends PayloadBase {
     /**
      * @return the tensor
      */
-    public BigDecimal[] getTensor() {
+    public double[] getTensor() {
         return tensor;
     }
 
