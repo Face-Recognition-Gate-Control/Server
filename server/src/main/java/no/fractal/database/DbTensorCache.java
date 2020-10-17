@@ -71,17 +71,17 @@ public class DbTensorCache {
      * @return an array with the ranges
      */
     private Range[] getRanges() {
-        int              length   = this.quickSearchArray.length;
-        ArrayList<Range> ranges   = new ArrayList<>();
-        int              interval = Math.floorDiv(length, NUM_THREADS);
+        int length = this.quickSearchArray.length;
+        ArrayList<Range> ranges = new ArrayList<>();
+        int interval = Math.floorDiv(length, NUM_THREADS);
 
         for (int i = 0; i < NUM_THREADS - 1; i++) {
             int start = i * interval;
-            int end   = (i + 1) * interval;
+            int end = (i + 1) * interval;
             ranges.add(new Range(start, end));
         }
 
-        ranges.add(new Range(ranges.get(NUM_THREADS - 2).to, - 1));
+        ranges.add(new Range(ranges.get(NUM_THREADS - 2).to, -1));
 
         return ranges.toArray(Range[]::new);
     }
@@ -91,7 +91,6 @@ public class DbTensorCache {
      * add operation in progress this wil block
      *
      * @param searchData the data to compair
-     *
      * @return the highest scored comparison result
      */
     public ComparisonResult getClosestMatch(TensorData searchData) throws SQLException {
@@ -104,22 +103,22 @@ public class DbTensorCache {
 
             Future<TensorComparator.indexResultPackage>[] res = new Future[NUM_THREADS];
 
-            for (int i = 0; i < NUM_THREADS; i++) {
-                final int idx = i;
-                res[i] = executor.submit(
-                        () -> TensorComparator.euclideanFast(ranges[idx], searchData.tensor, quickSearchArray));
-            }
+//            for (int i = 0; i < NUM_THREADS; i++) {
+//                final int idx = i;
+//                res[i] = executor.submit(
+//                        () -> TensorComparator.euclideanFast(ranges[idx], searchData.tensor, quickSearchArray));
+//            }
 
-            int    bestIdx  = - 1;
+            int bestIdx = -1;
             double bestDist = 1 << 5;
 
 
             for (int i = 0; i < NUM_THREADS; i++) {
                 TensorComparator.indexResultPackage resultPackage = res[i].get();
-                double                              dist          = resultPackage.result;
+                double dist = resultPackage.result;
                 if (dist < bestDist) {
                     bestDist = dist;
-                    bestIdx  = resultPackage.index;
+                    bestIdx = resultPackage.index;
                 }
             }
 
@@ -142,10 +141,10 @@ public class DbTensorCache {
      * @throws SQLException
      */
     private synchronized void updateIfChanged() throws SQLException {
-        if (! isAdding) {
+        if (!isAdding) {
             long lastChange = GateQueries.getLastTensorTableUpdate();
             if (this.lastTableChangeTime != lastChange) {
-                this.isAdding            = true;
+                this.isAdding = true;
                 this.lastTableChangeTime = lastChange;
                 updateDb();
             }
@@ -162,9 +161,9 @@ public class DbTensorCache {
             updatePending.acquire();
             currentSearching.acquire(CONCURRENT_SEARCHES);
 
-            tensorData       = GateQueries.getCurrentTensorData();
+            tensorData = GateQueries.getCurrentTensorData();
             quickSearchArray = buildFastArrays(tensorData);
-            ranges           = getRanges();
+            ranges = getRanges();
 
 
             currentSearching.release(CONCURRENT_SEARCHES);
@@ -181,11 +180,10 @@ public class DbTensorCache {
      * Builds an array with only the vectors for faster access in searching
      *
      * @param tensorData the tensor data array with the id tensor pairs
-     *
      * @return a 2d array with the tensors
      */
     private static double[][] buildFastArrays(ArrayList<TensorData> tensorData) {
-        int        size             = tensorData.size();
+        int size = tensorData.size();
         double[][] quickSearchArray = new double[size][512];
         for (int i = 0; i < size; i++) {
             quickSearchArray[i] = tensorData.get(i).tensor;
@@ -210,10 +208,10 @@ public class DbTensorCache {
         SimpleStopwatch.start("build");
         int numElements = 1000000;
         ArrayList<TensorData> tensorData = IntStream.range(0, numElements)
-                                                    .parallel()
-                                                    .mapToObj(DbTensorCache::generateRandomTensorData)
-                                                    .collect(
-                                                            Collectors.toCollection(ArrayList::new));
+                .parallel()
+                .mapToObj(DbTensorCache::generateRandomTensorData)
+                .collect(
+                        Collectors.toCollection(ArrayList::new));
 
         SimpleStopwatch.stop("build", true);
         DbTensorCache tc = new DbTensorCache();
@@ -228,13 +226,13 @@ public class DbTensorCache {
         }
 
 
-        tc.tensorData       = tensorData;
+        tc.tensorData = tensorData;
         tc.quickSearchArray = buildFastArrays(tensorData);
-        tc.ranges           = tc.getRanges();
+        tc.ranges = tc.getRanges();
 
         SimpleStopwatch.start("tot");
-        ComparisonResult result  = null;
-        TensorData       pattern = DbTensorCache.generateRandomTensorData(0);
+        ComparisonResult result = null;
+        TensorData pattern = DbTensorCache.generateRandomTensorData(0);
         tc.tensorData.set(tensorData.size() - 20, pattern);
         tc.quickSearchArray[tensorData.size() - 20] = pattern.tensor;
         for (int i = 0; i < 10; i++) {

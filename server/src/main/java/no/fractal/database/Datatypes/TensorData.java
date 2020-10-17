@@ -7,7 +7,7 @@ import java.util.UUID;
  */
 public class TensorData {
 
-    private static final int TENSOR_SIZE = 512;
+    public static final int TENSOR_SIZE = 512;
 
     public double[] tensor;
 
@@ -37,7 +37,7 @@ public class TensorData {
      */
     public TensorData(double[] tensor, UUID id) {
         this.tensor = tensor;
-        this.id     = id;
+        this.id = id;
     }
 
 
