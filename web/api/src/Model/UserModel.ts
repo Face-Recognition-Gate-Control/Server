@@ -3,12 +3,18 @@ import database from '@/loaders/postgres'
 import { Model } from '@/Model/Model'
 
 export class UserModel extends Model {
+    private _rolesTable = 'user_roles'
+
     constructor() {
         super('users')
     }
 
     async getAllUsers() {
         return await database.query(`SELECT * FROM ${this.table}`)
+    }
+
+    async getRolesForUser(id: number) {
+        return await database.query(`SELECT * FROM ${this._rolesTable} WHERE user_id = $1`, [id])
     }
 
     async getUserById(id: number) {

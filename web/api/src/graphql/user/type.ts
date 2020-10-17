@@ -1,4 +1,5 @@
 import { GraphQLInt, GraphQLObjectType, GraphQLString } from 'graphql'
+import { UserRoles } from './query'
 
 /**
  * Describes the user type for GraphQL.
@@ -15,6 +16,7 @@ let UserType = new GraphQLObjectType({
         telephone: { type: GraphQLInt },
         password: { type: GraphQLString },
         created: { type: GraphQLString },
+        roles: UserRoles,
     }),
     description: 'A registered user',
 })

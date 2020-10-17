@@ -32,6 +32,17 @@ export class UserService {
     }
 
     /**
+     * Returns all roles for the user
+     */
+    async getUserRoles(id: number) {
+        try {
+            return (await this._model.getRolesForUser(id)).rows
+        } catch (error) {
+            logger.error(error)
+        }
+    }
+
+    /**
      * Creates a new user
      * @param user user fields
      */

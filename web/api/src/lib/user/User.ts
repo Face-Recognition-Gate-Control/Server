@@ -6,6 +6,7 @@ export type UserType = {
     telephone?: number
     password?: string
     created?: number
+    roles?: Array<string>
 }
 
 export class User {
@@ -16,8 +17,9 @@ export class User {
     private _telephone?: number
     private _password?: string
     private _created?: number
+    private _roles?: Array<string>
 
-    constructor({ id, firstname, lastname, email, telephone, password, created }: UserType) {
+    constructor({ id, firstname, lastname, email, telephone, password, created, roles }: UserType) {
         this._id = id
         this._firstname = firstname
         this._lastname = lastname
@@ -25,6 +27,7 @@ export class User {
         this._telephone = telephone
         this._password = password
         this._created = created
+        this._roles = roles
     }
 
     public get id(): number | undefined {
@@ -53,5 +56,9 @@ export class User {
 
     public get password(): string | undefined {
         return this._password
+    }
+
+    public get roles(): Array<string> | undefined {
+        return this._roles
     }
 }
