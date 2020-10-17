@@ -41,6 +41,16 @@ export class UserService {
             logger.error(error)
         }
     }
+    /**
+     * Returns all entering events for the user
+     */
+    async getUserEnterEvents(id: number) {
+        try {
+            return (await this._model.getUserEnterEvents(id)).rows
+        } catch (error) {
+            logger.error(error)
+        }
+    }
 
     /**
      * Creates a new user

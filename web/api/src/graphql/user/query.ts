@@ -1,4 +1,4 @@
-import UserType from '@/graphql/user/type'
+import { UserType, UserEnterEvent } from '@/graphql/user/type'
 import { UserService } from '@/Service/UserService'
 import { GraphQLFieldConfig, GraphQLInt, GraphQLList, GraphQLString } from 'graphql'
 import RoleType from '../role/type'
@@ -44,6 +44,17 @@ export const UserRoles: GraphQLFieldConfig<any, any, { [id: string]: number }> =
         if (!root.id && !args.id) return []
         const id = root.id ? root.id : args.id
         return await userService.getUserRoles(id)
+    },
+}
+
+/**
+ * Retrieves all enter events for a user
+ */
+export const UserEnterEvents: GraphQLFieldConfig<any, any, { [id: string]: number }> = {
+    type: new GraphQLList(UserEnterEvent),
+    resolve: async (root, args) => {
+        if (!root.id) return []
+        return await userService.getUserEnterEvents(root.id)
     },
 }
 

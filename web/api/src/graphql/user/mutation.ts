@@ -1,4 +1,4 @@
-import UserType from '@/graphql/user/type'
+import { UserType } from '@/graphql/user/type'
 import { GraphQLFieldConfig, GraphQLInt, GraphQLNonNull, GraphQLString } from 'graphql'
 import { UserService } from '@/Service/UserService'
 import { UserType as NewUserType } from '@/lib/user/User'

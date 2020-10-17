@@ -4,6 +4,7 @@ import { Model } from '@/Model/Model'
 
 export class UserModel extends Model {
     private _rolesTable = 'user_roles'
+    private _enteredEventsTable = 'user_enter_events'
 
     constructor() {
         super('users')
@@ -15,6 +16,13 @@ export class UserModel extends Model {
 
     async getRolesForUser(id: number) {
         return await database.query(`SELECT * FROM ${this._rolesTable} WHERE user_id = $1`, [id])
+    }
+
+    async getUserEnterEvents(id: number) {
+        return await database.query(
+            `SELECT * FROM ${this._enteredEventsTable} WHERE user_id = $1`,
+            [id]
+        )
     }
 
     async getUserById(id: number) {

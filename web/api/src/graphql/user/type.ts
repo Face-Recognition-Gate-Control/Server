@@ -1,5 +1,5 @@
 import { GraphQLInt, GraphQLObjectType, GraphQLString } from 'graphql'
-import { UserRoles } from './query'
+import { UserEnterEvents, UserRoles } from './query'
 
 /**
  * Describes the user type for GraphQL.
@@ -17,8 +17,22 @@ let UserType = new GraphQLObjectType({
         password: { type: GraphQLString },
         created: { type: GraphQLString },
         roles: UserRoles,
+        enterEvents: UserEnterEvents,
     }),
     description: 'A registered user',
 })
 
-export default UserType
+/**
+ * Describes a user entered event
+ * The event will occur when a user enters a gate/station
+ */
+let UserEnterEvent = new GraphQLObjectType({
+    name: 'UserEnterEvent',
+    fields: () => ({
+        station_id: { type: GraphQLString },
+        enter_time: { type: GraphQLString },
+    }),
+    description: 'An event for when a user entered a gate/station',
+})
+
+export { UserType, UserEnterEvent }
