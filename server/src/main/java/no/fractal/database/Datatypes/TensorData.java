@@ -1,9 +1,5 @@
 package no.fractal.database.Datatypes;
 
-import no.fractal.util.ArrayUtils.BigDecimalArrays;
-
-import java.math.BigDecimal;
-import java.math.MathContext;
 import java.util.UUID;
 
 /**
@@ -44,21 +40,6 @@ public class TensorData {
         this.id     = id;
     }
 
-    /**
-     * Calculates the euclidean distance between this tensor and another. Returning
-     * the result(distance).
-     *
-     * @param other tensor to calculate distance against
-     *
-     * @return distance
-     */
-//    public float euclideanDistance(TensorData other) {
-//
-//        return BigDecimalArrays
-//                .sumElements(
-//                        BigDecimalArrays.elementSquare(BigDecimalArrays.elementSubtract(this.tensor, other.tensor)))
-//                .divide(BigDecimal.valueOf(tensor.length)).sqrt(MathContext.DECIMAL32).floatValue();
-//    }
 
     /**
      * returns the array as an sql formated string that is '{a1,a2,a3,a4...,an}'
