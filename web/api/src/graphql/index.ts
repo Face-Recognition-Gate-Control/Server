@@ -1,5 +1,6 @@
 import user from '@/graphql/user'
 import station from '@/graphql/station'
+import role from '@/graphql/role'
 
 import { GraphQLObjectType, GraphQLSchema } from 'graphql'
 
@@ -8,14 +9,14 @@ import { GraphQLObjectType, GraphQLSchema } from 'graphql'
  */
 const Query = new GraphQLObjectType({
     name: 'Query',
-    fields: () => ({ ...user.query, ...station.query }),
+    fields: () => ({ ...user.query, ...station.query, ...role.query }),
 })
 /**
  * Mutation graph
  */
 const Mutation = new GraphQLObjectType({
     name: 'Mutation',
-    fields: () => ({ ...user.mutation, ...station.mutation }),
+    fields: () => ({ ...user.mutation, ...station.mutation, ...role.mutation }),
 })
 
 /**
