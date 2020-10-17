@@ -16,8 +16,6 @@ const BunyanLogger = bunyan.createLogger({
  */
 class ConsoleLogger {
     display(any?: any, message?: any) {
-        console.log(message)
-
         console.log('====================================================\n')
         if (message) {
             console.log(message)
@@ -36,8 +34,6 @@ class ConsoleLogger {
     }
 
     public error(any?: any, message?: any) {
-        console.log(message)
-
         this.display(any, message)
     }
 
