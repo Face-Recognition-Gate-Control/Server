@@ -5,8 +5,8 @@ import no.fractal.database.Datatypes.TensorData;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -15,7 +15,7 @@ import java.util.stream.IntStream;
  * them in memory for later.
  */
 public class TensorCache {
-    
+
     private static final TensorCache instance = new TensorCache();
 
     /**
@@ -31,7 +31,7 @@ public class TensorCache {
     /**
      * The tensor cache list
      */
-    private List<TensorData> tensorListCache = new ArrayList<TensorData>();
+    private CopyOnWriteArrayList<TensorData> tensorListCache = new CopyOnWriteArrayList<TensorData>();
 
     /**
      * Test tensor used for testing purposes only
@@ -63,7 +63,7 @@ public class TensorCache {
      *
      * @return cached tensor data
      */
-    public synchronized List<TensorData> getCachedTensors() {
+    public synchronized CopyOnWriteArrayList<TensorData> getCachedTensors() {
         try {
             if (this.hasDatabaseChanged()) {
                 updateCahce();
@@ -99,7 +99,7 @@ public class TensorCache {
      */
     private void updateCahce() throws SQLException {
         this.cacheIsUpdating = true;
-        this.tensorListCache = GateQueries.getCurrentTensorData();
+        this.tensorListCache = new CopyOnWriteArrayList<TensorData>(GateQueries.getCurrentTensorData());
         this.cacheIsUpdating = false;
     }
 
@@ -109,15 +109,15 @@ public class TensorCache {
      * @param cacheSize the size of the cache
      * @return the list generated of tensor data
      */
-    public ArrayList<TensorData> generateRandomCache(int cacheSize) {
+    public CopyOnWriteArrayList<TensorData> generateRandomCache(int cacheSize) {
         ArrayList<TensorData> tensorData = IntStream.range(0, cacheSize)
                 .parallel()
                 .mapToObj(this::generateRandomTensorData)
                 .collect(
                         Collectors.toCollection(ArrayList::new));
         tensorData.set((int) (Math.random() * cacheSize), this.testTensor);
-        this.tensorListCache = tensorData;
-        return tensorData;
+        this.tensorListCache = new CopyOnWriteArrayList<TensorData>(tensorData);
+        return this.tensorListCache;
     }
 
     /**
