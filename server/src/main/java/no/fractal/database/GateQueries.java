@@ -22,7 +22,7 @@ public class GateQueries extends PsqlDb {
 
         sqlQuery(query, resultSet -> {
             ret.add(new TensorData(
-                    (BigDecimal[]) resultSet.getArray("face_vec").getArray(),
+                    (double[]) resultSet.getArray("face_vec").getArray(),
                     UUID.fromString(resultSet.getString("user_id"))
             ));
         });

@@ -1,9 +1,5 @@
 package no.fractal.database.Datatypes;
 
-import no.fractal.util.ArrayUtils.BigDecimalArrays;
-
-import java.math.BigDecimal;
-import java.math.MathContext;
 import java.util.UUID;
 
 /**
@@ -11,9 +7,9 @@ import java.util.UUID;
  */
 public class TensorData {
 
-    private static final int TENSOR_SIZE = 512;
+    public static final int TENSOR_SIZE = 512;
 
-    public BigDecimal[] tensor;
+    public double[] tensor;
 
     public UUID id;
 
@@ -21,7 +17,7 @@ public class TensorData {
      * @param id the id of the tensor
      */
     public TensorData(UUID id) {
-        this(new BigDecimal[TENSOR_SIZE], id);
+        this(new double[TENSOR_SIZE], id);
     }
 
     /**
@@ -29,7 +25,7 @@ public class TensorData {
      *
      * @param tensor tensor array
      */
-    public TensorData(BigDecimal[] tensor) {
+    public TensorData(double[] tensor) {
         this(tensor, null);
     }
 
@@ -39,25 +35,11 @@ public class TensorData {
      * @param tensor tensor array
      * @param id     id of the tensor
      */
-    public TensorData(BigDecimal[] tensor, UUID id) {
+    public TensorData(double[] tensor, UUID id) {
         this.tensor = tensor;
-        this.id     = id;
+        this.id = id;
     }
 
-    /**
-     * Calculates the euclidean distance between this tensor and another. Returning
-     * the result(distance).
-     *
-     * @param other tensor to calculate distance against
-     *
-     * @return distance
-     */
-    public float euclideanDistance(TensorData other) {
-        return BigDecimalArrays
-                .sumElements(
-                        BigDecimalArrays.elementSquare(BigDecimalArrays.elementSubtract(this.tensor, other.tensor)))
-                .divide(BigDecimal.valueOf(tensor.length)).sqrt(MathContext.DECIMAL32).floatValue();
-    }
 
     /**
      * returns the array as an sql formated string that is '{a1,a2,a3,a4...,an}'
@@ -68,7 +50,7 @@ public class TensorData {
         StringBuilder builder = new StringBuilder();
 
         builder.append("'{");
-        for (BigDecimal val : tensor) {
+        for (double val : tensor) {
             builder.append(val + ",");
         }
 
