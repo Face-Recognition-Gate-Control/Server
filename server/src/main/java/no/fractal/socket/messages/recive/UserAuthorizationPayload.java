@@ -3,13 +3,12 @@ package no.fractal.socket.messages.recive;
 import no.fractal.TensorComparison.ComparisonResult;
 import no.fractal.database.Datatypes.TensorData;
 import no.fractal.database.Datatypes.User;
-import no.fractal.database.DbTensorCache;
+import no.fractal.database.TensorSearcher;
 import no.fractal.server.ClientRequestDatabaseInterface;
 import no.fractal.socket.messages.send.UserIdentefiedMessage;
 import no.fractal.socket.messages.send.UserNotIdentifiedMessage;
 import no.fractal.socket.send.AbstractMessage;
 
-import java.math.BigDecimal;
 import java.util.UUID;
 
 public class UserAuthorizationPayload extends PayloadBase {
@@ -44,7 +43,7 @@ public class UserAuthorizationPayload extends PayloadBase {
         TensorData tensorData = new TensorData(tensor);
 
         try {
-            ComparisonResult closest       = DbTensorCache.getInstance().getClosestMatch(tensorData);
+            ComparisonResult closest       = TensorSearcher.getInstance().getClosestMatch(tensorData);
             AbstractMessage  returnMessage = null;
             if (closest.diffValue < 0.6) {
                 User user = ClientRequestDatabaseInterface.getInstance().getUser(closest.id);

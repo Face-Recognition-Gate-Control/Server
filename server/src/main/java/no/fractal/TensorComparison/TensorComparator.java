@@ -18,7 +18,7 @@ public class TensorComparator {
      * @param dbData    tensor list to to calculate against
      * @return the distance and range for the element with the closest range
      */
-    public static indexResultPackage euclideanFast(Range range, double[] queryData, List<TensorData> dbData) {
+    public static indexResultPackage euclideanFast(Range range, double[] queryData, double[][] dbData) {
 
         int bestIdx = -1;
         double bestDist = 1 << 5;
@@ -26,11 +26,11 @@ public class TensorComparator {
         int toIndex = range.to;
 
         if (range.to == -1) {
-            toIndex = dbData.size() - 1;
+            toIndex = dbData.length - 1;
         }
 
         for (int i = range.from; i < toIndex; i++) {
-            double dist = getEuclideanDistance(queryData, dbData.get(i));
+            double dist = getEuclideanDistance(queryData, dbData[i]);
             if (dist < bestDist) {
                 bestDist = dist;
                 bestIdx = i;
@@ -47,10 +47,10 @@ public class TensorComparator {
      * @param beta  the other one
      * @return the euclidian distance between the vectors
      */
-    public static double getEuclideanDistance(double[] alpha, TensorData beta) {
+    public static double getEuclideanDistance(double[] alpha, double[] beta) {
         float distance = 0;
         for (int i = 512; --i >= 0; ) {
-            double dif = alpha[i] - beta.tensor[i];
+            double dif = alpha[i] - beta[i];
             distance += (dif * dif);
         }
         return Math.sqrt(distance);

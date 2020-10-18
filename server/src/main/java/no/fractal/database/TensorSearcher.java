@@ -13,27 +13,25 @@ import java.io.FileNotFoundException;
 import java.io.InputStreamReader;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.UUID;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.Semaphore;
+import java.util.concurrent.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 /**
- * this is the singelton interface used to acsess the db tensors
+ * this is the singleton interface used to search through the tensors for a mach
  * <p>
- * the reason for this interface is for caching
+ * The class cashes the current tensors for faster access
  */
-public class DbTensorCache {
+public class TensorSearcher {
 
     // num threads to use for a single seartch op
     private static final int NUM_THREADS = 6;
     // max paralel sertch ops
     private static final int CONCURRENT_SEARCHES = 5;
     private static final XoRoShiRo128PlusRandom r = new XoRoShiRo128PlusRandom();
-    private static DbTensorCache instance;
+    private static TensorSearcher instance;
     private final Semaphore updatePending = new Semaphore(1);
     private final Semaphore currentSearching = new Semaphore(CONCURRENT_SEARCHES);
     private final ExecutorService executor;
@@ -43,7 +41,7 @@ public class DbTensorCache {
     private double[][] quickSearchArray;
     private Range[] ranges;
 
-    private DbTensorCache() {
+    private TensorSearcher() {
         executor = Executors.newFixedThreadPool(NUM_THREADS);
         try {
             updateDb();
@@ -58,9 +56,9 @@ public class DbTensorCache {
      *
      * @return instance
      */
-    public static DbTensorCache getInstance() {
+    public static TensorSearcher getInstance() {
         if (instance == null) {
-            instance = new DbTensorCache();
+            instance = new TensorSearcher();
         }
         return instance;
     }
@@ -103,11 +101,11 @@ public class DbTensorCache {
 
             Future<TensorComparator.indexResultPackage>[] res = new Future[NUM_THREADS];
 
-//            for (int i = 0; i < NUM_THREADS; i++) {
-//                final int idx = i;
-//                res[i] = executor.submit(
-//                        () -> TensorComparator.euclideanFast(ranges[idx], searchData.tensor, quickSearchArray));
-//            }
+            for (int i = 0; i < NUM_THREADS; i++) {
+                final int idx = i;
+                res[i] = executor.submit(
+                        () -> TensorComparator.euclideanFast(ranges[idx], searchData.tensor, quickSearchArray));
+            }
 
             int bestIdx = -1;
             double bestDist = 1 << 5;
@@ -143,6 +141,7 @@ public class DbTensorCache {
     private synchronized void updateIfChanged() throws SQLException {
         if (!isAdding) {
             long lastChange = GateQueries.getLastTensorTableUpdate();
+
             if (this.lastTableChangeTime != lastChange) {
                 this.isAdding = true;
                 this.lastTableChangeTime = lastChange;
@@ -193,8 +192,29 @@ public class DbTensorCache {
 
     }
 
-    // --- testing stuff --- //
-    private static TensorData generateRandomTensorData(int a) {
+    /**
+     * Generates a random cache for this class; used for testing
+     *
+     * @param cacheSize the size of the cache
+     * @return the list generated of tensor data
+     */
+    public ArrayList<TensorData> generateRandomCache(int cacheSize, TensorData testTensor) {
+        ArrayList<TensorData> tensorData = IntStream.range(0, cacheSize)
+                                                    .parallel()
+                                                    .mapToObj(this::generateRandomTensorData)
+                                                    .collect(
+                                                            Collectors.toCollection(ArrayList::new));
+        tensorData.set((int) (Math.random() * cacheSize), testTensor);
+        this.tensorData = tensorData;
+        this.quickSearchArray = buildFastArrays(tensorData);
+        this.ranges = getRanges();
+        return this.tensorData;
+    }
+
+
+
+
+    public TensorData generateRandomTensorData(int a) {
 
         double[] tensor = new double[512];
         for (int i = 0; i < 512; i++) {
@@ -204,58 +224,5 @@ public class DbTensorCache {
         return new TensorData(tensor, UUID.randomUUID());
     }
 
-    public static void main(String[] args) {
-        SimpleStopwatch.start("build");
-        int numElements = 1000000;
-        ArrayList<TensorData> tensorData = IntStream.range(0, numElements)
-                .parallel()
-                .mapToObj(DbTensorCache::generateRandomTensorData)
-                .collect(
-                        Collectors.toCollection(ArrayList::new));
 
-        SimpleStopwatch.stop("build", true);
-        DbTensorCache tc = new DbTensorCache();
-
-        try {
-            BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream("./embedings_test")));
-
-            ArrayList<float[]> embedings = new ArrayList<>();
-
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
-
-
-        tc.tensorData = tensorData;
-        tc.quickSearchArray = buildFastArrays(tensorData);
-        tc.ranges = tc.getRanges();
-
-        SimpleStopwatch.start("tot");
-        ComparisonResult result = null;
-        TensorData pattern = DbTensorCache.generateRandomTensorData(0);
-        tc.tensorData.set(tensorData.size() - 20, pattern);
-        tc.quickSearchArray[tensorData.size() - 20] = pattern.tensor;
-        for (int i = 0; i < 10; i++) {
-            SimpleStopwatch.start(String.format("run-%s", i));
-
-
-            try {
-                result = tc.getClosestMatch(pattern);
-
-            } catch (Exception e) {
-
-                e.printStackTrace();
-            }
-
-            SimpleStopwatch.stop(String.format("run-%s", i), true);
-
-            System.out.printf("correct is: %s\n" + "guess is: %s\n", pattern.id, result.id);
-            //System.out.println("dist: " + result.diffValue);
-
-
-        }
-        SimpleStopwatch.stop("tot", true);
-
-
-    }
 }

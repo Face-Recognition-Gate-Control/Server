@@ -3,7 +3,7 @@ package no.fractal.server;
 import no.fractal.TensorComparison.ComparisonResult;
 import no.fractal.database.Datatypes.TensorData;
 import no.fractal.database.Datatypes.User;
-import no.fractal.database.DbTensorCache;
+import no.fractal.database.TensorSearcher;
 import no.fractal.database.GateQueries;
 import no.fractal.server.corutenes.OldEntryRemover;
 import no.fractal.util.FileUtils;
@@ -123,7 +123,7 @@ public class ClientRequestDatabaseInterface {
     }
 
     public ComparisonResult getBestMatch(TensorData tensorData) throws SQLException {
-        return DbTensorCache.getInstance().getClosestMatch(tensorData);
+        return TensorSearcher.getInstance().getClosestMatch(tensorData);
     }
 
     /**

@@ -4,17 +4,16 @@ import no.fractal.TensorComparison.ComparisonResult;
 import no.fractal.database.Datatypes.TensorData;
 import no.fractal.util.SimpleStopwatch;
 
-class TensorCalculatorTest {
+class TensorSearcherTest {
 
     @org.junit.jupiter.api.Test
     void getClosestMatch() throws InterruptedException {
         SimpleStopwatch.start("build");
-        TensorData pattern = TensorCache.getInstance().generateRandomTensorData(0);
-        TensorCache.getInstance().setTestTensor(pattern);
-        TensorCache.getInstance().generateRandomCache(1000000);
+        TensorData pattern = TensorSearcher.getInstance().generateRandomTensorData(0);
+        TensorSearcher.getInstance().generateRandomCache(10000, pattern);
         SimpleStopwatch.stop("build", true);
         SimpleStopwatch.start("tot");
-        int nThreads = 20;
+        int nThreads = 1;
         Thread[] threads = new Thread[nThreads];
         for (int i = 0; i < nThreads; i++) {
             MyThread mt = new MyThread(pattern);
@@ -42,7 +41,7 @@ class TensorCalculatorTest {
             ComparisonResult result = null;
             SimpleStopwatch.start(String.format("THREAD-%s", Thread.currentThread().getId()));
             try {
-                result = TensorCalculator.getInstance().getClosestMatch(pattern);
+                result = TensorSearcher.getInstance().getClosestMatch(pattern);
             } catch (Exception e) {
                 e.printStackTrace();
             }
