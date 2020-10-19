@@ -9,6 +9,7 @@ dotenv.config({ path: `.env.${process.env.NODE_ENV}` })
 export default {
     port: process.env.PORT,
     api_prefix: '/api',
+    jwt_secret: process.env.JWT_SECRET,
     database: {
         database: process.env.DATABASE_DATABASE,
         host: process.env.DATABASE_HOST,

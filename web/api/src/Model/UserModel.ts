@@ -1,3 +1,4 @@
+import { Credentials } from '@/lib/auth/Credentials'
 import { User } from '@/lib/user/User'
 import database from '@/loaders/postgres'
 import { Model } from '@/Model/Model'
@@ -18,6 +19,14 @@ export class UserModel extends Model {
         return await database.query(`SELECT * FROM ${this._rolesTable} WHERE user_id = $1`, [id])
     }
 
+    async getUserWithRoles(id: number) {
+        return await database.query(
+            `SELECT *, (SELECT array_agg(role_name)
+                 FROM ${this._rolesTable} WHERE user_id = $1) AS roles FROM ${this.table} WHERE id = $1`,
+            [id]
+        )
+    }
+
     async getUserEnterEvents(id: number) {
         return await database.query(
             `SELECT * FROM ${this._enteredEventsTable} WHERE user_id = $1`,
@@ -27,6 +36,10 @@ export class UserModel extends Model {
 
     async getUserById(id: number) {
         return await database.query(`SELECT * FROM ${this.table} WHERE id = $1`, [id])
+    }
+
+    async getUserByMail(email: string) {
+        return await database.query(`SELECT * FROM ${this.table} WHERE email = $1 LIMIT 1`, [email])
     }
 
     async createUser(user: User) {

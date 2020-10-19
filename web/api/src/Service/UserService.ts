@@ -1,6 +1,8 @@
 import { User, UserType } from '@/lib/user/User'
 import { UserModel } from '@/Model/UserModel'
 import logger from '@/loaders/logger'
+import { hash } from '@/lib/passwordHasher'
+import validator from 'validator'
 
 export class UserService {
     private _model: UserModel
@@ -14,7 +16,19 @@ export class UserService {
      */
     async getUser(id: number) {
         try {
-            return (await this._model.getUserById(id)).rows[0]
+            return new User((await this._model.getUserById(id)).rows[0])
+        } catch (error) {
+            logger.error(error)
+        }
+    }
+
+    /**
+     * Returns a user with all roles, or null if a user is not found
+     * @param id id of the user to get
+     */
+    async getUserWithRoles(id: number) {
+        try {
+            return new User((await this._model.getUserWithRoles(id)).rows[0])
         } catch (error) {
             logger.error(error)
         }
@@ -25,7 +39,7 @@ export class UserService {
      */
     async getAllUsers() {
         try {
-            return (await this._model.getAllUsers()).rows
+            return (await this._model.getAllUsers()).rows.map((user) => new User(user))
         } catch (error) {
             logger.error(error)
         }
@@ -57,13 +71,39 @@ export class UserService {
      * @param user user fields
      */
     async createUser(user: UserType) {
-        // TODO : VALIDATION, HASH PASSWORD
         try {
-            const userToCreate = new User(user)
-            let newUserCreated = (await this._model.createUser(userToCreate)).rows[0]
-            return new User(newUserCreated)
+            if (this.validateUser(user)) {
+                user.password = await hash(user.password)
+                const userToCreate = new User(user)
+                let newUserCreated = (await this._model.createUser(userToCreate)).rows[0]
+                return new User(newUserCreated)
+            }
         } catch (error) {
             logger.error(error)
         }
+    }
+
+    /**
+     * Validates a user for creation
+     * @param user user to validate
+     */
+    private validateUser(user: UserType) {
+        let validators = [
+            validator.isAlpha(user.firstname!),
+            validator.isAlpha(user.lastname!),
+            validator.isEmail(user.email!),
+            validator.isNumeric(user.telephone?.toString()!),
+            validator.isLength(user.telephone?.toString()!, {
+                min: 8,
+                max: 8,
+            }),
+            validator.isLength(user.password!, {
+                min: 6,
+            }),
+        ]
+
+        return validators.every((v) => {
+            return v == true
+        })
     }
 }

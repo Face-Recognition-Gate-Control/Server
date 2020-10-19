@@ -1,6 +1,7 @@
 import user from '@/graphql/user'
 import station from '@/graphql/station'
 import role from '@/graphql/role'
+import auth from '@/graphql/authentication'
 
 import { GraphQLObjectType, GraphQLSchema } from 'graphql'
 
@@ -16,7 +17,7 @@ const Query = new GraphQLObjectType({
  */
 const Mutation = new GraphQLObjectType({
     name: 'Mutation',
-    fields: () => ({ ...user.mutation, ...station.mutation, ...role.mutation }),
+    fields: () => ({ ...user.mutation, ...station.mutation, ...role.mutation, ...auth.mutation }),
 })
 
 /**

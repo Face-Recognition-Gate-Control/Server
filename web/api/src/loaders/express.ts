@@ -5,6 +5,11 @@ import * as express from 'express'
 import cors from 'cors'
 import { generateSchema } from '@/graphql'
 import { graphqlHTTP } from 'express-graphql'
+import { verifyToken } from '@/lib/auth/jwt'
+import { UserRequestAuthentication } from '@/lib/auth/UserRequestAuthentication'
+import { IncomingMessage } from 'http'
+import { Response } from 'express'
+import { Authorizer } from '@/lib/auth/Authorizer'
 
 export default async ({ server }: { server: express.Application }) => {
     server.get('/status', (req, res) => {
@@ -22,7 +27,7 @@ export default async ({ server }: { server: express.Application }) => {
      */
     server.use(
         '/graphql',
-        graphqlHTTP(async (req) => ({
+        graphqlHTTP(async (request, response) => ({
             schema: generateSchema(),
             /**
              * Enable / disable Webinterface
@@ -36,11 +41,21 @@ export default async ({ server }: { server: express.Application }) => {
                 /**
                  * HTTP - Express Request
                  */
-                request: req,
-                protected: false,
+                request,
+                response,
+                authorizer: await UserRequestAuthentication(request.headers.authorization),
+                // authorizer: await UserRequestAuthentication(
+                //     'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyaWQiOiIxIiwiaWF0IjoxNjAzMDI5NTE5fQ.Cd1UIarugfWBb3Oj0nng3n8uG_ubIMKp0WuF02hv904'
+                // ),
             },
         }))
     )
 
     return server
+}
+
+export type RequestContext = {
+    request: IncomingMessage
+    response: Response
+    authorizer: Authorizer
 }
