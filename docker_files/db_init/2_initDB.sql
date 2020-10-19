@@ -9,17 +9,17 @@ CREATE TABLE IF NOT EXISTS updates_table(
 CREATE FUNCTION watch_updates(tbl text) RETURNS void AS $$
     BEGIN
         INSERT INTO
-            updates_table (id, last_change)
-            VALUES (tbl, extract(epoch from now()))
-            ON CONFLICT (id)
-            DO
-                UPDATE SET (last_change) = extract(epoch from now());
+        updates_table (id, last_change)
+        VALUES (tbl, extract(epoch from now()))
+        ON CONFLICT (id)
+        DO UPDATE SET last_change = extract(epoch from now());
     END;
     $$ LANGUAGE plpgsql;
 
 CREATE FUNCTION watch_user_data() RETURNS TRIGGER AS $$
     BEGIN
     EXECUTE watch_updates('new_user_queue');
+    RETURN NULL;
     END;
     $$ LANGUAGE plpgsql;
 
