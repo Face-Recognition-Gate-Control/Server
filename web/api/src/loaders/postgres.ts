@@ -19,6 +19,7 @@ async function connectToDatabase() {
     try {
         await sql.connect()
         logger.info('CONNECTED TO DATABASE')
+        return sql
     } catch (error) {
         logger.error(error, 'DATABASE ERROR')
     }
