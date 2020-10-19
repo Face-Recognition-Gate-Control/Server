@@ -17,7 +17,6 @@ describe('User Model', () => {
         firstname: 'firstname',
         email: 'test@live.com',
     }
-    let userid = -1
 
     before(async () => {
         await db.connect()
@@ -44,8 +43,8 @@ describe('User Model', () => {
     after(async () => {
         await db.query(`DELETE FROM new_user_queue WHERE tmp_id = '${reg_token}'`)
         await db.query(`DELETE FROM stations WHERE id = '${station_id}'`)
-        await db.query(`DELETE FROM login_referance WHERE user_id = '${userid}'`)
-        await db.query(`DELETE FROM users WHERE id = '${userid}'`)
+        await db.query(`DELETE FROM login_referance WHERE user_id = '${reg_token}'`)
+        await db.query(`DELETE FROM users WHERE id = '${reg_token}'`)
     })
 
     it('should return true if token exist', async function() {
@@ -66,7 +65,6 @@ describe('User Model', () => {
 
     it('should create a user and add login referance', async function() {
         let user = (await model.createUser(validUser))?.rows[0]
-        userid = user.id
-        assert.strictEqual(undefined, undefined)
+        assert.strictEqual(validUser.email, user.email)
     })
 })

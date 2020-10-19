@@ -1,5 +1,5 @@
 export type UserType = {
-    id?: number
+    id?: string
     firstname?: string
     lastname?: string
     email?: string
@@ -19,7 +19,7 @@ export type NewUser = {
 }
 
 export class User {
-    private _id?: number
+    private _id?: string
     private _firstname?: string
     private _lastname?: string
     private _email?: string
@@ -39,7 +39,7 @@ export class User {
         this._roles = roles
     }
 
-    public get id(): number | undefined {
+    public get id(): string | undefined {
         return this._id
     }
 

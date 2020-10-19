@@ -23,13 +23,13 @@ export class UserModel extends Model {
         return await this.database.query(`SELECT * FROM ${this.table}`)
     }
 
-    async getRolesForUser(id: number) {
+    async getRolesForUser(id: string) {
         return await this.database.query(`SELECT * FROM ${this._rolesTable} WHERE user_id = $1`, [
             id,
         ])
     }
 
-    async getUserWithRoles(id: number) {
+    async getUserWithRoles(id: string) {
         return await this.database.query(
             `SELECT *, (SELECT array_agg(role_name)
                  FROM ${this._rolesTable} WHERE user_id = $1) AS roles FROM ${this.table} WHERE id = $1`,
@@ -37,14 +37,14 @@ export class UserModel extends Model {
         )
     }
 
-    async getUserEnterEvents(id: number) {
+    async getUserEnterEvents(id: string) {
         return await this.database.query(
             `SELECT * FROM ${this._enteredEventsTable} WHERE user_id = $1`,
             [id]
         )
     }
 
-    async getUserById(id: number) {
+    async getUserById(id: string) {
         return await this.database.query(`SELECT * FROM ${this.table} WHERE id = $1`, [id])
     }
 
@@ -58,15 +58,22 @@ export class UserModel extends Model {
         try {
             await this.database.query('BEGIN')
 
-            const returnedUser = await this.database.query(
-                `INSERT INTO ${this.table} (firstname, lastname, email, telephone, password) VALUES ($1, $2,$3,$4,$5) RETURNING *;`,
-                [user.firstname, user.lastname, user.email, user.telephone, user.password]
-            )
-
-            let registrationData = await this.getUserRegistrationData(user.registration_token)
+            const registrationData = await this.getUserRegistrationData(user.registration_token)
             if (registrationData.rowCount != 1) throw new Error('Registration token does not exist')
+            const tokenData = registrationData.rows[0]
+            this.moveFromRegistrationUserQueue(tokenData)
 
-            this.moveFromRegistrationUserQueue(returnedUser.rows[0].id, registrationData.rows[0])
+            const returnedUser = await this.database.query(
+                `INSERT INTO ${this.table} (id, firstname, lastname, email, telephone, password) VALUES ($1, $2,$3,$4,$5, $6) RETURNING *;`,
+                [
+                    tokenData.tmp_id,
+                    user.firstname,
+                    user.lastname,
+                    user.email,
+                    user.telephone,
+                    user.password,
+                ]
+            )
 
             await this.database.query('COMMIT')
             console.log('COMPLETE')
@@ -77,14 +84,14 @@ export class UserModel extends Model {
         }
     }
 
-    private async moveFromRegistrationUserQueue(userid: number, q: any) {
-        await this.database.query(`DELETE FROM new_user_queue WHERE tmp_id = $1`, [q.tmp_id])
+    private async moveFromRegistrationUserQueue(registrationQueue: any) {
+        await this.database.query(`DELETE FROM new_user_queue WHERE tmp_id = $1`, [
+            registrationQueue.tmp_id,
+        ])
         await this.database.query(
             `INSERT INTO login_referance (user_id, face_vec, file_name) VALUES
-        (
-            $1,$2,$3
-        )`,
-            [userid, q.face_vec, q.file_name]
+            ($1,$2,$3)`,
+            [registrationQueue.tmp_id, registrationQueue.face_vec, registrationQueue.file_name]
         )
     }
 }

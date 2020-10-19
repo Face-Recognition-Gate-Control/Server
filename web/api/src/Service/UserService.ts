@@ -14,7 +14,7 @@ export class UserService {
      * Returns a user, or null if a user is not found
      * @param id id of the user to get
      */
-    async getUser(id: number) {
+    async getUser(id: string) {
         try {
             return new User((await this._model.getUserById(id)).rows[0])
         } catch (error) {
@@ -26,7 +26,7 @@ export class UserService {
      * Returns a user with all roles, or null if a user is not found
      * @param id id of the user to get
      */
-    async getUserWithRoles(id: number) {
+    async getUserWithRoles(id: string) {
         try {
             return new User((await this._model.getUserWithRoles(id)).rows[0])
         } catch (error) {
@@ -48,7 +48,7 @@ export class UserService {
     /**
      * Returns all roles for the user
      */
-    async getUserRoles(id: number) {
+    async getUserRoles(id: string) {
         try {
             return (await this._model.getRolesForUser(id)).rows
         } catch (error) {
@@ -58,7 +58,7 @@ export class UserService {
     /**
      * Returns all entering events for the user
      */
-    async getUserEnterEvents(id: number) {
+    async getUserEnterEvents(id: string) {
         try {
             return (await this._model.getUserEnterEvents(id)).rows
         } catch (error) {

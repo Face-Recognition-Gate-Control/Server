@@ -14,7 +14,7 @@ let userService: UserService
 /**
  * Retrieves a single user by its id
  */
-const User: GraphQLFieldConfig<any, RequestContext, { [id: string]: number }> = {
+const User: GraphQLFieldConfig<any, RequestContext, { [id: string]: string }> = {
     type: UserType,
     args: {
         id: { type: GraphQLString },
@@ -28,7 +28,7 @@ const User: GraphQLFieldConfig<any, RequestContext, { [id: string]: number }> = 
 /**
  * Retrieves all users in the database
  */
-const Users: GraphQLFieldConfig<any, RequestContext, { [id: string]: number }> = {
+const Users: GraphQLFieldConfig<any, RequestContext> = {
     type: new GraphQLList(UserType),
     resolve: async (root, args, ctx) => {
         if (!ctx.authorizer.isAuthorized()) return []
@@ -39,7 +39,7 @@ const Users: GraphQLFieldConfig<any, RequestContext, { [id: string]: number }> =
 /**
  * Retrieves all roles for a user
  */
-export const UserRoles: GraphQLFieldConfig<any, RequestContext, { [id: string]: number }> = {
+export const UserRoles: GraphQLFieldConfig<any, RequestContext, { [id: string]: string }> = {
     type: new GraphQLList(RoleType),
     args: {
         id: { type: GraphQLString },
@@ -54,7 +54,7 @@ export const UserRoles: GraphQLFieldConfig<any, RequestContext, { [id: string]: 
 /**
  * Retrieves all enter events for a user
  */
-export const UserEnterEvents: GraphQLFieldConfig<any, RequestContext, { [id: string]: number }> = {
+export const UserEnterEvents: GraphQLFieldConfig<any, RequestContext, { [id: string]: string }> = {
     type: new GraphQLList(UserEnterEvent),
     resolve: async (root, args, ctx) => {
         if (
