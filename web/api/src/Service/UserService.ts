@@ -1,4 +1,4 @@
-import { User, UserType } from '@/lib/user/User'
+import { NewUser, User, UserType } from '@/lib/user/User'
 import { UserModel } from '@/Model/UserModel'
 import logger from '@/loaders/logger'
 import { hash } from '@/lib/passwordHasher'
@@ -70,13 +70,14 @@ export class UserService {
      * Creates a new user
      * @param user user fields
      */
-    async createUser(user: UserType) {
+    async createUser(user: NewUser) {
         try {
             if (this.validateUser(user)) {
                 user.password = await hash(user.password)
-                const userToCreate = new User(user)
-                let newUserCreated = (await this._model.createUser(userToCreate)).rows[0]
-                return new User(newUserCreated)
+                let newUserCreated = await this._model.createUser(user)
+                if (newUserCreated) {
+                    return new User(newUserCreated.rows[0])
+                }
             }
         } catch (error) {
             logger.error(error)

@@ -9,6 +9,15 @@ export type UserType = {
     roles?: Array<string>
 }
 
+export type NewUser = {
+    firstname: string
+    lastname: string
+    email: string
+    telephone: number
+    password: string
+    registration_token: string
+}
+
 export class User {
     private _id?: number
     private _firstname?: string
