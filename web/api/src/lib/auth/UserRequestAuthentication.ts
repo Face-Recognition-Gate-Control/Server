@@ -1,3 +1,4 @@
+import db from '@/loaders/postgres'
 import { UserModel } from '@/Model/UserModel'
 import { UserService } from '@/Service/UserService'
 import { Authorizer } from './Authorizer'
@@ -15,7 +16,7 @@ export async function UserRequestAuthentication(bearerToken: string | undefined)
     if (token) {
         console.log(token)
 
-        let userService = new UserService(new UserModel())
+        let userService = new UserService(new UserModel(db))
         const user = await userService.getUserWithRoles(token.userid as any)
         authorizer.user = user
     }

@@ -2,25 +2,30 @@ import { Credentials } from '@/lib/auth/Credentials'
 import { User } from '@/lib/user/User'
 import database from '@/loaders/postgres'
 import { Model } from '@/Model/Model'
+import { Client } from 'pg'
 
 export class UserModel extends Model {
     private _rolesTable = 'user_roles'
     private _enteredEventsTable = 'user_enter_events'
 
-    constructor() {
-        super('users')
+    constructor(database: Client) {
+        super('users', database)
+    }
+
     }
 
     async getAllUsers() {
-        return await database.query(`SELECT * FROM ${this.table}`)
+        return await this.database.query(`SELECT * FROM ${this.table}`)
     }
 
     async getRolesForUser(id: number) {
-        return await database.query(`SELECT * FROM ${this._rolesTable} WHERE user_id = $1`, [id])
+        return await this.database.query(`SELECT * FROM ${this._rolesTable} WHERE user_id = $1`, [
+            id,
+        ])
     }
 
     async getUserWithRoles(id: number) {
-        return await database.query(
+        return await this.database.query(
             `SELECT *, (SELECT array_agg(role_name)
                  FROM ${this._rolesTable} WHERE user_id = $1) AS roles FROM ${this.table} WHERE id = $1`,
             [id]
@@ -28,18 +33,20 @@ export class UserModel extends Model {
     }
 
     async getUserEnterEvents(id: number) {
-        return await database.query(
+        return await this.database.query(
             `SELECT * FROM ${this._enteredEventsTable} WHERE user_id = $1`,
             [id]
         )
     }
 
     async getUserById(id: number) {
-        return await database.query(`SELECT * FROM ${this.table} WHERE id = $1`, [id])
+        return await this.database.query(`SELECT * FROM ${this.table} WHERE id = $1`, [id])
     }
 
     async getUserByMail(email: string) {
-        return await database.query(`SELECT * FROM ${this.table} WHERE email = $1 LIMIT 1`, [email])
+        return await this.database.query(`SELECT * FROM ${this.table} WHERE email = $1 LIMIT 1`, [
+            email,
+        ])
     }
 
     async createUser(user: User) {
