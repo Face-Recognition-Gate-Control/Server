@@ -36,8 +36,8 @@ public class ClientHandler implements Runnable {
     private final Consumer<FractalClient> authorizedCallback;
 
     ClientHandler(Socket clientSocket, TcpServer server, Consumer<FractalClient> authorizedCallback) {
-        this.server             = server;
-        this.clientSocket       = clientSocket;
+        this.server = server;
+        this.clientSocket = clientSocket;
         this.authorizedCallback = authorizedCallback;
     }
 
@@ -45,10 +45,9 @@ public class ClientHandler implements Runnable {
     public void run() {
         try {
             final var unauthorizedClient = new FractalClient(clientSocket, server);
-            LOGGER.log(Level.INFO, "Unautorized client connected...");
-            unauthorizedClient.run();
+            LOGGER.log(Level.INFO, "Unauthorized client connected...");
             Runnable task = () -> {
-                if (! unauthorizedClient.isAuthorized()) {
+                if (!unauthorizedClient.isAuthorized()) {
                     unauthorizedClient.closeClient();
                     LOGGER.log(Level.INFO, "Closed client for not authorizing...");
                 } else {
@@ -56,10 +55,10 @@ public class ClientHandler implements Runnable {
                 }
             };
             ScheduledFuture<?> future = ClientHandler.scheduledExecutor.schedule(task,
-                                                                                 UNATHORIZED_CONNECTION_TIME,
-                                                                                 TimeUnit.MILLISECONDS
+                    UNATHORIZED_CONNECTION_TIME,
+                    TimeUnit.MILLISECONDS
             );
-
+            unauthorizedClient.run();
         } catch (IOException e) {
             LOGGER.log(Level.WARNING, "Socket IO error", e);
         }
