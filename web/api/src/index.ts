@@ -1,5 +1,6 @@
 /**
  * Application entrypoint
  *
- * @author: Christoffer A Træen
  */
+import { bootstrap } from '@/bootstrap'
+bootstrap()
