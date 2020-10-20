@@ -20,6 +20,7 @@ export class StationService {
     async getStationById(id: string) {
         try {
             let q = (await this._model.getStationById(id)).rows[0]
+            return q
         } catch (error) {
             logger.error(error)
         }
