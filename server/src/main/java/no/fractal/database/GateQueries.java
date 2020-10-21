@@ -31,10 +31,10 @@ public class GateQueries extends PsqlDb {
                 for (int i = 0; i < vectors.length; i++) {
                     vectorToDouble[i] = vectors[i].doubleValue();
                 }
-            ret.add(new TensorData(
+                ret.add(new TensorData(
                         vectorToDouble,
-                    UUID.fromString(resultSet.getString("user_id"))
-            ));
+                        UUID.fromString(resultSet.getString("user_id"))
+                ));
             } catch (ClassCastException e) {
                 LOGGER.log(Level.WARNING, e.getMessage(), e);
             }
@@ -112,7 +112,7 @@ public class GateQueries extends PsqlDb {
         AtomicBoolean ret = new AtomicBoolean(false);
 
         sqlQuery(query, resultSet -> {
-            ret.set(resultSet.first());
+            ret.set(!resultSet.getString("tmp_id").isBlank());
         });
 
         return ret.get();
