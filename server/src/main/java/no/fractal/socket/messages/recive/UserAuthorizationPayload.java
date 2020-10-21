@@ -59,7 +59,10 @@ public class UserAuthorizationPayload extends PayloadBase {
                 returnMessage = new UserNotIdentifiedMessage(session_id, registrationUrl);
             }
 
-            dispatcher.addMessage(returnMessage);
+            if (returnMessage != null) {
+                dispatcher.addMessage(returnMessage);
+            }
+
 
         } catch (Exception e) {
             System.out.println(e);
