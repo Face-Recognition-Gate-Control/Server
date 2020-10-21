@@ -57,9 +57,8 @@ public class GateQueries extends PsqlDb {
     }
 
     public static User getUser(UUID userID) throws SQLException {
-
         String query = String.format(
-                "SELECT firstname, lastname FROM users where id = '%s';", userID.toString());
+                "SELECT users.firstname, users.lastname, login_referance.file_name FROM users INNER JOIN login_referance ON users.id=login_referance.user_id where id = '%s' ;", userID.toString());
 
         AtomicReference<User> ret = new AtomicReference<>();
 
@@ -67,7 +66,8 @@ public class GateQueries extends PsqlDb {
             ret.set(new User(
                     userID,
                     resultSet.getString("firstname"),
-                    resultSet.getString("lastname")
+                    resultSet.getString("lastname"),
+                    resultSet.getString("file_name")
             ));
         });
 
