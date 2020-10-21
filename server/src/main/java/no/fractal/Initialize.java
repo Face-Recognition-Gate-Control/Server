@@ -25,7 +25,7 @@ public class Initialize {
      * Saves the test user image to perm storage
      */
     private void setupTestImage() throws InitException {
-        var userImageName = "00000000-0000-0000-0000-000000000000.0jpg";
+        var userImageName = "00000000-0000-0000-0000-000000000000.jpg";
         var resourcePath = "/images/" + userImageName;
 
         String tempDir = System.getProperty("java.io.tmpdir");
