@@ -3,6 +3,9 @@ package no.fractal.database.Datatypes;
 import no.fractal.server.ClientRequestDatabaseInterface;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.UUID;
 
 /**
@@ -31,11 +34,22 @@ public class User {
      * @return file for thumbnail or null if not exists
      */
     public File getUserImage() {
+        var tmpdir = ClientRequestDatabaseInterface.getInstance().imageTmpSaveDir;
+        var permDir = ClientRequestDatabaseInterface.getInstance().imagePermSaveDir;
 
-        var thumbnail = new File(ClientRequestDatabaseInterface.getInstance().imagePermSaveDir, thumbnail_name);
+        var thumbnail = new File(permDir, thumbnail_name);
+        var tmpThumbnail = new File(tmpdir, thumbnail_name);
+        if (tmpThumbnail.exists()) {
+            try {
+                Files.move(Path.of(tmpThumbnail.toURI()), Path.of(thumbnail.toURI()));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
         if (thumbnail.exists()) {
             return thumbnail;
         }
+
         return null;
     }
 }
