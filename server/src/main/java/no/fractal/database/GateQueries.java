@@ -12,8 +12,12 @@ import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class GateQueries extends PsqlDb {
+
+    private static final Logger LOGGER = Logger.getLogger(GateQueries.class.getName());
 
     public static ArrayList<TensorData> getCurrentTensorData() throws SQLException {
         String query = "SELECT user_id, face_vec FROM login_referance;";
@@ -21,10 +25,19 @@ public class GateQueries extends PsqlDb {
         ArrayList<TensorData> ret = new ArrayList<>();
 
         sqlQuery(query, resultSet -> {
+            try {
+                var vectors = (BigDecimal[]) resultSet.getArray("face_vec").getArray();
+                double[] vectorToDouble = new double[vectors.length];
+                for (int i = 0; i < vectors.length; i++) {
+                    vectorToDouble[i] = vectors[i].doubleValue();
+                }
             ret.add(new TensorData(
-                    (double[]) resultSet.getArray("face_vec").getArray(),
+                        vectorToDouble,
                     UUID.fromString(resultSet.getString("user_id"))
             ));
+            } catch (ClassCastException e) {
+                LOGGER.log(Level.WARNING, e.getMessage(), e);
+            }
         });
 
         return ret;
