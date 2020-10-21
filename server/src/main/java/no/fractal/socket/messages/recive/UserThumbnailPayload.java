@@ -7,7 +7,7 @@ import java.util.UUID;
 
 public class UserThumbnailPayload extends PayloadBase {
 
-    private String session_id;
+    private UUID session_id;
 
     public UserThumbnailPayload() {
     }
@@ -15,7 +15,7 @@ public class UserThumbnailPayload extends PayloadBase {
     /**
      * @return the session_id
      */
-    public String getSession_id() {
+    public UUID getSession_id() {
         return session_id;
     }
 
@@ -23,10 +23,11 @@ public class UserThumbnailPayload extends PayloadBase {
     public void execute() {
         Segment segment = this.segments.get("thumbnail");
         try {
-            ClientRequestDatabaseInterface.getInstance().registerImageToUser(UUID.fromString(session_id),
-                                                                             segment.getFile()
+            ClientRequestDatabaseInterface.getInstance().registerImageToUser(session_id,
+                    segment.getFile()
             );
         } catch (Exception e) {
+            System.out.println(e);
             // TODO; Implement login failure handlin
         }
     }
