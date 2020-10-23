@@ -98,7 +98,7 @@ public class GateQueries extends PsqlDb {
     public static void addImageToWaitQue(UUID user_id, File imgFile) throws SQLException {
         String query = String.format(
                 "UPDATE new_user_queue SET file_name='%s' where tmp_id='%s';",
-                imgFile.toString(),
+                imgFile.getName(),
                 user_id
         );
 
