@@ -1,9 +1,5 @@
 package no.fractal.TensorComparison;
 
-import no.fractal.database.Datatypes.TensorData;
-
-import java.util.List;
-
 /**
  * holder for the tensor comparison task
  */
@@ -26,7 +22,7 @@ public class TensorComparator {
         int toIndex = range.to;
 
         if (range.to == -1) {
-            toIndex = dbData.length - 1;
+            toIndex = dbData.length;
         }
 
         for (int i = range.from; i < toIndex; i++) {

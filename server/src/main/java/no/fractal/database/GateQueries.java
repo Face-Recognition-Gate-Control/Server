@@ -12,8 +12,12 @@ import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class GateQueries extends PsqlDb {
+
+    private static final Logger LOGGER = Logger.getLogger(GateQueries.class.getName());
 
     public static ArrayList<TensorData> getCurrentTensorData() throws SQLException {
         String query = "SELECT user_id, face_vec FROM login_referance;";
@@ -21,10 +25,19 @@ public class GateQueries extends PsqlDb {
         ArrayList<TensorData> ret = new ArrayList<>();
 
         sqlQuery(query, resultSet -> {
-            ret.add(new TensorData(
-                    (double[]) resultSet.getArray("face_vec").getArray(),
-                    UUID.fromString(resultSet.getString("user_id"))
-            ));
+            try {
+                var vectors = (BigDecimal[]) resultSet.getArray("face_vec").getArray();
+                double[] vectorToDouble = new double[vectors.length];
+                for (int i = 0; i < vectors.length; i++) {
+                    vectorToDouble[i] = vectors[i].doubleValue();
+                }
+                ret.add(new TensorData(
+                        vectorToDouble,
+                        UUID.fromString(resultSet.getString("user_id"))
+                ));
+            } catch (ClassCastException e) {
+                LOGGER.log(Level.WARNING, e.getMessage(), e);
+            }
         });
 
         return ret;
@@ -44,9 +57,8 @@ public class GateQueries extends PsqlDb {
     }
 
     public static User getUser(UUID userID) throws SQLException {
-
         String query = String.format(
-                "SELECT firstname, lastname FROM users where id = '%s';", userID.toString());
+                "SELECT users.firstname, users.lastname, login_referance.file_name FROM users INNER JOIN login_referance ON users.id=login_referance.user_id where id = '%s' ;", userID.toString());
 
         AtomicReference<User> ret = new AtomicReference<>();
 
@@ -54,7 +66,8 @@ public class GateQueries extends PsqlDb {
             ret.set(new User(
                     userID,
                     resultSet.getString("firstname"),
-                    resultSet.getString("lastname")
+                    resultSet.getString("lastname"),
+                    resultSet.getString("file_name")
             ));
         });
 
@@ -85,7 +98,7 @@ public class GateQueries extends PsqlDb {
     public static void addImageToWaitQue(UUID user_id, File imgFile) throws SQLException {
         String query = String.format(
                 "UPDATE new_user_queue SET file_name='%s' where tmp_id='%s';",
-                imgFile.toString(),
+                imgFile.getName(),
                 user_id
         );
 
@@ -99,7 +112,7 @@ public class GateQueries extends PsqlDb {
         AtomicBoolean ret = new AtomicBoolean(false);
 
         sqlQuery(query, resultSet -> {
-            ret.set(resultSet.first());
+            ret.set(!resultSet.getString("tmp_id").isBlank());
         });
 
         return ret.get();

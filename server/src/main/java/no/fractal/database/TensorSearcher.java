@@ -5,17 +5,14 @@ import no.fractal.TensorComparison.ComparisonResult;
 import no.fractal.TensorComparison.Range;
 import no.fractal.TensorComparison.TensorComparator;
 import no.fractal.database.Datatypes.TensorData;
-import no.fractal.util.SimpleStopwatch;
 
-import java.io.BufferedReader;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.InputStreamReader;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.UUID;
-import java.util.concurrent.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.Semaphore;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -121,7 +118,7 @@ public class TensorSearcher {
             }
 
             currentSearching.release();
-            TensorData bestMatch = tensorData.get(bestIdx);
+            TensorData bestMatch = (bestIdx != -1) ? tensorData.get(bestIdx) : searchData;
             return new ComparisonResult(bestMatch.id, (float) bestDist);
 
         } catch (Exception e) {
@@ -159,9 +156,10 @@ public class TensorSearcher {
         try {
             updatePending.acquire();
             currentSearching.acquire(CONCURRENT_SEARCHES);
-
+            System.out.println("UPDATE DB");
             tensorData = GateQueries.getCurrentTensorData();
             quickSearchArray = buildFastArrays(tensorData);
+            System.out.println(quickSearchArray.length);
             ranges = getRanges();
 
 
@@ -200,18 +198,16 @@ public class TensorSearcher {
      */
     public ArrayList<TensorData> generateRandomCache(int cacheSize, TensorData testTensor) {
         ArrayList<TensorData> tensorData = IntStream.range(0, cacheSize)
-                                                    .parallel()
-                                                    .mapToObj(this::generateRandomTensorData)
-                                                    .collect(
-                                                            Collectors.toCollection(ArrayList::new));
+                .parallel()
+                .mapToObj(this::generateRandomTensorData)
+                .collect(
+                        Collectors.toCollection(ArrayList::new));
         tensorData.set((int) (Math.random() * cacheSize), testTensor);
         this.tensorData = tensorData;
         this.quickSearchArray = buildFastArrays(tensorData);
         this.ranges = getRanges();
         return this.tensorData;
     }
-
-
 
 
     public TensorData generateRandomTensorData(int a) {
