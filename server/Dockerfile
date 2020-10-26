@@ -1,12 +1,16 @@
-FROM ubuntu:latest
-
-RUN apt update && apt install -y curl
-RUN curl -sSL https://get.docker.com/ | sh
-RUN apt update && apt install -y openjdk-14-jre
-
-
-COPY ./target/server-1.0-SNAPSHOT.jar /app/server-1.0-SNAPSHOT.jar
+FROM maven:3.6.3-openjdk-16
+COPY ./src /build/src
+COPY ./pom.xml /build/pom.xml
+WORKDIR /build
+RUN mvn package shade:shade
+RUN rm target/original*.jar
 
 
-CMD java -jar /app/server-1.0-SNAPSHOT.jar
+FROM openjdk:16-jdk
+#ubuntu:latest
+#RUN apt update && apt install -y openjdk-14-jre
+COPY --from=0 /build/target/*.jar /app/app.jar
+
+
+CMD java -jar /app/app.jar
 
