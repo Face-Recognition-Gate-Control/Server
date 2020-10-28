@@ -9,9 +9,9 @@ abstract class PsqlDb {
 
     protected static final DebugLogger allQueries = new DebugLogger(false);
     protected static final DebugLogger errorQueries = new DebugLogger(true);
-    private static final String url = System.getenv("SQLURL");
+    private static final String url = System.getenv("SQLURL"); //"jdbc:postgresql://10.10.50.50/fractal";
     private static final String dbUser = System.getenv("USER_USERNAME");
-    private static final String dbPassword = System.getenv("POSGRESS_USER_PASSWORD");
+    private static final String dbPassword = System.getenv("USER_PASSWORD");
 
     protected static Connection tryConnectToDB() throws SQLException {
         allQueries.log("try connect to db", "url", url, "user", dbUser, "passwd", dbPassword);
@@ -28,17 +28,14 @@ abstract class PsqlDb {
         return connection;
     }
 
-
-    protected static void sqlQuery(String query,
-                                   ThrowingConsumer<ResultSet, SQLException> rowHandler
-    ) throws SQLException {
+    protected static void sqlQuery(String query, ThrowingConsumer<ResultSet, SQLException> rowHandler)
+            throws SQLException {
 
         Connection connection = tryConnectToDB();
-        Statement  statement  = connection.createStatement();
+        Statement statement = connection.createStatement();
 
         allQueries.log("making SQL query:\n", query);
         ResultSet resultSet = statement.executeQuery(query);
-
 
         while (resultSet.next()) {
             rowHandler.accept(resultSet);
@@ -50,14 +47,12 @@ abstract class PsqlDb {
 
     }
 
-
     protected static void sqlUpdate(String query) throws SQLException {
         Connection connection = tryConnectToDB();
-        Statement  statement  = connection.createStatement();
+        Statement statement = connection.createStatement();
 
         allQueries.log("making SQL update:\n", query);
         statement.executeUpdate(query);
-
 
         statement.close();
         connection.close();
