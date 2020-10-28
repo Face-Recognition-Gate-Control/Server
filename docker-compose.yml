@@ -92,7 +92,7 @@ services:
     container_name: nginx
 
     build:
-      context: ./DockerFiles/nginx_certbot
+      context: ./docker_files/nginx_certbot
       dockerfile: Dockerfile
 
     volumes:
