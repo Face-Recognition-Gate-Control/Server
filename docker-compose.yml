@@ -99,7 +99,7 @@ services:
       - type: volume
         source: nginx_data
         target: /etc/letsencrypt
-      - type: volume
+      - type: bind
         source: /web/frontend
         target: /www/fractal/
 
