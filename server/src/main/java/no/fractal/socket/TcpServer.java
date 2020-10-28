@@ -12,52 +12,52 @@ import java.util.logging.Logger;
 
 public class TcpServer {
 
-	private static Logger LOGGER = Logger.getLogger(TcpServer.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(TcpServer.class.getName());
 
-	private final int MAX_THREADS = 10;
+    private final int MAX_THREADS = 10;
+    private final Map<String, FractalClient> authorizedClients = new HashMap<>();
+    private int port = 9876;
+    private String host = "localhost";
+    private ServerSocket welcomeSocket;
 
-	private int port = 9876;
+    public TcpServer() {
+    }
 
-	private String host = "localhost";
+    public TcpServer(int port) {
+        this.port = port;
+    }
 
-	private ServerSocket welcomeSocket;
+    public TcpServer(int port, String host) {
+        this(port);
+        this.host = host;
+    }
 
-	private Map<String, Client> connectedClients = new HashMap<>();
+    /**
+     * Initializes the server socket, and starts accepting clients.
+     */
+    public void start() {
+        ExecutorService pool = Executors.newFixedThreadPool(MAX_THREADS);
+        try {
+            this.welcomeSocket = new ServerSocket(port);
+            LOGGER.log(Level.INFO, String.format("Server started on port: %s", port));
 
-	public TcpServer() {
-	}
+            while (true) {
+                try {
+                    Socket clientSocket = this.welcomeSocket.accept();
 
-	public TcpServer(int port) {
-		this.port = port;
-	}
+                    pool.execute(new ClientHandler(clientSocket, this, this::addFractalClient));
+                } catch (IOException e) {
+                    LOGGER.log(Level.SEVERE, e.getMessage(), e);
+                }
+            }
+        } catch (IOException e) {
+            LOGGER.log(Level.SEVERE, e.getMessage(), e);
+        }
+    }
 
-	public TcpServer(int port, String host) {
-		this(port);
-		this.host = host;
-	}
-
-	/**
-	 * Initializes the server socket, and starts accepting clients.
-	 */
-	public void start() {
-		ExecutorService pool = Executors.newFixedThreadPool(MAX_THREADS);
-		try {
-			this.welcomeSocket = new ServerSocket(port);
-			LOGGER.log(Level.INFO, String.format("Server started on port: %s", port));
-			while (true) {
-				try {
-					Socket clientSocket = this.welcomeSocket.accept();
-					FractalClient client = new FractalClient(clientSocket, this);
-					this.connectedClients.put(client.getClientID(), client);
-					pool.execute(client);
-					LOGGER.log(Level.INFO, String.format("A new client connected: %s", client.getClientID()));
-				} catch (IOException e) {
-					LOGGER.log(Level.SEVERE, e.getMessage(), e);
-				}
-			}
-		} catch (IOException e) {
-			LOGGER.log(Level.SEVERE, e.getMessage(), e);
-		}
-	}
+    private void addFractalClient(FractalClient fractalClient) {
+        this.authorizedClients.put(fractalClient.getClientID(), fractalClient);
+        LOGGER.log(Level.INFO, String.format("Authorized client with id: %s", fractalClient.getClientID()));
+    }
 
 }

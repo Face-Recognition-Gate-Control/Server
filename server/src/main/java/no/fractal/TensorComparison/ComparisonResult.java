@@ -10,7 +10,7 @@ public class ComparisonResult {
     public final float diffValue;
 
     public ComparisonResult(UUID id, float diffValue) {
-        this.id = id;
+        this.id        = id;
         this.diffValue = diffValue;
     }
 }

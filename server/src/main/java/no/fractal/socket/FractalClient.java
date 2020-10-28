@@ -1,105 +1,122 @@
 package no.fractal.socket;
 
-import no.fractal.socket.meta.*;
-import no.fractal.socket.payload.AuthenticationPayload;
-import no.fractal.socket.payload.NoSuchPayloadException;
-import no.fractal.socket.payload.PayloadBase;
-import no.fractal.socket.payload.ThumbnailPayload;
+import com.google.gson.JsonSyntaxException;
+import no.fractal.socket.messages.recive.*;
+import no.fractal.socket.payload.InvalidPayloadException;
+import no.fractal.socket.send.MessageDispatcher;
 
 import java.io.BufferedInputStream;
-
 import java.io.IOException;
-
 import java.net.Socket;
 import java.net.SocketException;
-
+import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.google.gson.JsonSyntaxException;
-import no.fractal.socket.send.MessageDispatcher;
-
 public class FractalClient extends Client {
 
-	private MessageDispatcher dispatcher;
+    // Handles logging for the FractalClient
+    private static final Logger LOGGER = Logger.getLogger(FractalClient.class.getName());
+    private final FractalProtocol protocol = new FractalProtocol();
+    private MessageDispatcher dispatcher;
+    private UUID GateId;
+
+    public FractalClient(Socket clientSocket, TcpServer server) throws IOException {
+        super(clientSocket, server);
+    }
+
+    public UUID getGateId() {
+        return GateId;
+    }
+
+    public void setGateId(UUID gateId) {
+        this.GateId = gateId;
+    }
+
+    @Override
+    public void run() {
+        this.read();
+    }
+
+    /**
+     * Reads all incoming headers and routes the payloads to the approporiate
+     * payload handlers.
+     */
+    @Override
+    protected void read() {
+        try {
+
+            BufferedInputStream in = this.getInputReader();
+            this.dispatcher = new MessageDispatcher(this.getOutputStream());
+
+            boolean reading = true;
+            while (reading) {
+
+                // Blocks here until all header fields are red.
+                FractalProtocol.PayloadData payloadData = protocol.readPayloadData(in);
 
 
+                try {
+                    PayloadBase payload = this.isAuthorized() ? authorizedPayloads(payloadData) : unauthorizedPayloads(
+                            payloadData);
 
-	// Handles logging for the FractalClient
-	private static Logger LOGGER = Logger.getLogger(FractalClient.class.getName());
+                    if (payload == null) {
+                        throw new NoSuchPayloadException("Can not find the payload with name: " + payloadData.getId());
+                    }
+                    // Execute the payload
+                    payload.setDispatcher(dispatcher);
+                    payload.setClient(this);
+                    payload.execute();
+                } catch (JsonSyntaxException e) {
+                    // SEND INVALID META FOR PAYLOAD
+                    LOGGER.log(Level.INFO, String.format("Invalid meta for: %s", payloadData.getId()));
+                } catch (NoSuchPayloadException | InvalidPayloadException e) {
+                    // SEND INVALID PAYLOAD NAME
+                    LOGGER.log(Level.INFO, String.format("%s", e.getMessage()));
+                }
 
-	private FractalProtocol protocol = new FractalProtocol(new JsonMetaParser());
+                /**
+                 * Make sure all data for payload is cleared.
+                 */
+                protocol.clearStream(in);
+            }
 
-	public FractalClient(Socket clientSocket, TcpServer server) throws IOException {
-		super(clientSocket, server);
-	}
+            this.getClientSocket().close();
+            LOGGER.log(Level.INFO, String.format("Client disconnected: %s", this.getClientID()));
+        } catch (SocketException e) {
+            LOGGER.log(Level.SEVERE, e.getMessage());
+        } catch (IOException e) {
+            LOGGER.log(Level.SEVERE, e.getMessage());
+        } catch (Exception e) {
+            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, e.getMessage());
+        }
 
-	@Override
-	public void run() {
-		this.dispatcher = new MessageDispatcher(this.getOutputStream());
-		this.read();
+    }
 
-	}
+    private PayloadBase authorizedPayloads(FractalProtocol.PayloadData payloadData) {
+        return switch (payloadData.getId()) {
+            case "gate_authorization" -> FractalProtocol.BuildPayloadObject(GateAuthorizationPayload.class,
+                                                                            payloadData
+            );
+            case "user_authorization" -> FractalProtocol.BuildPayloadObject(UserAuthorizationPayload.class,
+                                                                            payloadData
+            );
+            case "user_thumbnail" -> FractalProtocol.BuildPayloadObject(UserThumbnailPayload.class, payloadData);
+            case "user_entered" -> FractalProtocol.BuildPayloadObject(UserEnteredPayload.class, payloadData);
+            case "gate_ping" -> FractalProtocol.BuildPayloadObject(PingPayload.class, payloadData);
+            default -> null;
+        };
+    }
 
-	/**
-	 * Reads all incoming headers and routes the payloads to the approporiate
-	 * payload handlers.
-	 */
-	@Override
-	protected void read() {
+    private PayloadBase unauthorizedPayloads(FractalProtocol.PayloadData payloadData) {
+        return switch (payloadData.getId()) {
+            case "gate_authorization" -> FractalProtocol.BuildPayloadObject(GateAuthorizationPayload.class,
+                                                                            payloadData
+            );
+            default -> null;
+        };
+    }
 
-		try {
-
-			BufferedInputStream in = this.getInputReader();
-
-
-			boolean reading = true;
-			while (reading) {
-
-				// Blocks here until all header fields are red.
-				FractalProtocol.PayloadBuilder payloadBuilder = protocol.readPayload(in);
-
-				// Headers extract
-				String payloadName = protocol.getId();
-
-				try {
-					PayloadBase payload = switch (payloadName) {
-						case "authentication" -> payloadBuilder.createPayloadObject(AuthenticationPayload.class);
-						case "thumbnail" -> payloadBuilder.createPayloadObject(ThumbnailPayload.class);
-						default -> null;
-					};
-
-					if (payload == null) {
-						throw new NoSuchPayloadException("Can not find the payload with name: " + payloadName);
-					}
-					// Execute the payload
-
-					payload.execute();
-				} catch (JsonSyntaxException e) {
-					// SEND INVALID META FOR PAYLOAD
-					LOGGER.log(Level.INFO, String.format("Invalid meta for: %s", payloadName));
-				} catch (NoSuchPayloadException e) {
-					// SEND INVALID PAYLOAD NAME
-					LOGGER.log(Level.INFO, String.format("%s", e.getMessage()));
-				}
-
-				/**
-				 * Make sure all data for payload is cleared.
-				 */
-				protocol.clearStream(in);
-			}
-
-			this.getClientSocket().close();
-			LOGGER.log(Level.INFO, String.format("Client disconnected: %s", this.getClientID()));
-		} catch (SocketException e) {
-			LOGGER.log(Level.SEVERE, e.getMessage());
-		} catch (IOException e) {
-			LOGGER.log(Level.SEVERE, e.getMessage());
-		} catch (Exception e) {
-			e.printStackTrace();
-			LOGGER.log(Level.SEVERE, e.getMessage());
-		}
-
-	}
 
 }

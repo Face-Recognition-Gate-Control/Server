@@ -13,26 +13,23 @@ public class StreamUtils {
 
         StringBuilder stringBuilder = new StringBuilder();
 
-        JSONObject jsonObject = new JSONObject(
-                new JSONTokener(
-                        new String(inputStream.readNBytes(byteSize))));
-
+        JSONObject jsonObject = new JSONObject(new JSONTokener(new String(inputStream.readNBytes(byteSize))));
 
         return jsonObject;
     }
 
-    public static void readFileFromStream(BufferedInputStream inputStream, int byteSize, File savePath) throws IOException {
+    public static void readFileFromStream(BufferedInputStream inputStream, int byteSize, File savePath)
+            throws IOException {
 
         FileOutputStream outputStream = new FileOutputStream(savePath);
 
-        int remaining = byteSize;
+        int remaining  = byteSize;
         int bufferSize = 4096;
 
+        byte[] buffer    = new byte[bufferSize];
+        int    bytesRead = - 1;
 
-        byte[] buffer = new byte[bufferSize];
-        int bytesRead = -1;
-
-        while ((bytesRead = inputStream.read(buffer, 0, Math.min(remaining, bufferSize))) != -1) {
+        while ((bytesRead = inputStream.read(buffer, 0, Math.min(remaining, bufferSize))) != - 1) {
             remaining -= bufferSize;
 
             outputStream.write(buffer, 0, bytesRead);
@@ -83,12 +80,12 @@ public class StreamUtils {
         writeFileToStream(outputStream, file, 4096);
     }
 
-    public static void writeFileToStream(BufferedOutputStream outputStream, File file, int bufferSize) throws IOException {
+    public static void writeFileToStream(BufferedOutputStream outputStream, File file, int bufferSize)
+            throws IOException {
         BufferedInputStream inputStream = new BufferedInputStream(new FileInputStream(file));
 
-
-        byte[] buffer = new byte[bufferSize];
-        int bytesRead = -1;
+        byte[] buffer    = new byte[bufferSize];
+        int    bytesRead = - 1;
 
         while ((bytesRead = inputStream.read(buffer)) > 0) {
             outputStream.write(buffer, 0, bytesRead);
@@ -102,8 +99,6 @@ public class StreamUtils {
     public static void writeJsonToStream(BufferedOutputStream outputStream, JSONObject jsonObject) throws IOException {
         writeStringToStream(outputStream, jsonObject.toString());
 
-
     }
-
 
 }

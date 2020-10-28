@@ -1,53 +1,67 @@
 package no.fractal.TensorComparison;
 
-import no.fractal.database.Datatypes.TensorData;
-
-import java.util.ArrayList;
-
 /**
  * holder for the tensor comparison task
  */
 public class TensorComparator {
-    // mebbe just return the highest will be a tad faster becaus way less writing to
-    // mem wil be purely stack based
 
     /**
      * Calculates the euclidean distance between the testData tensor and all
-     * elements in provided tensor data list, starting from given index(inclusive)
-     * to the end.
-     * 
-     * @param from     incluse where in test data to start calculating
-     * @param testData tensor for calculating distance with
-     * @param data     tensor list to to calculate against
-     * @return an array containing the result for every disntance calculations
+     * elements in provided tensor data list, starting within the provided range
+     *
+     * @param range     the range of the db data to move over
+     * @param queryData tensor for calculating distance with
+     * @param dbData    tensor list to to calculate against
+     * @return the distance and range for the element with the closest range
      */
-    public static ComparisonResult[] euclideanDistanceCalculationTask(int from, TensorData testData,
-            ArrayList<TensorData> data) {
-        return euclideanDistanceCalculationTask(from, data.size(), testData, data);
+    public static indexResultPackage euclideanFast(Range range, double[] queryData, double[][] dbData) {
+
+        int bestIdx = -1;
+        double bestDist = 1 << 5;
+
+        int toIndex = range.to;
+
+        if (range.to == -1) {
+            toIndex = dbData.length;
+        }
+
+        for (int i = range.from; i < toIndex; i++) {
+            double dist = getEuclideanDistance(queryData, dbData[i]);
+            if (dist < bestDist) {
+                bestDist = dist;
+                bestIdx = i;
+            }
+
+        }
+        return new indexResultPackage(bestDist, bestIdx);
     }
 
     /**
-     * /** Calculates the euclidean distance between the testData tensor and all
-     * elements in provided tensor data list, starting from given index(inclusive)
-     * to given lenth (exclusive)
-     * 
-     * @param from     incluse where in test data to start calculating
-     * @param to       exclusive where in the test data to stop calculating
-     * @param testData tensor for calculating distance with
-     * @param data     tensor list to to calculate against
-     * @return an array containing the result for every disntance calculations
+     * calculates the euclidian distance between two vectors
+     *
+     * @param alpha one of the vectors
+     * @param beta  the other one
+     * @return the euclidian distance between the vectors
      */
-    public static ComparisonResult[] euclideanDistanceCalculationTask(int from, int to, TensorData testData,
-            ArrayList<TensorData> data) {
-        // DO NOT MODIFY THE DATA ARRAY - CAN CAUSE DATA RACE ?!
-
-        ComparisonResult[] results = new ComparisonResult[to - from];
-
-        for (int i = 0; i < to - from; i++) {
-            results[i] = new ComparisonResult(data.get(from + i).id, data.get(from + i).euclideanDistance(testData));
+    public static double getEuclideanDistance(double[] alpha, double[] beta) {
+        float distance = 0;
+        for (int i = 512; --i >= 0; ) {
+            double dif = alpha[i] - beta[i];
+            distance += (dif * dif);
         }
+        return Math.sqrt(distance);
+    }
 
-        return results;
+    /**
+     * Dataholder to return the distance and index
+     */
+    public static class indexResultPackage {
+        public double result;
+        public int index;
 
+        public indexResultPackage(double result, int index) {
+            this.result = result;
+            this.index = index;
+        }
     }
 }

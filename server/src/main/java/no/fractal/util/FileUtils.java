@@ -15,6 +15,7 @@ public class FileUtils {
      *
      * @param file   The file to check if is in the directory
      * @param parent The dir to check if the file is in
+     *
      * @return true if the file is in any of the dirs sub directorys
      */
     public static boolean isFileChildOfDir(File file, File parent) {
@@ -38,7 +39,7 @@ public class FileUtils {
         File[] contents = file.listFiles();
         if (contents != null) {
             for (File f : contents) {
-                if (!Files.isSymbolicLink(f.toPath())) {
+                if (! Files.isSymbolicLink(f.toPath())) {
                     deleteDir(f);
                 }
             }
@@ -53,6 +54,7 @@ public class FileUtils {
      * If the file provided have no ending the input object is returned
      *
      * @param file the file to remove the ending from
+     *
      * @return the file object representing a file with one less ending
      */
     public static File getFileWithOneLessEnding(File file) {

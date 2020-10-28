@@ -113,41 +113,44 @@ services:
 
 
   # https://github.com/mikael2/payara-postgres-nginx/
-#  nginx:
-#    container_name: nginx
-#
-#    build:
-#      context: ./DockerFiles/nginx_certbot
-#      dockerfile: Dockerfile
-#
-#    volumes:
-#      - type: volume
-#        source: nginx_data
-#        target: /etc/letsencrypt
-#
-#    env_file:
-#      - ./config_files/nginx_cerbot.env
-#
-#    environment:
-#      DOMAIN: "${API_DOMAIN}"
-#      LE_EMAIL: "${MAIL_USERNAME}"
-#    logging:
-#      options:
-#        max-size: "50m"
-#        max-file: "3"
-#
-#    ports:
-#      - "80:80"
-#      - "443:443"
-#
-#    networks:
-#      frontend:
-#      internal:
-#
-#    depends_on:
-#      - api_server
-#
-#    restart: unless-stopped
+  nginx:
+    container_name: nginx
+
+    build:
+      context: ./DockerFiles/nginx_certbot
+      dockerfile: Dockerfile
+
+    volumes:
+      - type: volume
+        source: nginx_data
+        target: /etc/letsencrypt
+      - type: volume
+        source: /web/frontend
+        target: /www/fractal/
+
+    env_file:
+      - ./config_files/nginx_cerbot.env
+
+    environment:
+      DOMAIN: "${API_DOMAIN}"
+      LE_EMAIL: "${MAIL_USERNAME}"
+    logging:
+      options:
+        max-size: "50m"
+        max-file: "3"
+
+    ports:
+      - "80:80"
+      - "443:443"
+
+    networks:
+      frontend:
+      internal:
+
+    depends_on:
+      - api_server
+
+    restart: unless-stopped
 
 
 networks:

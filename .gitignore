@@ -27,5 +27,4 @@ gen
 server/target
 
 *env
-
-
+.env.*

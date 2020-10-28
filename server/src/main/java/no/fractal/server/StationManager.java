@@ -16,14 +16,16 @@ public class StationManager {
 
     private ArrayList<GateStation> activeStations;
 
-    public GateStation registerStation(UUID gateId){
+    public GateStation registerStation(UUID gateId) {
         return null;
     }
 
     /**
      * cheks if the loggin is valid
+     *
      * @param stationId the id for the station to chek
      * @param logginKey the loggin key for the station
+     *
      * @return wheter the loggin is valid
      * @throws SQLException
      */

@@ -3,7 +3,7 @@ package no.fractal.server;
 import no.fractal.TensorComparison.ComparisonResult;
 import no.fractal.database.Datatypes.TensorData;
 import no.fractal.database.Datatypes.User;
-import no.fractal.database.DbTensorCache;
+import no.fractal.database.TensorSearcher;
 import no.fractal.database.GateQueries;
 import no.fractal.server.corutenes.OldEntryRemover;
 import no.fractal.util.FileUtils;
@@ -23,24 +23,22 @@ import java.util.concurrent.TimeUnit;
 public class ClientRequestDatabaseInterface {
 
 
+    public static final long CLEANUP_INTERVAL = 360000L; // 100*60*60
+    public static final long ALLOWED_AGE_FOR_THE_NEW_STUF = 8640000L; // 100*60*60*24
     private static ClientRequestDatabaseInterface instance;
     public final File imageSaveDir;
     public final File imagePermSaveDir;
     public final File imageTmpSaveDir;
     private final String nodeUrl;
+    private final ScheduledExecutorService scheduledExecutor = Executors
+            .newSingleThreadScheduledExecutor();
     public StationManager stationManager;
 
-    public static final long CLEANUP_INTERVAL = 360000L; // 100*60*60
-    public static final long ALLOWED_AGE_FOR_THE_NEW_STUF = 8640000L; // 100*60*60*24
-
-    private ScheduledExecutorService scheduledExecutor = Executors
-            .newSingleThreadScheduledExecutor();
-
     public ClientRequestDatabaseInterface() {
-        nodeUrl = System.getenv("NODE_URL");
-        imageSaveDir = new File("fractal_thumbnail_images");
+        nodeUrl          = System.getenv("NODE_URL");
+        imageSaveDir     = new File("fractal_thumbnail_images");
         imagePermSaveDir = new File(imageSaveDir, "perm_storage");
-        imageTmpSaveDir = new File(imageSaveDir, "temp_storage");
+        imageTmpSaveDir  = new File(imageSaveDir, "temp_storage");
 
         this.stationManager = new StationManager();
     }
@@ -56,6 +54,7 @@ public class ClientRequestDatabaseInterface {
      * returns the user objet from the uuid gained from the tensor comparison
      *
      * @param uid user id
+     *
      * @return The user object null if none is found
      */
     public User getUser(UUID uid) throws SQLException {
@@ -82,13 +81,13 @@ public class ClientRequestDatabaseInterface {
      * Cheks if the provided id is in the wait que if it is, a registration url is generated and returned
      *
      * @param userId the id of the new user
-     * @param gateId the id og of the gate used to register
+     *
      * @return a strig with the url
      * @throws SQLException
      */
-    public String getNewRegistrationURL(UUID userId, UUID gateId) throws SQLException {
+    public String getNewRegistrationURL(UUID userId) throws SQLException {
         if (GateQueries.isIdInNewQue(userId)) {
-            return this.nodeUrl + "/" + userId + gateId;
+            return this.nodeUrl + "/" + userId;
         }
 
         return null;
@@ -100,6 +99,7 @@ public class ClientRequestDatabaseInterface {
      * @param userId     the users id
      * @param tensorData the users face tensor data
      * @param stationId  the staion the user where registered at
+     *
      * @throws SQLException
      */
     public void registerUserInQue(UUID userId, TensorData tensorData, UUID stationId) throws SQLException {
@@ -111,6 +111,7 @@ public class ClientRequestDatabaseInterface {
      *
      * @param userId
      * @param imageFile
+     *
      * @throws SQLException
      */
     public void registerImageToUser(UUID userId, File imageFile) throws SQLException {
@@ -122,7 +123,7 @@ public class ClientRequestDatabaseInterface {
     }
 
     public ComparisonResult getBestMatch(TensorData tensorData) throws SQLException {
-        return DbTensorCache.getInstance().getClosestMatch(tensorData);
+        return TensorSearcher.getInstance().getClosestMatch(tensorData);
     }
 
     /**
@@ -138,7 +139,6 @@ public class ClientRequestDatabaseInterface {
 
 
     }
-
 
 
 }

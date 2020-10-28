@@ -6,26 +6,25 @@ package no.fractal.socket.meta;
  * segemnts in the package (Json data, files, other types etc). All data that is
  * to be red/written has to be defined in a segment in order in which it is to
  * be red/written from the stream.
- * 
  */
 public class Meta {
 
-	/**
-	 * Required for JSON marshalling
-	 */
-	public Meta() {
-	}
+    /**
+     * All segments in the meta payload
+     */
+    private Segment[] segments;
 
-	/**
-	 * All segments in the meta payload
-	 */
-	private Segment[] segments;
+    /**
+     * Required for JSON marshalling
+     */
+    public Meta() {
+    }
 
-	public Segment[] getSegments() {
-		return segments;
-	}
+    public Segment[] getSegments() {
+        return segments;
+    }
 
-	public void setSegments(Segment[] segments) {
-		this.segments = segments;
-	}
+    public void setSegments(Segment[] segments) {
+        this.segments = segments;
+    }
 }

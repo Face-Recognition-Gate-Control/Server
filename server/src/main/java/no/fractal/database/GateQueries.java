@@ -12,8 +12,12 @@ import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class GateQueries extends PsqlDb {
+
+    private static final Logger LOGGER = Logger.getLogger(GateQueries.class.getName());
 
     public static ArrayList<TensorData> getCurrentTensorData() throws SQLException {
         String query = "SELECT user_id, face_vec FROM login_referance;";
@@ -21,90 +25,22 @@ public class GateQueries extends PsqlDb {
         ArrayList<TensorData> ret = new ArrayList<>();
 
         sqlQuery(query, resultSet -> {
-            ret.add(new TensorData(
-                    (BigDecimal[]) resultSet.getArray("face_vec").getArray(),
-                    UUID.fromString(resultSet.getString("user_id"))
-                    ));
-        });
-
-        return ret;
-    }
-
-    public static User getUser(UUID userID) throws SQLException {
-
-        String query = String.format(
-                "SELECT firstname, lastname FROM users where id = '%s';", userID.toString());
-
-        AtomicReference<User> ret = new AtomicReference<>();
-
-        sqlQuery(query, resultSet -> {
-            ret.set(new User(
-                    userID,
-                    resultSet.getString("firstname"),
-                    resultSet.getString("lastname")
-            ));
-        });
-
-        return ret.get();
-    }
-
-    public static void registerUserEnteredRoom(UUID user_id, UUID stationId) throws SQLException {
-        String query = String.format(
-                "INSERT INTO user_enter_events (user_id, station_id)  VALUES ('%s', '%s');",
-                user_id,
-                stationId);
-
-        sqlUpdate(query);
-    }
-
-    public static void addUserToNewQueue(UUID user_id, TensorData tensorData, UUID stationId) throws SQLException {
-        String query = String.format(
-                "INSERT INTO new_user_queue (tmp_id, face_vec, station_id)  VALUES ('%s', %s, '%s');",
-                user_id,
-                tensorData.asSQLString(),
-                stationId);
-
-        sqlUpdate(query);
-    }
-
-    public static void addImageToWaitQue(UUID user_id, File imgFile) throws SQLException {
-        String query = String.format(
-                "UPDATE new_user_queue SET file_name='%s' where tmp_id='%s';",
-                imgFile.toString(),
-                user_id);
-
-        sqlUpdate(query);
-    }
-
-    public static boolean isIdInNewQue(UUID userId) throws SQLException {
-        String query = String.format(
-                "SELECT tmp_id FROM new_user_queue where tmp_id = '%s';", userId.toString());
-
-        AtomicBoolean ret = new AtomicBoolean(false);
-
-        sqlQuery(query, resultSet -> {
-            ret.set(resultSet.first());
-        });
-
-        return ret.get();
-
-    }
-
-    public static boolean isStationLoginValid(UUID stationId, String stationSecret) throws SQLException {
-        String query = String.format(
-                "SELECT login_key FROM stations where id = '%s';", stationId.toString());
-
-        AtomicBoolean ret = new AtomicBoolean(false);
-
-        sqlQuery(query, resultSet -> {
-            if (resultSet.first()){
-                if (resultSet.getString("login_key").equals(stationSecret)){
-                    ret.set(true);
+            try {
+                var vectors = (BigDecimal[]) resultSet.getArray("face_vec").getArray();
+                double[] vectorToDouble = new double[vectors.length];
+                for (int i = 0; i < vectors.length; i++) {
+                    vectorToDouble[i] = vectors[i].doubleValue();
                 }
+                ret.add(new TensorData(
+                        vectorToDouble,
+                        UUID.fromString(resultSet.getString("user_id"))
+                ));
+            } catch (ClassCastException e) {
+                LOGGER.log(Level.WARNING, e.getMessage(), e);
             }
         });
 
-        return ret.get();
+        return ret;
     }
 
     public static long getLastTensorTableUpdate() throws SQLException {
@@ -118,6 +54,81 @@ public class GateQueries extends PsqlDb {
 
         return ret.get();
 
+    }
+
+    public static User getUser(UUID userID) throws SQLException {
+        String query = String.format(
+                "SELECT users.firstname, users.lastname, login_referance.file_name FROM users INNER JOIN login_referance ON users.id=login_referance.user_id where id = '%s' ;", userID.toString());
+
+        AtomicReference<User> ret = new AtomicReference<>();
+
+        sqlQuery(query, resultSet -> {
+            ret.set(new User(
+                    userID,
+                    resultSet.getString("firstname"),
+                    resultSet.getString("lastname"),
+                    resultSet.getString("file_name")
+            ));
+        });
+
+        return ret.get();
+    }
+
+    public static void registerUserEnteredRoom(UUID user_id, UUID stationId) throws SQLException {
+        String query = String.format(
+                "INSERT INTO user_enter_events (user_id, station_id)  VALUES ('%s', '%s');",
+                user_id,
+                stationId
+        );
+
+        sqlUpdate(query);
+    }
+
+    public static void addUserToNewQueue(UUID user_id, TensorData tensorData, UUID stationId) throws SQLException {
+        String query = String.format(
+                "INSERT INTO new_user_queue (tmp_id, face_vec, station_id)  VALUES ('%s', %s, '%s');",
+                user_id,
+                tensorData.asSQLString(),
+                stationId
+        );
+
+        sqlUpdate(query);
+    }
+
+    public static void addImageToWaitQue(UUID user_id, File imgFile) throws SQLException {
+        String query = String.format(
+                "UPDATE new_user_queue SET file_name='%s' where tmp_id='%s';",
+                imgFile.getName(),
+                user_id
+        );
+
+        sqlUpdate(query);
+    }
+
+    public static boolean isIdInNewQue(UUID userId) throws SQLException {
+        String query = String.format(
+                "SELECT tmp_id FROM new_user_queue where tmp_id = '%s';", userId.toString());
+
+        AtomicBoolean ret = new AtomicBoolean(false);
+
+        sqlQuery(query, resultSet -> {
+            ret.set(!resultSet.getString("tmp_id").isBlank());
+        });
+
+        return ret.get();
+
+    }
+
+    public static boolean isStationLoginValid(UUID stationId, String stationSecret) throws SQLException {
+        String query = String.format(
+                "SELECT login_key FROM stations where id = '%s';", stationId.toString());
+
+        AtomicBoolean stationValid = new AtomicBoolean(false);
+
+        sqlQuery(query, resultSet -> {
+            stationValid.set(resultSet.getString("login_key").equals(stationSecret));
+        });
+        return stationValid.get();
     }
 
     public static HashMap<UUID, File> removeTimedOutIdsFromNewQueue(long timeLimit) throws SQLException {
@@ -134,12 +145,9 @@ public class GateQueries extends PsqlDb {
         });
 
 
-
         return ret;
 
     }
-
-
 
 
     // examples
