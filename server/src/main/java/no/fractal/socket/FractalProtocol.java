@@ -99,8 +99,15 @@ public class FractalProtocol {
      * @throws IOException if stream closes or reading fails.
      */
     private int readByteSize(BufferedInputStream in, int length) throws IOException {
-        byte[] input     = new byte[length];
-        int    bytesRead = in.read(input, 0, input.length);
+        byte[]  input     = new byte[length];
+        boolean end       = false;
+        int     bytesRead = 0;
+        while (!end) {
+            int offset = bytesRead == 0 ? 0 : bytesRead - 1;
+            bytesRead += in.read(input, offset, input.length - offset);
+            if (bytesRead == length)
+                end = true;
+        }
         if (bytesRead <= 0) {
             throw new IOException("Bytestream closed");
         }
@@ -125,7 +132,15 @@ public class FractalProtocol {
         int    size  = readByteSize(in, headerSize);
         byte[] input = new byte[size];
         input = new byte[size];
-        int bytesRead = in.read(input, 0, input.length);
+        boolean end       = false;
+        int     bytesRead = 0;
+        while (!end) {
+            int offset = bytesRead == 0 ? 0 : bytesRead - 1;
+            bytesRead += in.read(input, offset, input.length - offset);
+            if (bytesRead == size)
+                end = true;
+        }
+
         if (bytesRead <= 0) {
             throw new IOException("Bytestream closed");
         }
