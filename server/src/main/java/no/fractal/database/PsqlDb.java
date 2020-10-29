@@ -28,17 +28,14 @@ abstract class PsqlDb {
         return connection;
     }
 
-
-    protected static void sqlQuery(String query,
-                                   ThrowingConsumer<ResultSet, SQLException> rowHandler
-    ) throws SQLException {
+    protected static void sqlQuery(String query, ThrowingConsumer<ResultSet, SQLException> rowHandler)
+            throws SQLException {
 
         Connection connection = tryConnectToDB();
-        Statement  statement  = connection.createStatement();
+        Statement statement = connection.createStatement();
 
         allQueries.log("making SQL query:\n", query);
         ResultSet resultSet = statement.executeQuery(query);
-
 
         while (resultSet.next()) {
             rowHandler.accept(resultSet);
@@ -50,14 +47,12 @@ abstract class PsqlDb {
 
     }
 
-
     protected static void sqlUpdate(String query) throws SQLException {
         Connection connection = tryConnectToDB();
-        Statement  statement  = connection.createStatement();
+        Statement statement = connection.createStatement();
 
         allQueries.log("making SQL update:\n", query);
         statement.executeUpdate(query);
-
 
         statement.close();
         connection.close();

@@ -50,7 +50,9 @@ public class UserAuthorizationPayload extends PayloadBase {
                 User user = ClientRequestDatabaseInterface.getInstance().getUser(closest.id);
                 var userThumbnail = user.getUserImage();
                 if (userThumbnail != null) {
-                    returnMessage = new UserIdentefiedMessage(userThumbnail, session_id, "you can go throgh", true);
+                    System.out.println(user.firstName);
+                    returnMessage = new UserIdentefiedMessage(userThumbnail, user.id, "Access", true);
+
                 }
             } else {
                 ClientRequestDatabaseInterface.getInstance().registerUserInQue(session_id, face_featuresData,
@@ -62,7 +64,6 @@ public class UserAuthorizationPayload extends PayloadBase {
             if (returnMessage != null) {
                 dispatcher.addMessage(returnMessage);
             }
-
 
         } catch (Exception e) {
             System.out.println(e);
