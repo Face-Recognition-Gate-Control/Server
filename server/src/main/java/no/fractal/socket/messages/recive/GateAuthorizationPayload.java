@@ -32,17 +32,17 @@ public class GateAuthorizationPayload extends PayloadBase {
         try {
             var uid = UUID.fromString(station_uid);
             boolean validationOk = ClientRequestDatabaseInterface.getInstance().stationManager.IsStationValid(uid,
-                                                                                                              login_key
+                    login_key
             );
-
             if (validationOk) {
-                client.setAuthorized(validationOk);
                 client.setClientID(uid.toString());
-                GateAuthorizedMessage gateAuthorizedMessage = new GateAuthorizedMessage("mabye remove bro");
+                client.setAuthorized(validationOk);
+                GateAuthorizedMessage gateAuthorizedMessage = new GateAuthorizedMessage("Fisk");
                 this.dispatcher.addMessage(gateAuthorizedMessage);
             }
 
         } catch (Exception e) {
+            e.printStackTrace();
             // TODO; Implement login failure handlin
         }
     }
