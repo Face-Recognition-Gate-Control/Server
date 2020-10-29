@@ -111,11 +111,10 @@ public class ClientRequestDatabaseInterface {
      *
      * @param userId
      * @param imageFile
-     *
      * @throws SQLException
      */
     public void registerImageToUser(UUID userId, File imageFile) throws SQLException {
-        if (FileUtils.isFileChildOfDir(FileUtils.systemTmpDir, imageFile)) {
+        if (FileUtils.isFileChildOfDir(imageFile, this.imageTmpSaveDir)) {
             GateQueries.addImageToWaitQue(userId, imageFile);
         } else {
             // exeption mabye somthing is wrong
