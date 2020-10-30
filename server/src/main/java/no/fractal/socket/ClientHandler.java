@@ -25,7 +25,7 @@ public class ClientHandler implements Runnable {
      * How many milliseconds a client can stay unathorized before the socket is
      * closed
      */
-    private static final long UNATHORIZED_CONNECTION_TIME = 3000L;
+    private static final long UNATHORIZED_CONNECTION_TIME = 4000L;
     private static final Logger LOGGER = Logger.getLogger(TcpServer.class.getName());
     private static final ScheduledExecutorService scheduledExecutor = Executors.newSingleThreadScheduledExecutor();
     private final TcpServer server;
@@ -62,11 +62,11 @@ public class ClientHandler implements Runnable {
                     UNATHORIZED_CONNECTION_TIME,
                     TimeUnit.MILLISECONDS
             );
+
             unauthorizedClient.run();
         } catch (IOException e) {
             LOGGER.log(Level.WARNING, "Socket IO error", e);
         }
     }
-
 
 }
