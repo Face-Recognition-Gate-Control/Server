@@ -53,7 +53,9 @@ public class UserAuthorizationPayload extends PayloadBase {
                 var userThumbnail = user.getUserImage();
                 if (userThumbnail != null) {
                     System.out.println(user.firstName);
-                    returnMessage = new UserIdentefiedMessage(userThumbnail, session_id, "you can go throgh", true);
+
+                    returnMessage = new UserIdentefiedMessage(userThumbnail, user.id, "Access", true);
+
 
                 }
             } else {
@@ -66,7 +68,6 @@ public class UserAuthorizationPayload extends PayloadBase {
             if (returnMessage != null) {
                 dispatcher.addMessage(returnMessage);
             }
-
 
         } catch (Exception e) {
             System.out.println(e);

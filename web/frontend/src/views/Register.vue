@@ -6,7 +6,7 @@
 				<p v-if="registrationFailed" class="is-size-5 has-text-danger">
 					Something went wrong!
 				</p>
-				<form>
+				<form v-on:submit.prevent>
 					<div class="field">
 						<label class="label">First name</label>
 						<div class="control">

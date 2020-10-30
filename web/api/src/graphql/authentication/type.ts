@@ -5,6 +5,7 @@ let AuthenticationType = new GraphQLObjectType({
     name: 'AuthenticationType',
     fields: () => ({
         user: { type: UserType },
+        token: { type: GraphQLString },
     }),
     description: 'Authentication',
 })

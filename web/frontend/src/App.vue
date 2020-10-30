@@ -1,10 +1,20 @@
 <template>
-	<router-link to="/">Home</router-link>
-	<router-link to="/register/5">About</router-link>
 	<section class="section">
+		<Menu />
 		<router-view />
 	</section>
 </template>
+<script lang="ts">
+import { defineComponent } from "vue";
+import Menu from "@/components/Menu.vue";
+
+export default defineComponent({
+	components: {
+		Menu,
+	},
+	setup() {},
+});
+</script>
 
 <style>
 #app {
