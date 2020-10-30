@@ -46,12 +46,16 @@ public class UserAuthorizationPayload extends PayloadBase {
 
             ComparisonResult closest = TensorSearcher.getInstance().getClosestMatch(face_featuresData);
             AbstractMessage returnMessage = null;
+            System.out.println(closest.diffValue);
+            System.out.println(closest.id);
             if (closest.diffValue < 0.6) {
                 User user = ClientRequestDatabaseInterface.getInstance().getUser(closest.id);
                 var userThumbnail = user.getUserImage();
                 if (userThumbnail != null) {
                     System.out.println(user.firstName);
+
                     returnMessage = new UserIdentefiedMessage(userThumbnail, user.id, "Access", true);
+
 
                 }
             } else {

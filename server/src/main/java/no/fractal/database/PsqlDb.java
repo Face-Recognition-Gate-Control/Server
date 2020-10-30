@@ -9,9 +9,9 @@ abstract class PsqlDb {
 
     protected static final DebugLogger allQueries = new DebugLogger(false);
     protected static final DebugLogger errorQueries = new DebugLogger(true);
-    private static final String url = System.getenv("SQLURL");
+    private static final String url = System.getenv("SQLURL"); //"jdbc:postgresql://10.10.50.50/fractal";
     private static final String dbUser = System.getenv("USER_USERNAME");
-    private static final String dbPassword = System.getenv("POSGRESS_USER_PASSWORD");
+    private static final String dbPassword = System.getenv("USER_PASSWORD");
 
     protected static Connection tryConnectToDB() throws SQLException {
         allQueries.log("try connect to db", "url", url, "user", dbUser, "passwd", dbPassword);

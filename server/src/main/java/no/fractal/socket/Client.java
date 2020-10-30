@@ -4,6 +4,7 @@ import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.net.Socket;
+import java.util.function.Consumer;
 
 /**
  * A client connected to a socket. A socket client has access to the server
@@ -44,20 +45,25 @@ public abstract class Client implements Runnable {
     private boolean authorized;
 
     /**
+     * Callback used for notifying when the client has authorized
+     */
+    private final Consumer<Client> authorizedCallback;
+
+    /**
      * Creates the client socket. Creates the input reader.
      *
      * @param clientSocket the client socket
      * @param server       the server
-     *
      * @throws IOException              thrown if there are problems creating the
      *                                  input stream reader
      * @throws IllegalArgumentException thrown if socket or server is null
      */
-    public Client(Socket clientSocket, TcpServer server) throws IOException {
+    public Client(Socket clientSocket, TcpServer server, Consumer<Client> authorizedCallback) throws IOException {
         this.setClientSocket(clientSocket);
         this.setServer(server);
         this.createInputReader();
         this.createOutputStream();
+        this.authorizedCallback = authorizedCallback;
     }
 
     /**
@@ -86,7 +92,6 @@ public abstract class Client implements Runnable {
      * Sets the server instance reference
      *
      * @param server the server instance
-     *
      * @throws IllegalArgumentException if socket is null
      */
     private void setServer(TcpServer server) {
@@ -112,7 +117,6 @@ public abstract class Client implements Runnable {
      * Sets the client socket.
      *
      * @param clientSocket the socket of the client
-     *
      * @throws IllegalArgumentException if socket is null
      */
     private void setClientSocket(Socket clientSocket) {
@@ -128,6 +132,7 @@ public abstract class Client implements Runnable {
 
     public void setAuthorized(boolean authorized) {
         this.authorized = authorized;
+        this.authorizedCallback.accept(this);
     }
 
     public void closeClient() {

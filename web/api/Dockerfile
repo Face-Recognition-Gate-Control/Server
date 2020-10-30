@@ -16,7 +16,5 @@ WORKDIR /usr/src/app
 #COPY . .
 
 EXPOSE 8080
-#CMD [ "node", "server.js" ]
 
-
-CMD npm install && npm run dev
+CMD npm install && npm run devprod
