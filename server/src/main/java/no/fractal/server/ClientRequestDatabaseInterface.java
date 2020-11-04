@@ -1,8 +1,8 @@
 package no.fractal.server;
 
 import no.fractal.TensorComparison.ComparisonResult;
-import no.fractal.database.Datatypes.TensorData;
-import no.fractal.database.Datatypes.User;
+import no.fractal.database.Models.TensorData;
+import no.fractal.database.Models.User;
 import no.fractal.database.TensorSearcher;
 import no.fractal.database.GateQueries;
 import no.fractal.server.corutenes.OldEntryRemover;
@@ -58,7 +58,7 @@ public class ClientRequestDatabaseInterface {
      * @return The user object null if none is found
      */
     public User getUser(UUID uid) throws SQLException {
-        User res = GateQueries.getUser(uid);
+        User res = GateQueries.getUserByID(uid);
 
         // if any fields are empty there are no object in the db return null
         res = res.firstName == null ? null : res;
@@ -72,7 +72,7 @@ public class ClientRequestDatabaseInterface {
      * @param gateId the id of the gate/room
      */
     public void registerUserEntering(UUID userId, UUID gateId) throws SQLException {
-        GateQueries.registerUserEnteredRoom(userId, gateId);
+        GateQueries.createUserEnteredEvent(userId, gateId);
 
     }
 
@@ -86,7 +86,7 @@ public class ClientRequestDatabaseInterface {
      * @throws SQLException
      */
     public String getNewRegistrationURL(UUID userId) throws SQLException {
-        if (GateQueries.isIdInNewQue(userId)) {
+        if (GateQueries.isIdInRegistrationQueue(userId)) {
             return this.nodeUrl + "/" + userId;
         }
 
@@ -103,7 +103,7 @@ public class ClientRequestDatabaseInterface {
      * @throws SQLException
      */
     public void registerUserInQue(UUID userId, TensorData tensorData, UUID stationId) throws SQLException {
-        GateQueries.addUserToNewQueue(userId, tensorData, stationId);
+        GateQueries.addNewUserToRegistrationQueue(userId, tensorData, stationId);
     }
 
     /**
@@ -115,7 +115,7 @@ public class ClientRequestDatabaseInterface {
      */
     public void registerImageToUser(UUID userId, File imageFile) throws SQLException {
         if (FileUtils.isFileChildOfDir(imageFile, this.imageTmpSaveDir)) {
-            GateQueries.addImageToWaitQue(userId, imageFile);
+            GateQueries.addThumbnailToNewUserInRegistrationQueue(userId, imageFile);
         } else {
             // exeption mabye somthing is wrong
         }

@@ -4,7 +4,7 @@ import it.unimi.dsi.util.XoRoShiRo128PlusRandom;
 import no.fractal.TensorComparison.ComparisonResult;
 import no.fractal.TensorComparison.Range;
 import no.fractal.TensorComparison.TensorComparator;
-import no.fractal.database.Datatypes.TensorData;
+import no.fractal.database.Models.TensorData;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -157,7 +157,7 @@ public class TensorSearcher {
             updatePending.acquire();
             currentSearching.acquire(CONCURRENT_SEARCHES);
             System.out.println("UPDATE DB");
-            tensorData = GateQueries.getCurrentTensorData();
+            tensorData = GateQueries.getAllTensors();
             quickSearchArray = buildFastArrays(tensorData);
             System.out.println(quickSearchArray.length);
             ranges = getRanges();

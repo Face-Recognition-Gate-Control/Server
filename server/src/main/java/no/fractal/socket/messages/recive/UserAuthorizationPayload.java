@@ -1,8 +1,8 @@
 package no.fractal.socket.messages.recive;
 
 import no.fractal.TensorComparison.ComparisonResult;
-import no.fractal.database.Datatypes.TensorData;
-import no.fractal.database.Datatypes.User;
+import no.fractal.database.Models.TensorData;
+import no.fractal.database.Models.User;
 import no.fractal.database.TensorSearcher;
 import no.fractal.server.ClientRequestDatabaseInterface;
 import no.fractal.socket.messages.send.UserIdentefiedMessage;

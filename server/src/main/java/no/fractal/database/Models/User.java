@@ -1,4 +1,4 @@
-package no.fractal.database.Datatypes;
+package no.fractal.database.Models;
 
 import no.fractal.server.ClientRequestDatabaseInterface;
 
@@ -9,7 +9,8 @@ import java.nio.file.Path;
 import java.util.UUID;
 
 /**
- * user, to bee expanded
+ * Model class for a User.
+ * A user has an ID, firstname, lastname, and a thumbnail image.
  */
 public class User {
 

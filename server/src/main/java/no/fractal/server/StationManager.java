@@ -1,6 +1,6 @@
 package no.fractal.server;
 
-import no.fractal.database.Datatypes.GateStation;
+import no.fractal.database.Models.GateStation;
 import no.fractal.database.GateQueries;
 
 import java.sql.SQLException;

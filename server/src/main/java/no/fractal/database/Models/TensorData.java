@@ -1,4 +1,4 @@
-package no.fractal.database.Datatypes;
+package no.fractal.database.Models;
 
 import java.util.UUID;
 
@@ -42,9 +42,9 @@ public class TensorData {
 
 
     /**
-     * returns the array as an sql formated string that is '{a1,a2,a3,a4...,an}'
+     * Returns the array as an sql formatted string that is '{a1,a2,a3,a4...,an}'
      *
-     * @return
+     * @return sql formatted string of elements
      */
     public String asSQLString() {
         StringBuilder builder = new StringBuilder();

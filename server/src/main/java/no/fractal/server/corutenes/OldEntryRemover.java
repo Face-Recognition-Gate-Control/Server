@@ -27,7 +27,7 @@ public class OldEntryRemover extends TimerTask {
         try {
             long                currentTime = Instant.now().getEpochSecond();
             long                killTime    = currentTime + killAgeInMillis;
-            HashMap<UUID, File> res         = GateQueries.removeTimedOutIdsFromNewQueue(killTime);
+            HashMap<UUID, File> res         = GateQueries.removeExpiredNewUserRegistrations(killTime);
 
             for (Map.Entry<UUID, File> entry : res.entrySet()) {
                 if (entry.getValue() != null) {
