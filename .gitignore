@@ -9,6 +9,8 @@
 *.tar.gz
 *.rar
 
+**/node_modules/
+
 # IntelliJ project files
 .idea
 *.iml
