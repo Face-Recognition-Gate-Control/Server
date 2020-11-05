@@ -13,12 +13,17 @@ import java.util.Map;
 public abstract class PayloadBase {
 
     protected transient MessageDispatcher dispatcher;
+
     protected transient Client client;
+
     /**
      * Holds all segments attached to this payload
      */
     protected transient Map<String, Segment> segments;
 
+    /**
+     * Empty constructor is required for JSON parser
+     */
     public PayloadBase() {
     }
 

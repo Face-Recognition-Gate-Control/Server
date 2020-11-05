@@ -5,11 +5,18 @@ import no.fractal.socket.messages.send.GateAuthorizedMessage;
 
 import java.util.UUID;
 
+/**
+ * Sent from the a gate station to authorize itself with the server.
+ * The station is authorized with its id and a secret.
+ */
 public class GateAuthorizationPayload extends PayloadBase {
 
     private String login_key;
     private String station_uid;
 
+    /**
+     * Empty constructor is required for JSON parser
+     */
     public GateAuthorizationPayload() {
     }
 

@@ -5,7 +5,7 @@ import no.fractal.database.Models.TensorData;
 import no.fractal.database.Models.User;
 import no.fractal.database.TensorSearcher;
 import no.fractal.database.GateQueries;
-import no.fractal.server.corutenes.OldEntryRemover;
+import no.fractal.server.corutenes.ExpiredUserRegistrationTask;
 import no.fractal.util.FileUtils;
 
 import java.io.File;
@@ -148,7 +148,7 @@ public class ClientService {
      */
     private void startScheduledCleanupService() {
         this.scheduledExecutor.scheduleAtFixedRate(
-                new OldEntryRemover(EXPIRATION_TIME),
+                new ExpiredUserRegistrationTask(EXPIRATION_TIME),
                 0L,
                 CLEANUP_INTERVAL,
                 TimeUnit.SECONDS
