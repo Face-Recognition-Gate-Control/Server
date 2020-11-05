@@ -1,6 +1,6 @@
 package no.fractal.socket.messages.recive;
 
-import no.fractal.server.ClientRequestDatabaseInterface;
+import no.fractal.server.ClientService;
 import no.fractal.socket.messages.send.GateAuthorizedMessage;
 
 import java.util.UUID;
@@ -31,7 +31,7 @@ public class GateAuthorizationPayload extends PayloadBase {
     public void execute() {
         try {
             var uid = UUID.fromString(station_uid);
-            boolean validationOk = ClientRequestDatabaseInterface.getInstance().stationManager.IsStationValid(uid,
+            boolean validationOk = ClientService.getInstance().stationManager.IsStationValid(uid,
                     login_key
             );
             if (validationOk) {

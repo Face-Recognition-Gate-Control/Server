@@ -1,6 +1,6 @@
 package no.fractal.socket;
 
-import no.fractal.server.ClientRequestDatabaseInterface;
+import no.fractal.server.ClientService;
 import no.fractal.socket.meta.Segment;
 
 import java.io.File;
@@ -15,7 +15,7 @@ public class SegmentReader {
     /**
      * The folder where we store files temporary when they arrive.
      */
-    private static final String TEMP_FOLDER = ClientRequestDatabaseInterface.getInstance().imageTmpSaveDir.getAbsolutePath();
+    private static final String TEMP_FOLDER = ClientService.getInstance().imageTmpSaveDir.getAbsolutePath();
 
     /**
      * Extract all segments from the request, and store them in a temp folder. An

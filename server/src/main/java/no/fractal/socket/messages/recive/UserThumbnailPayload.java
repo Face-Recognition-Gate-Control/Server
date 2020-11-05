@@ -1,6 +1,6 @@
 package no.fractal.socket.messages.recive;
 
-import no.fractal.server.ClientRequestDatabaseInterface;
+import no.fractal.server.ClientService;
 import no.fractal.socket.meta.Segment;
 import no.fractal.socket.payload.InvalidSegmentNameException;
 
@@ -31,7 +31,7 @@ public class UserThumbnailPayload extends PayloadBase {
                 throw new InvalidSegmentNameException("Segment: " + THUMBNAIL_SEGMENT_NAME + " is NULL");
             }
             System.out.println(segment.getFile().getAbsoluteFile());
-            ClientRequestDatabaseInterface.getInstance().registerImageToUser(session_id,
+            ClientService.getInstance().addThumbnailToNewUserInRegistrationQueue(session_id,
                     segment.getFile()
             );
         } catch (Exception e) {

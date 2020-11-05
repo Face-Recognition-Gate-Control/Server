@@ -1,6 +1,6 @@
 package no.fractal.socket.messages.recive;
 
-import no.fractal.server.ClientRequestDatabaseInterface;
+import no.fractal.server.ClientService;
 
 import java.util.UUID;
 
@@ -21,7 +21,7 @@ public class UserEnteredPayload extends PayloadBase {
     @Override
     public void execute() {
         try {
-            ClientRequestDatabaseInterface.getInstance().registerUserEntering(UUID.fromString(session_id),
+            ClientService.getInstance().createUserEnteredEvent(UUID.fromString(session_id),
                     UUID.fromString(client.getClientID()));
 
         } catch (Exception e) {

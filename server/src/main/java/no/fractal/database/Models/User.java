@@ -1,6 +1,6 @@
 package no.fractal.database.Models;
 
-import no.fractal.server.ClientRequestDatabaseInterface;
+import no.fractal.server.ClientService;
 
 import java.io.File;
 import java.io.IOException;
@@ -35,8 +35,8 @@ public class User {
      * @return file for thumbnail or null if not exists
      */
     public File getUserImage() {
-        var tmpdir = ClientRequestDatabaseInterface.getInstance().imageTmpSaveDir;
-        var permDir = ClientRequestDatabaseInterface.getInstance().imagePermSaveDir;
+        var tmpdir = ClientService.getInstance().imageTmpSaveDir;
+        var permDir = ClientService.getInstance().imagePermSaveDir;
 
         var thumbnail = new File(permDir, thumbnail_name);
         var tmpThumbnail = new File(tmpdir, thumbnail_name);

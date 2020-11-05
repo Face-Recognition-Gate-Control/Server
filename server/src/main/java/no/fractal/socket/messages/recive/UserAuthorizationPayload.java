@@ -4,7 +4,7 @@ import no.fractal.TensorComparison.ComparisonResult;
 import no.fractal.database.Models.TensorData;
 import no.fractal.database.Models.User;
 import no.fractal.database.TensorSearcher;
-import no.fractal.server.ClientRequestDatabaseInterface;
+import no.fractal.server.ClientService;
 import no.fractal.socket.messages.send.UserIdentefiedMessage;
 import no.fractal.socket.messages.send.UserNotIdentifiedMessage;
 import no.fractal.socket.send.AbstractMessage;
@@ -49,7 +49,7 @@ public class UserAuthorizationPayload extends PayloadBase {
             System.out.println(closest.diffValue);
             System.out.println(closest.id);
             if (closest.diffValue < 0.6) {
-                User user = ClientRequestDatabaseInterface.getInstance().getUser(closest.id);
+                User user = ClientService.getInstance().getUserById(closest.id);
                 var userThumbnail = user.getUserImage();
                 if (userThumbnail != null) {
                     System.out.println(user.firstName);
@@ -57,9 +57,9 @@ public class UserAuthorizationPayload extends PayloadBase {
 
                 }
             } else {
-                ClientRequestDatabaseInterface.getInstance().registerUserInQue(session_id, face_featuresData,
+                ClientService.getInstance().addNewUserToRegistrationQueue(session_id, face_featuresData,
                         UUID.fromString(client.getClientID()));
-                String registrationUrl = ClientRequestDatabaseInterface.getInstance().getNewRegistrationURL(session_id);
+                String registrationUrl = ClientService.getInstance().getNewRegistrationURL(session_id);
                 returnMessage = new UserNotIdentifiedMessage(session_id, registrationUrl);
             }
 
