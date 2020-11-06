@@ -47,8 +47,12 @@ public class ClientHandler implements Runnable {
         try {
             final var unauthorizedClient = new FractalClient(clientSocket, server, (Client client) -> {
                 if (client.isAuthorized()) {
-                    notAuthorizedTask.cancel(true);
-                    authorizedCallback.accept(client);
+                    if (notAuthorizedTask != null) {
+                        LOGGER.log(Level.INFO, "Client connected!");
+                        notAuthorizedTask.cancel(true);
+                        authorizedCallback.accept(client);
+                    }
+
                 }
             });
             LOGGER.log(Level.INFO, "Unauthorized client connected...");
@@ -61,6 +65,7 @@ public class ClientHandler implements Runnable {
 
             notAuthorizedTask = ClientHandler.scheduledExecutor.schedule(task, UNATHORIZED_CONNECTION_TIME,
                     TimeUnit.MILLISECONDS);
+
 
             unauthorizedClient.run();
         } catch (IOException e) {
