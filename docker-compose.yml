@@ -52,6 +52,9 @@ services:
       - type: bind
         source: $PWD/web/api/
         target: /usr/src/app
+      - type: volume
+        source: node_modules
+        target: /usr/src/app/node_modules
 
     networks:
       local_network:
@@ -75,6 +78,9 @@ services:
       - type: volume
         source: fractal_thumbnail_images
         target: /fractal_thumbnail_images
+      - type: volume
+        source: maven_data
+        target: /root/.m2
 
     networks:
       local_network:
@@ -143,5 +149,9 @@ volumes:
 
   # thumbnail images
   fractal_thumbnail_images:
+
+  maven_data:
+
+  node_modules:
 
   nginx_data:
