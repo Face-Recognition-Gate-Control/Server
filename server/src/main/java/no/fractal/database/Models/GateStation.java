@@ -1,9 +1,9 @@
-package no.fractal.database.Datatypes;
+package no.fractal.database.Models;
 
 import java.util.UUID;
 
 /**
- * a object representing a gate station probably to be replaced by the fractal client
+ * Model class for a Gate station.
  */
 public class GateStation {
     public final UUID stationId;

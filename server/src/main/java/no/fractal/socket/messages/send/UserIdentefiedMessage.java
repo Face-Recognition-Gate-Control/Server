@@ -6,6 +6,11 @@ import no.fractal.socket.send.AbstractMessage;
 import java.io.File;
 import java.util.UUID;
 
+/**
+ * Message for when a user is idnetified on the server.
+ * The message includes the thumbnail of the user, the session id(user id), a message for the identification and
+ * if the user is allowed access of not.
+ */
 public class UserIdentefiedMessage extends AbstractMessage {
     public static final String MESSAGE_TYPE = "user_identified";
 

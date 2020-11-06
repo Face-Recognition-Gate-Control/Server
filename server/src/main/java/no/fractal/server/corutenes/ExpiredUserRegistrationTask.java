@@ -11,25 +11,24 @@ import java.util.TimerTask;
 import java.util.UUID;
 
 /**
- * Responsible for deletiong the useres that where offered a chanse to make a accont but declined
+ * Responsible for cleaning/removing expired user registrations.
  */
-public class OldEntryRemover extends TimerTask {
+public class ExpiredUserRegistrationTask extends TimerTask {
 
-    private final long killAgeInMillis; // 100*60*60*24
+    private final long expirationTime; // 100*60*60*24
 
-    public OldEntryRemover(long killAgeInMillis) {
-        this.killAgeInMillis = killAgeInMillis;
+    public ExpiredUserRegistrationTask(long expirationTime) {
+        this.expirationTime = expirationTime;
     }
-
 
     @Override
     public void run() {
         try {
             long                currentTime = Instant.now().getEpochSecond();
-            long                killTime    = currentTime + killAgeInMillis;
-            HashMap<UUID, File> res         = GateQueries.removeTimedOutIdsFromNewQueue(killTime);
+            long                killTime    = currentTime + expirationTime;
+            HashMap<UUID, File> expiredRegistrations         = GateQueries.removeExpiredNewUserRegistrations(killTime);
 
-            for (Map.Entry<UUID, File> entry : res.entrySet()) {
+            for (Map.Entry<UUID, File> entry : expiredRegistrations.entrySet()) {
                 if (entry.getValue() != null) {
                     boolean suc = entry.getValue().delete();
                     System.out.printf(

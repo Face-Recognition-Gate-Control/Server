@@ -10,11 +10,17 @@ import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/**
+ * Entry point for a TCP server.
+ * It creates a welcome socket on a given port, and accept incomming connections.
+ * A connected and handshake client is moved to a new thread, so the server can continue accepting new connections.
+ */
 public class TcpServer {
 
     private static final Logger LOGGER = Logger.getLogger(TcpServer.class.getName());
 
-    private final int MAX_THREADS = 10;
+    private static final int MAX_THREADS = 10;
+
     private final Map<String, Client> authorizedClients = new HashMap<>();
     private int port = 9876;
     private String host = "localhost";

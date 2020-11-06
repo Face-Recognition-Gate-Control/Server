@@ -75,7 +75,7 @@ public class FractalClient extends Client {
                     LOGGER.log(Level.INFO, String.format("%s", e.getMessage()));
                 }
 
-                /**
+                /*
                  * Make sure all data for payload is cleared.
                  */
                 protocol.clearStream(in);

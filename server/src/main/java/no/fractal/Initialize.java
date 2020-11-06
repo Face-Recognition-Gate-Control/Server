@@ -1,6 +1,6 @@
 package no.fractal;
 
-import no.fractal.server.ClientRequestDatabaseInterface;
+import no.fractal.server.ClientService;
 
 import java.io.File;
 import java.io.IOException;
@@ -30,7 +30,7 @@ public class Initialize {
 
         String tempDir = System.getProperty("java.io.tmpdir");
         try {
-            File file = new File(ClientRequestDatabaseInterface.getInstance().imagePermSaveDir, userImageName);
+            File file = new File(ClientService.getInstance().imagePermSaveDir, userImageName);
             if (!file.exists()) {
                 var is = (getClass().getResourceAsStream(resourcePath));
                 Files.copy(is, file.getAbsoluteFile().toPath());
@@ -45,7 +45,7 @@ public class Initialize {
      * Make sure we can write and folders for thumbnails are setup
      */
     private void setupThumbnailFolders() throws InitException {
-        var i = ClientRequestDatabaseInterface.getInstance();
+        var i = ClientService.getInstance();
         if (!i.imagePermSaveDir.exists()) {
             try {
                 Files.createDirectories(i.imagePermSaveDir.toPath());

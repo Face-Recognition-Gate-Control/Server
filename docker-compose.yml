@@ -78,7 +78,7 @@ services:
       - type: volume
         source: fractal_thumbnail_images
         target: /fractal_thumbnail_images
-      - type:  volume
+      - type: volume
         source: maven_data
         target: /root/.m2
 

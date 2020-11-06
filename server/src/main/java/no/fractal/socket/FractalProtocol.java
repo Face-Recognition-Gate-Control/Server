@@ -16,6 +16,9 @@ import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+/**
+ * Implements the FRACTAL protocol mechanism for reading a payload from a stream.
+ */
 public class FractalProtocol {
 
     private static final Parser parser = new JsonMetaParser();
@@ -85,7 +88,7 @@ public class FractalProtocol {
         }
     }
 
-    private void reduceRemaingPayloadBytes(int bytesRed) {
+    private void reduceRemainingPayloadBytes(int bytesRed) {
         this.remainingPayloadBytes -= bytesRed;
     }
 
@@ -99,25 +102,25 @@ public class FractalProtocol {
      * @throws IOException if stream closes or reading fails.
      */
     private int readByteSize(BufferedInputStream in, int length) throws IOException {
-        byte[] input     = new byte[length];
-        int    bytesRead = in.read(input, 0, input.length);
+        byte[]  input     = new byte[length];
+        boolean end       = false;
+        int     bytesRead = 0;
+        while (!end) {
+            int offset = bytesRead == 0 ? 0 : bytesRead - 1;
+            bytesRead += in.read(input, offset, input.length - offset);
+            if (bytesRead == length)
+                end = true;
+        }
         if (bytesRead <= 0) {
             throw new IOException("Bytestream closed");
         }
-        reduceRemaingPayloadBytes(bytesRead);
-        int size = 1;
-        switch (length) {
-            case 1:
-                size = input[0];
-                break;
-            case 2:
-                size = ByteBuffer.wrap(input).getShort();
-                break;
-            case 4:
-                size = ByteBuffer.wrap(input).getInt();
-                break;
-
-        }
+        reduceRemainingPayloadBytes(bytesRead);
+        int size = switch (length) {
+            case 1 -> input[0];
+            case 2 -> ByteBuffer.wrap(input).getShort();
+            case 4 -> ByteBuffer.wrap(input).getInt();
+            default -> 1;
+        };
         return size;
     }
 
@@ -125,11 +128,19 @@ public class FractalProtocol {
         int    size  = readByteSize(in, headerSize);
         byte[] input = new byte[size];
         input = new byte[size];
-        int bytesRead = in.read(input, 0, input.length);
+        boolean end       = false;
+        int     bytesRead = 0;
+        while (!end) {
+            int offset = bytesRead == 0 ? 0 : bytesRead - 1;
+            bytesRead += in.read(input, offset, input.length - offset);
+            if (bytesRead == size)
+                end = true;
+        }
+
         if (bytesRead <= 0) {
             throw new IOException("Bytestream closed");
         }
-        reduceRemaingPayloadBytes(bytesRead);
+        reduceRemainingPayloadBytes(bytesRead);
         return new String(input, StandardCharsets.UTF_8).trim();
     }
 
@@ -146,7 +157,7 @@ public class FractalProtocol {
         var sr = new SegmentReader();
         segments.forEach((key, segment) -> {
             segment.setFile(sr.writeSegmentToTemp(inputStream, segment));
-            reduceRemaingPayloadBytes(segment.getSize());
+            reduceRemainingPayloadBytes(segment.getSize());
         });
 
         return segments;
