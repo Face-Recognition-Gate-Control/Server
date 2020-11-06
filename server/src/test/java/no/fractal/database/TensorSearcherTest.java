@@ -1,7 +1,7 @@
 package no.fractal.database;
 
 import no.fractal.TensorComparison.ComparisonResult;
-import no.fractal.database.Datatypes.TensorData;
+import no.fractal.database.Models.TensorData;
 import no.fractal.util.SimpleStopwatch;
 
 class TensorSearcherTest {
