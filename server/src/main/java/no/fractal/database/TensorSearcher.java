@@ -33,7 +33,6 @@ public class TensorSearcher {
     private final Semaphore currentSearching = new Semaphore(CONCURRENT_SEARCHES);
     private final ExecutorService executor;
     private long lastTableChangeTime = 0;
-    private boolean isAdding;
     private ArrayList<TensorData> tensorData;
     private double[][] quickSearchArray;
     private Range[] ranges;
@@ -135,15 +134,13 @@ public class TensorSearcher {
      * @throws SQLException
      */
     private synchronized void updateIfChanged() throws SQLException {
-        if (!isAdding) {
-            long lastChange = GateQueries.getLastTensorTableUpdate();
+        long lastChange = GateQueries.getLastTensorTableUpdate();
 
-            if (this.lastTableChangeTime != lastChange) {
-                this.isAdding = true;
-                this.lastTableChangeTime = lastChange;
-                updateDb();
-            }
+        if (this.lastTableChangeTime != lastChange) {
+            this.lastTableChangeTime = lastChange;
+            updateDb();
         }
+
 
     }
 
@@ -168,7 +165,6 @@ public class TensorSearcher {
         } finally {
             currentSearching.release(CONCURRENT_SEARCHES);
             updatePending.release();
-            this.isAdding = false;
         }
 
     }
