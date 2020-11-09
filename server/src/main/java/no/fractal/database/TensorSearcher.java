@@ -117,15 +117,14 @@ public class TensorSearcher {
                 }
             }
 
-            currentSearching.release();
             TensorData bestMatch = (bestIdx != -1) ? tensorData.get(bestIdx) : searchData;
             return new ComparisonResult(bestMatch.id, (float) bestDist);
-
         } catch (Exception e) {
-            currentSearching.release();
             e.printStackTrace();
-
             return null;
+        } finally {
+            currentSearching.release();
+
         }
 
     }
@@ -163,13 +162,14 @@ public class TensorSearcher {
             ranges = getRanges();
 
 
-            currentSearching.release(CONCURRENT_SEARCHES);
-            updatePending.release();
+
         } catch (Exception e) {
             e.printStackTrace();
+        } finally {
+            currentSearching.release(CONCURRENT_SEARCHES);
+            updatePending.release();
             this.isAdding = false;
         }
-        this.isAdding = false;
 
     }
 
