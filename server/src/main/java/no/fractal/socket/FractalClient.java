@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.net.Socket;
 import java.net.SocketException;
 import java.util.UUID;
+import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -21,8 +22,8 @@ public class FractalClient extends Client {
     private MessageDispatcher dispatcher;
     private UUID GateId;
 
-    public FractalClient(Socket clientSocket, TcpServer server) throws IOException {
-        super(clientSocket, server);
+    public FractalClient(Socket clientSocket, TcpServer server, Consumer<Client> authCallback) throws IOException {
+        super(clientSocket, server, authCallback);
     }
 
     public UUID getGateId() {
@@ -55,10 +56,9 @@ public class FractalClient extends Client {
                 // Blocks here until all header fields are red.
                 FractalProtocol.PayloadData payloadData = protocol.readPayloadData(in);
 
-
                 try {
-                    PayloadBase payload = this.isAuthorized() ? authorizedPayloads(payloadData) : unauthorizedPayloads(
-                            payloadData);
+                    PayloadBase payload = this.isAuthorized() ? authorizedPayloads(payloadData)
+                            : unauthorizedPayloads(payloadData);
 
                     if (payload == null) {
                         throw new NoSuchPayloadException("Can not find the payload with name: " + payloadData.getId());
@@ -75,7 +75,7 @@ public class FractalClient extends Client {
                     LOGGER.log(Level.INFO, String.format("%s", e.getMessage()));
                 }
 
-                /**
+                /*
                  * Make sure all data for payload is cleared.
                  */
                 protocol.clearStream(in);
@@ -97,11 +97,9 @@ public class FractalClient extends Client {
     private PayloadBase authorizedPayloads(FractalProtocol.PayloadData payloadData) {
         return switch (payloadData.getId()) {
             case "gate_authorization" -> FractalProtocol.BuildPayloadObject(GateAuthorizationPayload.class,
-                                                                            payloadData
-            );
+                    payloadData);
             case "user_authorization" -> FractalProtocol.BuildPayloadObject(UserAuthorizationPayload.class,
-                                                                            payloadData
-            );
+                    payloadData);
             case "user_thumbnail" -> FractalProtocol.BuildPayloadObject(UserThumbnailPayload.class, payloadData);
             case "user_entered" -> FractalProtocol.BuildPayloadObject(UserEnteredPayload.class, payloadData);
             case "gate_ping" -> FractalProtocol.BuildPayloadObject(PingPayload.class, payloadData);
@@ -112,11 +110,9 @@ public class FractalClient extends Client {
     private PayloadBase unauthorizedPayloads(FractalProtocol.PayloadData payloadData) {
         return switch (payloadData.getId()) {
             case "gate_authorization" -> FractalProtocol.BuildPayloadObject(GateAuthorizationPayload.class,
-                                                                            payloadData
-            );
+                    payloadData);
             default -> null;
         };
     }
-
 
 }

@@ -7,9 +7,9 @@ import java.io.File;
 import java.time.LocalDateTime;
 
 /**
- * A segment is a description of a packet segemnt in the FRACTAL protocol. A
- * segment has a size (total size to read/write to the stream), and a mimetype
- * describing the type of data the segment is.
+ * A segment is a description of a packet segment in the FRACTAL protocol. A
+ * segment has a size (total size to read/write to the stream), a mimetype
+ * describing the type of data the segment is and the file name.
  */
 public class Segment {
 

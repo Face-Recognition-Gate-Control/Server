@@ -1,4 +1,4 @@
-import { GraphQLFieldConfig, GraphQLNonNull, GraphQLString, GraphQLUnionType } from 'graphql'
+import { GraphQLFieldConfig, GraphQLNonNull, GraphQLString } from 'graphql'
 import { AuthenticationService } from '@/Service/AuthenticationService'
 import { AuthenticationType } from './type'
 import { Credentials } from '@/lib/auth/Credentials'

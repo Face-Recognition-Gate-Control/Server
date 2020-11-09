@@ -24,5 +24,5 @@ function verifyToken(bearerToken: string | undefined) {
  * @param data data to pass into the token
  */
 function createToken(data: AuthTokenData) {
-    return jwt.sign(data, config.jwt_secret!)
+    return jwt.sign(data, config.jwt_secret!, { expiresIn: '7d' })
 }

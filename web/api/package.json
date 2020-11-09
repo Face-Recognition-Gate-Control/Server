@@ -6,7 +6,8 @@
     "scripts": {
         "test": "NODE_ENV=development nodemon --exec mocha -r ts-node/register -r tsconfig-paths/register --compiler ttypescript test/**/*.spec.ts",
         "build": "NODE_ENV=production ttsc && babel src --out-dir dist --extensions .ts",
-        "dev": "NODE_ENV=development nodemon --exec ts-node --compiler ttypescript src/index.ts "
+        "dev": "NODE_ENV=development nodemon --exec ts-node --compiler ttypescript src/index.ts ",
+        "devprod": "NODE_ENV=production nodemon --exec ts-node --compiler ttypescript src/index.ts "
     },
     "author": "Christoffer A Træen, Trygve Woldseth",
     "license": "GPL-3.0",

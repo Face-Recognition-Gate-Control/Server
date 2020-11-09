@@ -1,7 +1,7 @@
 import { User, UserType } from '@/lib/user/User'
 import { UserModel } from '@/Model/UserModel'
 import logger from '@/loaders/logger'
-import { compare } from '@/lib/passwordHasher'
+import { compare, hash } from '@/lib/passwordHasher'
 import { createToken } from '@/lib/auth/jwt'
 
 export class AuthenticationService {
@@ -16,11 +16,14 @@ export class AuthenticationService {
      */
     async authenticateUser({ email, password }: { email: string; password: string }) {
         try {
+            email = email.toLowerCase()
             const user = (await this._model.getUserByMail(email)).rows[0]
+            if (!user) return
             let isCorrectPassword = await compare(password, user?.password)
             if (isCorrectPassword) {
                 return {
                     user: new User(user),
+                    token: createToken({ userid: user.id?.toString()! }),
                 }
             }
         } catch (error) {

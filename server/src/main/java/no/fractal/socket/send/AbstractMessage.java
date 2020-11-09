@@ -14,6 +14,11 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+/**
+ * Base class for all message that is to be sent.
+ * It holds all necessary data for creating a message (Headers, json data, and segments).
+ * It is responsible for building the message to the FRACTAL protocol format and stream the message to the receiver.
+ */
 public abstract class AbstractMessage {
 
     private final String messageType;
@@ -25,6 +30,10 @@ public abstract class AbstractMessage {
         this.segments    = new LinkedHashMap<String, Segment>();
     }
 
+    /**
+     * Converts the the segments map to a json formatted string.
+     * @return segments meta as json string
+     */
     private String getSegmentMetaAsJsonString() {
         JsonArray segmentArray = new JsonArray();
         var       gson         = new Gson();
@@ -36,6 +45,12 @@ public abstract class AbstractMessage {
         return gson.toJson(segmentArray);
     }
 
+    /**
+     * Writes the message to the provided output stream.
+     *
+     * @param outputStream the stream to write too
+     * @throws IOException thrown if stream fails.
+     */
     public void writeToStream(BufferedOutputStream outputStream) throws IOException {
 
         byte[] typeBytes    = this.messageType.getBytes();
@@ -101,6 +116,9 @@ public abstract class AbstractMessage {
         }
     }
 
+    /**
+     * Helper class for adding a File segment to a message
+     */
     public static class FileSegment extends Segment {
         private final File file;
 
@@ -125,6 +143,9 @@ public abstract class AbstractMessage {
         }
     }
 
+    /**
+     * Helper class for adding a JSON segment to a message.
+     */
     public static class JsonSegment extends Segment {
         private final byte[] bytes;
 
@@ -143,6 +164,9 @@ public abstract class AbstractMessage {
         }
     }
 
+    /**
+     * Helper class for adding a byte segment to a message.
+     */
     public static class ByteSegment extends Segment {
         private final byte[] blob;
 

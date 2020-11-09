@@ -25,17 +25,18 @@ public class ClientHandler implements Runnable {
      * How many milliseconds a client can stay unathorized before the socket is
      * closed
      */
-    private static final long UNATHORIZED_CONNECTION_TIME = 3000L;
+    private static final long UNATHORIZED_CONNECTION_TIME = 4000L;
     private static final Logger LOGGER = Logger.getLogger(TcpServer.class.getName());
     private static final ScheduledExecutorService scheduledExecutor = Executors.newSingleThreadScheduledExecutor();
     private final TcpServer server;
     private final Socket clientSocket;
+    private ScheduledFuture<?> notAuthorizedTask;
     /**
      * Callback function for when a client has successfully authorized
      */
-    private final Consumer<FractalClient> authorizedCallback;
+    private final Consumer<Client> authorizedCallback;
 
-    ClientHandler(Socket clientSocket, TcpServer server, Consumer<FractalClient> authorizedCallback) {
+    ClientHandler(Socket clientSocket, TcpServer server, Consumer<Client> authorizedCallback) {
         this.server = server;
         this.clientSocket = clientSocket;
         this.authorizedCallback = authorizedCallback;
@@ -44,25 +45,32 @@ public class ClientHandler implements Runnable {
     @Override
     public void run() {
         try {
-            final var unauthorizedClient = new FractalClient(clientSocket, server);
+            final var unauthorizedClient = new FractalClient(clientSocket, server, (Client client) -> {
+                if (client.isAuthorized()) {
+                    if (notAuthorizedTask != null) {
+                        LOGGER.log(Level.INFO, "Client connected!");
+                        notAuthorizedTask.cancel(true);
+                        authorizedCallback.accept(client);
+                    }
+
+                }
+            });
             LOGGER.log(Level.INFO, "Unauthorized client connected...");
             Runnable task = () -> {
                 if (!unauthorizedClient.isAuthorized()) {
                     unauthorizedClient.closeClient();
                     LOGGER.log(Level.INFO, "Closed client for not authorizing...");
-                } else {
-                    this.authorizedCallback.accept(unauthorizedClient);
                 }
             };
-            ScheduledFuture<?> future = ClientHandler.scheduledExecutor.schedule(task,
-                    UNATHORIZED_CONNECTION_TIME,
-                    TimeUnit.MILLISECONDS
-            );
+
+            notAuthorizedTask = ClientHandler.scheduledExecutor.schedule(task, UNATHORIZED_CONNECTION_TIME,
+                    TimeUnit.MILLISECONDS);
+
+
             unauthorizedClient.run();
         } catch (IOException e) {
             LOGGER.log(Level.WARNING, "Socket IO error", e);
         }
     }
-
 
 }

@@ -1,40 +1,28 @@
 version: '3.8'
 
-
-
 x-DbLoggin:
-  environment:
-    &postgres-login
-    # the posgress user master password
-    POSTGRES_PASSWORD: "${POSTGRES_MASTER_PASSWORD}"
+  environment: &postgres-login # the POSTGRES user master password
+    POSTGRES_PASSWORD: '${POSTGRES_MASTER_PASSWORD}'
 
-    USER_USERNAME: "${POSGRESS_USER_USERNAME}"
-    USER_DB_NAME: "${POSGRESS_USER_DB}"
-    USER_PASSWORD: "${POSGRESS_USER_PASSWORD}"
-
-    SQLURL: "jdbc:postgresql://${POSTGRES_IP}:5432/${POSGRESS_USER_DB}"
-  networks:
-    &postgres-ip
-    ipv4_address: "${POSTGRES_IP}"
-
-
-
-
-
+    USER_USERNAME: '${POSTGRES_USER_USERNAME}'
+    USER_DB_NAME: '${POSTGRES_USER_DB}'
+    USER_PASSWORD: '${POSTGRES_USER_PASSWORD}'
+    POSTGRES_IP: postgres_db
+    POSTGRES_PORT: ${POSTGRES_PORT}
+    SQLURL: 'jdbc:postgresql://${POSTGRES_IP}:5432/${POSTGRES_USER_DB}'
+  networks: &postgres-ip
+    ipv4_address: '${POSTGRES_IP}'
 
 services:
   postgres_db:
     image: postgres
 
-
     environment:
-      << : *postgres-login
-      PGDATA: "/var/lib/postgresql/data/pgdata"
+      <<: *postgres-login
+      PGDATA: '/var/lib/postgresql/data/pgdata'
 
     networks:
       local_network: *postgres-ip
-
-
 
     volumes:
       - type: volume
@@ -45,20 +33,17 @@ services:
         source: ./docker_files/db_init
         target: /docker-entrypoint-initdb.d
 
-
-
     restart: unless-stopped
 
-
-
   web_server:
-
     build:
       context: ./web/
       dockerfile: ./api/Dockerfile
 
     environment:
       <<: *postgres-login
+      JWT_SECRET: ${JWT_SECRET}
+      API_PORT: ${API_PORT}
 
     volumes:
       - type: volume
@@ -67,94 +52,86 @@ services:
       - type: bind
         source: $PWD/web/api/
         target: /usr/src/app
-
+      - type: volume
+        source: node_modules
+        target: /usr/src/app/node_modules
 
     networks:
       local_network:
-        ipv4_address: "${WEBSERVER_IP}"
-
-
-#    ports:
-#      - "80:80"
-#      - "48:48"
-
-#    depends_on:
-#      - postgres_db
-
+        ipv4_address: '${WEBSERVER_IP}'
+    depends_on:
+      - server
+    ports:
+      - '9988:8080'
     restart: unless-stopped
 
   server:
-
     build:
       context: ./server
       dockerfile: Dockerfile
 
-
     environment:
       <<: *postgres-login
-      NODE_URL: "${NODE_URL}"
-
+      NODE_URL: '${NODE_URL}'
 
     volumes:
       - type: volume
         source: fractal_thumbnail_images
         target: /fractal_thumbnail_images
       - type: volume
-        source: mvn_data
+        source: maven_data
         target: /root/.m2
-
 
     networks:
       local_network:
       frontend:
+    ports:
+      - '9876:9876'
 
     depends_on:
       - postgres_db
 
     restart: unless-stopped
 
-
-
   # https://github.com/mikael2/payara-postgres-nginx/
-#  nginx:
-#    container_name: nginx
-#
-#    build:
-#      context: ./DockerFiles/nginx_certbot
-#      dockerfile: Dockerfile
-#
-#    volumes:
-#      - type: volume
-#        source: nginx_data
-#        target: /etc/letsencrypt
-#      - type: volume
-#        source: /web/frontend
-#        target: /www/fractal/
-#
-#    env_file:
-#      - ./config_files/nginx_cerbot.env
-#
-#    environment:
-#      DOMAIN: "${API_DOMAIN}"
-#      LE_EMAIL: "${MAIL_USERNAME}"
-#    logging:
-#      options:
-#        max-size: "50m"
-#        max-file: "3"
-#
-#    ports:
-#      - "80:80"
-#      - "443:443"
-#
-#    networks:
-#      frontend:
-#      internal:
-#
-#    depends_on:
-#      - api_server
-#
-#    restart: unless-stopped
+  nginx:
+    container_name: nginx
 
+    build:
+      context: ./docker_files/nginx_certbot
+      dockerfile: Dockerfile
+
+    volumes:
+      - type: volume
+        source: nginx_data
+        target: /etc/letsencrypt
+      - type: bind
+        source: /web/frontend
+        target: /www/fractal/
+
+    env_file:
+      - ./config_files/nginx_cerbot.env
+
+    environment:
+      DOMAIN: '${API_DOMAIN}'
+      LE_EMAIL: '${MAIL_USERNAME}'
+    logging:
+      options:
+        max-size: '50m'
+        max-file: '3'
+
+    ports:
+      - '80:80'
+      - '443:443'
+
+    networks:
+      frontend:
+      local_network:
+
+    depends_on:
+      - web_server
+
+    restart: unless-stopped
 
 networks:
   local_network:
@@ -163,7 +140,6 @@ networks:
       driver: default
       config:
         - subnet: 10.0.0.0/8
-
 
   frontend:
 
@@ -174,6 +150,8 @@ volumes:
   # thumbnail images
   fractal_thumbnail_images:
 
-  mvn_data:
+  maven_data:
+
+  node_modules:
 
   nginx_data:

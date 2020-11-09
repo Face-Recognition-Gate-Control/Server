@@ -1,15 +1,22 @@
 package no.fractal.socket.messages.recive;
 
-import no.fractal.server.ClientRequestDatabaseInterface;
+import no.fractal.server.ClientService;
 import no.fractal.socket.messages.send.GateAuthorizedMessage;
 
 import java.util.UUID;
 
+/**
+ * Sent from the a gate station to authorize itself with the server.
+ * The station is authorized with its id and a secret.
+ */
 public class GateAuthorizationPayload extends PayloadBase {
 
     private String login_key;
     private String station_uid;
 
+    /**
+     * Empty constructor is required for JSON parser
+     */
     public GateAuthorizationPayload() {
     }
 
@@ -31,18 +38,18 @@ public class GateAuthorizationPayload extends PayloadBase {
     public void execute() {
         try {
             var uid = UUID.fromString(station_uid);
-            boolean validationOk = ClientRequestDatabaseInterface.getInstance().stationManager.IsStationValid(uid,
-                                                                                                              login_key
+            boolean validationOk = ClientService.getInstance().stationManager.IsStationValid(uid,
+                    login_key
             );
-
             if (validationOk) {
-                client.setAuthorized(validationOk);
                 client.setClientID(uid.toString());
-                GateAuthorizedMessage gateAuthorizedMessage = new GateAuthorizedMessage("mabye remove bro");
+                client.setAuthorized(validationOk);
+                GateAuthorizedMessage gateAuthorizedMessage = new GateAuthorizedMessage("Fisk");
                 this.dispatcher.addMessage(gateAuthorizedMessage);
             }
 
         } catch (Exception e) {
+            e.printStackTrace();
             // TODO; Implement login failure handlin
         }
     }

@@ -3,6 +3,9 @@ package no.fractal.socket.messages.send;
 import com.google.gson.JsonObject;
 import no.fractal.socket.send.AbstractMessage;
 
+/**
+ * A response message to the gate station when the station is verified on the server.
+ */
 public class GateAuthorizedMessage extends AbstractMessage {
     public static final String MESSAGE_TYPE = "gate_authorized";
 

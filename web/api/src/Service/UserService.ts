@@ -73,6 +73,7 @@ export class UserService {
     async createUser(user: NewUser) {
         try {
             if (this.validateUser(user)) {
+                user.email = user.email.toLowerCase()
                 user.password = await hash(user.password)
                 let newUserCreated = await this._model.createUser(user)
                 if (newUserCreated) {
