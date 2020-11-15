@@ -66,6 +66,17 @@ export const UserEnterEvents: GraphQLFieldConfig<any, RequestContext, { [id: str
     },
 }
 
+/**
+ * Retrieves all enter events for a user
+ */
+export const UserBlocked: GraphQLFieldConfig<any, RequestContext, { [id: string]: string }> = {
+    type: new GraphQLList(UserEnterEvent),
+    resolve: async (root, args, ctx) => {
+        if (!ctx.authorizer.isAuthorized()) return []
+        return await userService.getUserBlocked(root.id)
+    },
+}
+
 export default (service: UserService) => {
     userService = service
     return { User, Users }

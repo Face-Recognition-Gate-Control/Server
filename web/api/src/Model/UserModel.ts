@@ -7,6 +7,7 @@ export class UserModel extends Model {
     private _rolesTable = 'user_roles'
     private _enteredEventsTable = 'user_enter_events'
     private _new_user_table = 'new_user_queue'
+    private _blocked_table = 'blocked_users'
 
     constructor(database: Client) {
         super('users', database)
@@ -40,6 +41,13 @@ export class UserModel extends Model {
     async getUserEnterEvents(id: string) {
         return await this.database.query(
             `SELECT * FROM ${this._enteredEventsTable} WHERE user_id = $1`,
+            [id]
+        )
+    }
+
+    async getUserBlocked(id: string) {
+        return await this.database.query(
+            `SELECT * FROM ${this._blocked_table} WHERE user_id = $1`,
             [id]
         )
     }
