@@ -68,7 +68,7 @@ CREATE TABLE IF NOT EXISTS blocked_users
 	id serial not null constraint blocked_users_pk primary key,
 	user_id uuid constraint blocked_users_users_id_fk references users on update cascade on delete cascade,
 	reason text,
-	time_of_block numeric default 0
+	time_of_block numeric DEFAULT extract(epoch from now())
 );
 
 alter table blocked_users owner to fractal;

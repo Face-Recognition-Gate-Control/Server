@@ -48,8 +48,8 @@ export class UserModel extends Model {
 
     async setUserBlocked(id: string, reasonMessage: string) {
         return await this.database.query(
-            `INSERT INTO ${this._blocked_table} (user_id, reason, time_of_block) VALUES ($1, $2, $3) RETURNING *;`,
-            [id, reasonMessage, Date.now()]
+            `INSERT INTO ${this._blocked_table} (user_id, reason) VALUES ($1, $2) RETURNING *;`,
+            [id, reasonMessage]
         )
     }
 
