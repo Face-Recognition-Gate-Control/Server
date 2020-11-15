@@ -2,11 +2,13 @@
 	<div class="container">
 		<h1 class="title">Userpage</h1>
 
-		<div class="columns is-mobile py-5">
+		<div class="columns is-desktop py-5">
 			<div class="column">
-				<h2 class="subtitle has-text-weight-bold">Access</h2>
+				<h2 class="subtitle has-text-weight-bold">Status</h2>
 
-				<button v-if="!isBlocked" @click="setBlocked">I've got Corona</button>
+				<button class="button is-danger" v-if="!isBlocked" @click="setBlocked">
+					I've got Corona
+				</button>
 				<div v-if="isBlocked && isBlockedStatus">
 					Access is revoked because of: <i> {{ isBlockedStatus.reason }} </i
 					><br />
@@ -22,20 +24,28 @@
 			</div>
 			<div class="column">
 				<h2 class="subtitle has-text-weight-bold">Logs</h2>
-				<ul>
-					<li
-						v-for="enterEvent in userEnterEvents"
-						v-bind:key="enterEvent.enter_time"
-					>
-						<span
-							>{{ enterEvent.station_name }}
-							on
-							{{ getDateString(getEpochDate(enterEvent.enter_time)) }}
-							at
-							{{ getHourMinuteFromDate(getEpochDate(enterEvent.enter_time)) }}
-						</span>
-					</li>
-				</ul>
+				<table class="table">
+					<thead>
+						<tr>
+							<th>Room</th>
+							<th>Date</th>
+							<th>Time</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr
+							class=""
+							v-for="enterEvent in userEnterEvents"
+							v-bind:key="enterEvent.enter_time"
+						>
+							<td>{{ enterEvent.station_name }}</td>
+							<td>{{ getDateString(getEpochDate(enterEvent.enter_time)) }}</td>
+							<td>
+								{{ getHourMinuteFromDate(getEpochDate(enterEvent.enter_time)) }}
+							</td>
+						</tr>
+					</tbody>
+				</table>
 			</div>
 		</div>
 		<logout />
