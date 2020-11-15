@@ -43,8 +43,6 @@ const router = createRouter({
 })
 
 router.beforeEach((to, _, next) => {
-  console.log(isLoggedIn())
-
   if (to.meta.protected && !isLoggedIn()) {
     next({ path: '/login' })
   } else {

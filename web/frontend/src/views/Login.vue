@@ -92,11 +92,10 @@ mutation{
 	}
 	token
   }
-}`,
+}`
 				};
 				try {
 					const res = await gqlAxios.post("", data);
-					console.log(res);
 					const auth = res.data.data.Auth;
 
 					if (auth && auth.token) {
@@ -117,8 +116,8 @@ mutation{
 			password,
 			emailError,
 			passwordError,
-			login,
+			login
 		};
-	},
+	}
 });
 </script>
