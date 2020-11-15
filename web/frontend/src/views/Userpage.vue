@@ -11,11 +11,11 @@
 					Access is revoked because of: <i> {{ isBlockedStatus.reason }} </i
 					><br />
 					<b>Reported at:</b>
-					{{ getDateString(new Date(isBlockedStatus.timeOfBlock)) }}
+					{{ getDateString(getEpochDate(isBlockedStatus.timeOfBlock)) }}
 					<br /><b>Will last until:</b>
 					{{
 						getDateString(
-							addDaysToDate(new Date(isBlockedStatus.timeOfBlock), 14)
+							addDaysToDate(getEpochDate(isBlockedStatus.timeOfBlock), 14)
 						)
 					}}
 				</div>
@@ -30,11 +30,9 @@
 						<span
 							>{{ enterEvent.station_name }}
 							on
-							{{ getDateString(new Date(enterEvent.enter_time)) }}
+							{{ getDateString(getEpochDate(enterEvent.enter_time)) }}
 							at
-							{{
-								getHourMinuteFromDate(new Date(new Date(enterEvent.enter_time)))
-							}}
+							{{ getHourMinuteFromDate(getEpochDate(enterEvent.enter_time)) }}
 						</span>
 					</li>
 				</ul>
@@ -141,12 +139,14 @@ query{
 					let response = res.data.data.UserEnterEvents;
 
 					if (response) {
-						for (const enterEvent of response) {
-							userEnterEvents.push({
-								station_name: enterEvent.station_name,
-								enter_time: Number.parseInt(enterEvent.enter_time)
+						(response as Array<UserEnterEvents>)
+							.sort((e, k) => k.enter_time - e.enter_time)
+							.forEach(e => {
+								userEnterEvents.push({
+									station_name: e.station_name,
+									enter_time: Number.parseInt(e.enter_time.toString())
+								});
 							});
-						}
 					}
 				}
 			} catch (error) {
@@ -171,6 +171,10 @@ query{
 			return date;
 		}
 
+		function getEpochDate(epoch: number) {
+			return new Date(epoch * 1000);
+		}
+
 		return {
 			setBlocked,
 			isBlocked,
@@ -178,7 +182,8 @@ query{
 			getDateString,
 			addDaysToDate,
 			userEnterEvents,
-			getHourMinuteFromDate
+			getHourMinuteFromDate,
+			getEpochDate
 		};
 	}
 });
