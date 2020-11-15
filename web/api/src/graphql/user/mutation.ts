@@ -2,7 +2,6 @@ import { UserBlockedType, UserType } from '@/graphql/user/type'
 import { GraphQLFieldConfig, GraphQLInt, GraphQLNonNull, GraphQLString } from 'graphql'
 import { UserService } from '@/Service/UserService'
 import { NewUser } from '@/lib/user/User'
-import { Roles } from '@/lib/auth/roles'
 
 /**
  * MUTATION is for updating/creating new data entries
@@ -41,11 +40,9 @@ var User: GraphQLFieldConfig<any, any, any> = {
 var SetUserBlock: GraphQLFieldConfig<any, any, any> = {
     type: UserBlockedType,
     resolve: async (root: any, args: NewUser, ctx: any) => {
-        if (ctx.authorizer.hasRole([Roles.Admin, Roles.Moderator]) || ctx.authorizer.isOwner()) {
-            const user = ctx.authorizer.user
-            if (user) {
-                return await userSerivce.setUserBlocked(user.id, 'Corona')
-            }
+        const user = ctx.authorizer.user
+        if (user) {
+            return await userSerivce.setUserBlocked(user.id, 'Corona')
         }
     },
 }
