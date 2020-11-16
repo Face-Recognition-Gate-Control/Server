@@ -7,6 +7,7 @@ export class UserModel extends Model {
     private _rolesTable = 'user_roles'
     private _enteredEventsTable = 'user_enter_events'
     private _new_user_table = 'new_user_queue'
+    private _blocked_table = 'blocked_users'
 
     constructor(database: Client) {
         super('users', database)
@@ -39,7 +40,22 @@ export class UserModel extends Model {
 
     async getUserEnterEvents(id: string) {
         return await this.database.query(
-            `SELECT * FROM ${this._enteredEventsTable} WHERE user_id = $1`,
+            `SELECT user_id, enter_time , s.id as station_id, s.station_name as station_name FROM ${this._enteredEventsTable} JOIN stations s on user_enter_events.station_id = s.id
+            WHERE user_id = $1`,
+            [id]
+        )
+    }
+
+    async setUserBlocked(id: string, reasonMessage: string) {
+        return await this.database.query(
+            `INSERT INTO ${this._blocked_table} (user_id, reason) VALUES ($1, $2) RETURNING *;`,
+            [id, reasonMessage]
+        )
+    }
+
+    async getUserBlocked(id: string) {
+        return await this.database.query(
+            `SELECT * FROM ${this._blocked_table} WHERE user_id = $1`,
             [id]
         )
     }

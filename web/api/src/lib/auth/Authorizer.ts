@@ -9,6 +9,10 @@ export class Authorizer {
         }
     }
 
+    public get user() {
+        return this._user
+    }
+
     public hasRole(roles: Array<string>) {
         if (this._user) {
             return roles.find((role) => this._user!.roles?.find((userRole) => userRole === role))
@@ -21,8 +25,6 @@ export class Authorizer {
     }
 
     public isAuthorized() {
-        console.log(this._user)
-
         return this._user
     }
 }

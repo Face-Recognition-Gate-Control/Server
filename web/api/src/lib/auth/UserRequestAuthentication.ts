@@ -12,10 +12,9 @@ import { createToken, verifyToken } from './jwt'
  */
 export async function UserRequestAuthentication(bearerToken: string | undefined) {
     const authorizer = new Authorizer()
+
     const token = verifyToken(bearerToken)
     if (token) {
-        console.log(token)
-
         let userService = new UserService(new UserModel(db))
         const user = await userService.getUserWithRoles(token.userid as any)
         authorizer.user = user

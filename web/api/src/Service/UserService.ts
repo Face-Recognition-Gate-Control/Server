@@ -55,12 +55,39 @@ export class UserService {
             logger.error(error)
         }
     }
+
     /**
      * Returns all entering events for the user
      */
     async getUserEnterEvents(id: string) {
         try {
             return (await this._model.getUserEnterEvents(id)).rows
+        } catch (error) {
+            logger.error(error)
+        }
+    }
+
+    /**
+     * Returnstrue if user is blocked else false
+     */
+    async getUserBlocked(id: string) {
+        try {
+            var q = (await this._model.getUserBlocked(id)).rows[0]
+            console.log(q)
+
+            return q
+            // return (await this._model.getUserBlocked(id)).rows[0]
+        } catch (error) {
+            logger.error(error)
+        }
+    }
+
+    /**
+     * Sets the user to blocked with a reson message.
+     */
+    async setUserBlocked(id: string, reasonMessage: string) {
+        try {
+            return await (await this._model.setUserBlocked(id, reasonMessage)).rows[0]
         } catch (error) {
             logger.error(error)
         }

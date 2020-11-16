@@ -77,8 +77,20 @@ let UserEnterEvent = new GraphQLObjectType({
     fields: () => ({
         station_id: { type: GraphQLString },
         enter_time: { type: GraphQLString },
+        station_name: { type: GraphQLString },
     }),
     description: 'An event for when a user entered a gate/station',
 })
 
-export { UserType, UserEnterEvent }
+let UserBlockedType = new GraphQLObjectType({
+    name: 'UserBlocked',
+    fields: () => ({
+        id: { type: GraphQLString },
+        user_id: { type: GraphQLString },
+        reason: { type: GraphQLString },
+        time_of_block: { type: GraphQLString },
+    }),
+    description: 'User is blocked type',
+})
+
+export { UserType, UserEnterEvent, UserBlockedType }

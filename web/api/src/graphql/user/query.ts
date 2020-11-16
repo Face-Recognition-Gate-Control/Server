@@ -1,8 +1,8 @@
-import { UserType, UserEnterEvent } from '@/graphql/user/type'
+import { UserType, UserEnterEvent, UserBlockedType } from '@/graphql/user/type'
 import { Roles } from '@/lib/auth/roles'
 import { RequestContext } from '@/loaders/express'
 import { UserService } from '@/Service/UserService'
-import { GraphQLFieldConfig, GraphQLList, GraphQLString } from 'graphql'
+import { GraphQLFieldConfig, GraphQLList, GraphQLObjectType, GraphQLString } from 'graphql'
 import RoleType from '../role/type'
 
 /**
@@ -60,13 +60,30 @@ export const UserEnterEvents: GraphQLFieldConfig<any, RequestContext, { [id: str
         if (
             !ctx.authorizer.hasRole([Roles.Admin, Roles.Moderator]) ||
             !ctx.authorizer.isOwner(root.id)
-        )
-            return []
-        return await userService.getUserEnterEvents(root.id)
+        ) {
+            const user = ctx.authorizer.user
+            if (user) {
+                return await userService.getUserEnterEvents(user.id!)
+            }
+        }
+    },
+}
+
+/**
+ * Retrieves all enter events for a user
+ */
+export const UserBlocked: GraphQLFieldConfig<any, RequestContext, { [id: string]: string }> = {
+    type: UserBlockedType,
+    resolve: async (root, args, ctx) => {
+        if (!ctx.authorizer.isAuthorized()) return {}
+        const user = ctx.authorizer.user
+        if (user) {
+            return await userService.getUserBlocked(user.id!)
+        }
     },
 }
 
 export default (service: UserService) => {
     userService = service
-    return { User, Users }
+    return { User, Users, UserBlocked, UserEnterEvents }
 }
