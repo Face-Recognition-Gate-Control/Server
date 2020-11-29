@@ -53,6 +53,7 @@ public class ClientService {
         imageTmpSaveDir  = new File(imageSaveDir, "temp_storage");
 
         this.stationManager = new StationManager();
+        this.startScheduledCleanupService();
     }
 
     public static ClientService getInstance() {

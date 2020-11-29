@@ -21,7 +21,6 @@ public class TcpServer {
 
     private static final int MAX_THREADS = 10;
 
-    private final Map<String, Client> authorizedClients = new HashMap<>();
     private int port = 9876;
     private String host = "localhost";
     private ServerSocket welcomeSocket;
@@ -63,7 +62,6 @@ public class TcpServer {
     }
 
     private void addFractalClient(Client fractalClient) {
-        this.authorizedClients.put(fractalClient.getClientID(), fractalClient);
         LOGGER.log(Level.INFO, String.format("Authorized client with id: %s", fractalClient.getClientID()));
     }
 
