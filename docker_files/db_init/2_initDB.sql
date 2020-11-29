@@ -62,6 +62,22 @@ CREATE TABLE IF NOT EXISTS events(
 
 );
 
+-- users blocked from access
+CREATE TABLE IF NOT EXISTS blocked_users
+(
+	id serial not null constraint blocked_users_pk primary key,
+	user_id uuid constraint blocked_users_users_id_fk references users on update cascade on delete cascade,
+	reason text,
+	time_of_block numeric DEFAULT extract(epoch from now())
+);
+
+alter table blocked_users owner to fractal;
+
+create unique index blocked_users_id_uindex
+	on blocked_users (id);
+
+
+
 -- the stations the timetable events are on
 CREATE TABLE IF NOT EXISTS station_events(
     station_id uuid references stations(id) ON DELETE RESTRICT  not null,

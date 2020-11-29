@@ -6,6 +6,10 @@ const tokenKey = 'jwt'
 
 export function setToken(token: string) {
   window.sessionStorage.setItem(tokenKey, token)
+  setAxiosHeader(token)
+}
+
+function setAxiosHeader(token: string) {
   gqlAxios.defaults.headers.common['Authorization'] = `Bearer ${token}`
 }
 
@@ -17,6 +21,7 @@ export function isLoggedIn() {
   const token = getToken()
 
   if (token) {
+    setAxiosHeader(token)
     return !isTokenExpired(token)
   } else {
     return false

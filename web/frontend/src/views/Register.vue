@@ -164,7 +164,7 @@ export default defineComponent({
 
 			if (isEmpty(phonenumber.value)) {
 				phonenumberError.value = "Phone number is required";
-			} else if (!range(phonenumber.value.toString(), 8)) {
+			} else if (!range(phonenumber.value.toString(), 8, 8)) {
 				phonenumberError.value = "Phonenumber must be 8 characters";
 			} else {
 				phonenumberError.value = "";
@@ -189,7 +189,7 @@ export default defineComponent({
   User(registration_token:"${route.params.token}",firstname:"${firstname.value}",lastname:"${lastname.value}",email:"${email.value}",telephone:${phonenumber.value},password:"${password.value}"){
 	  id
   }
-}`,
+}`
 				};
 				try {
 					const res = await gqlAxios.post("", data);
@@ -219,8 +219,8 @@ export default defineComponent({
 			emailError,
 			passwordError,
 			repasswordError,
-			phonenumberError,
+			phonenumberError
 		};
-	},
+	}
 });
 </script>
