@@ -32,7 +32,7 @@
         "eslint": "^7.8.1",
         "gql-tag": "^1.0.1",
         "graphql-tools": "^6.2.4",
-        "mocha": "^8.2.0",
+        "mocha": "^10.1.0",
         "module-alias": "^2.2.2",
         "nodemon": "^2.0.4",
         "ts-loader": "^8.0.3",
